@@ -79,7 +79,7 @@ input {
 
 .app-header h1,
 .panel-heading h2,
-.results-placeholder h2,
+.results-panel h2,
 .saved-meals-placeholder h2 {
   margin: 0;
 }
@@ -106,7 +106,7 @@ input {
 }
 
 .worksheet-panel,
-.results-placeholder,
+.results-panel,
 .saved-meals-placeholder {
   border: 1px solid var(--rule);
   border-radius: 28px;
@@ -119,7 +119,7 @@ input {
   background: var(--worksheet);
 }
 
-.results-placeholder {
+.results-panel {
   background: var(--label);
 }
 
