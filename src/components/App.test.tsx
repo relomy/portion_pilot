@@ -109,6 +109,19 @@ describe('App mode switching', () => {
     expect(screen.getByLabelText(/^total calories$/i)).toHaveValue(900)
   })
 
+  it('keeps total-source controls outside the package-labeled section in manual total mode', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    await user.click(screen.getByLabelText(/^manual total$/i))
+
+    expect(screen.getByLabelText(/^total source$/i)).toBeInTheDocument()
+    expect(
+      screen.queryByText(/^package label inputs$/i),
+    ).not.toBeInTheDocument()
+    expect(screen.getByLabelText(/^total calories$/i)).toBeInTheDocument()
+  })
+
   it('flags real competing calorie entries in dev details', async () => {
     const user = userEvent.setup()
     render(<App />)

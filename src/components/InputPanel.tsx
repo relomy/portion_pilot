@@ -106,96 +106,94 @@ function TotalModeFields({
 >) {
   return (
     <>
-      <section
-        className="worksheet-section"
-        aria-labelledby="package-label-inputs-heading"
-      >
-        <div className="section-heading">
-          <h3 id="package-label-inputs-heading">Package label inputs</h3>
-        </div>
+      <fieldset className="segmented-control" aria-label="Total source">
+        <label className="segmented-control__option">
+          <input
+            checked={form.totalCaloriesSource === 'packageLabel'}
+            name="total-source"
+            type="radio"
+            onChange={() => onTotalSourceChange('packageLabel')}
+          />
+          <span>Package label</span>
+        </label>
 
-        <fieldset className="segmented-control" aria-label="Total source">
-          <label className="segmented-control__option">
-            <input
-              checked={form.totalCaloriesSource === 'packageLabel'}
-              name="total-source"
-              type="radio"
-              onChange={() => onTotalSourceChange('packageLabel')}
+        <label className="segmented-control__option">
+          <input
+            checked={form.totalCaloriesSource === 'manualTotal'}
+            name="total-source"
+            type="radio"
+            onChange={() => onTotalSourceChange('manualTotal')}
+          />
+          <span>Manual total</span>
+        </label>
+      </fieldset>
+
+      {form.totalCaloriesSource === 'packageLabel' ? (
+        <section
+          className="worksheet-section"
+          aria-labelledby="package-label-inputs-heading"
+        >
+          <div className="section-heading">
+            <h3 id="package-label-inputs-heading">Package label inputs</h3>
+          </div>
+
+          <div className="field-grid">
+            <WeightField
+              label="Raw total weight"
+              name="raw-total-weight-unit"
+              value={form.rawTotalWeight}
+              unit={form.rawTotalWeightUnit}
+              onValueChange={(value) => onNumberChange('rawTotalWeight', value)}
+              onUnitChange={(value) => onUnitChange('rawTotalWeightUnit', value)}
             />
-            <span>Package label</span>
-          </label>
 
-          <label className="segmented-control__option">
-            <input
-              checked={form.totalCaloriesSource === 'manualTotal'}
-              name="total-source"
-              type="radio"
-              onChange={() => onTotalSourceChange('manualTotal')}
+            <WeightField
+              label="Package serving weight"
+              name="package-serving-weight-unit"
+              value={form.packageServingWeight}
+              unit={form.packageServingWeightUnit}
+              onValueChange={(value) =>
+                onNumberChange('packageServingWeight', value)
+              }
+              onUnitChange={(value) =>
+                onUnitChange('packageServingWeightUnit', value)
+              }
             />
-            <span>Manual total</span>
-          </label>
-        </fieldset>
 
-        <div className="field-grid">
-          {form.totalCaloriesSource === 'packageLabel' ? (
-            <>
-              <WeightField
-                label="Raw total weight"
-                name="raw-total-weight-unit"
-                value={form.rawTotalWeight}
-                unit={form.rawTotalWeightUnit}
-                onValueChange={(value) => onNumberChange('rawTotalWeight', value)}
-                onUnitChange={(value) => onUnitChange('rawTotalWeightUnit', value)}
-              />
-
-              <WeightField
-                label="Package serving weight"
-                name="package-serving-weight-unit"
-                value={form.packageServingWeight}
-                unit={form.packageServingWeightUnit}
-                onValueChange={(value) =>
-                  onNumberChange('packageServingWeight', value)
-                }
-                onUnitChange={(value) =>
-                  onUnitChange('packageServingWeightUnit', value)
-                }
-              />
-
-              <label className="field">
-                <span>Package calories per serving</span>
-                <input
-                  aria-label="Package calories per serving"
-                  type="number"
-                  value={toInputValue(form.packageCaloriesPerServing)}
-                  onChange={(event) =>
-                    onNumberChange(
-                      'packageCaloriesPerServing',
-                      event.target.value === ''
-                        ? null
-                        : Number(event.target.value),
-                    )
-                  }
-                />
-              </label>
-            </>
-          ) : (
             <label className="field">
-              <span>Total calories</span>
+              <span>Package calories per serving</span>
               <input
-                aria-label="Total calories"
+                aria-label="Package calories per serving"
                 type="number"
-                value={toInputValue(form.manualTotalCalories)}
+                value={toInputValue(form.packageCaloriesPerServing)}
                 onChange={(event) =>
                   onNumberChange(
-                    'manualTotalCalories',
-                    event.target.value === '' ? null : Number(event.target.value),
+                    'packageCaloriesPerServing',
+                    event.target.value === ''
+                      ? null
+                      : Number(event.target.value),
                   )
                 }
               />
             </label>
-          )}
-        </div>
-      </section>
+          </div>
+        </section>
+      ) : (
+        <label className="field">
+          <span>Total calories</span>
+          <input
+            aria-label="Total calories"
+            type="number"
+            value={toInputValue(form.manualTotalCalories)}
+            onChange={(event) =>
+              onNumberChange(
+                'manualTotalCalories',
+                event.target.value === '' ? null : Number(event.target.value),
+              )
+            }
+          />
+        </label>
+      )}
 
       <section
         className="worksheet-section"
