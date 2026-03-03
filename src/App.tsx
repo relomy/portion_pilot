@@ -41,9 +41,7 @@ function toGrams(value: number | null, unit: WeightUnit): number | null {
 function App() {
   const [form, setForm] = useState<MealInputs>(createEmptyForm)
   const { deleteMeal, loadMeal, saveMeal, savedMeals } = useSavedMeals()
-  const hasConflictingCalories =
-    (form.manualTotalCalories !== null || form.packageCaloriesPerServing !== null) &&
-    form.caloriesPerServing !== null
+  const hasConflictingCalories = false
 
   const result = calculateMealMetrics({
     mode: form.mode,
@@ -121,37 +119,14 @@ function App() {
   }
 
   function handleTotalSourceChange(value: TotalCaloriesSource) {
-    setForm((current) =>
-      value === 'manualTotal'
-        ? {
-            ...current,
-            totalCaloriesSource: value,
-            rawTotalWeight: null,
-            packageServingWeight: null,
-            packageCaloriesPerServing: null,
-          }
-        : {
-            ...current,
-            totalCaloriesSource: value,
-            manualTotalCalories: null,
-            totalCalories: null,
-          },
-    )
+    setForm((current) => ({ ...current, totalCaloriesSource: value }))
   }
 
   function updateMode(mode: MealMode) {
     setForm((current) =>
       mode === 'total'
         ? { ...current, mode, caloriesPerServing: null }
-        : {
-            ...current,
-            mode,
-            manualTotalCalories: null,
-            totalCalories: null,
-            rawTotalWeight: null,
-            packageServingWeight: null,
-            packageCaloriesPerServing: null,
-          },
+        : { ...current, mode },
     )
   }
 

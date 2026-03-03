@@ -35,7 +35,7 @@ describe('App mode switching', () => {
     ).toBeInTheDocument()
   })
 
-  it('clears manual total calories when switching to per-serving mode', async () => {
+  it('preserves manual total calories when switching to per-serving mode and back', async () => {
     const user = userEvent.setup()
     render(<App />)
 
@@ -45,7 +45,7 @@ describe('App mode switching', () => {
     await user.click(screen.getByLabelText(/total calories mode/i))
     await user.click(screen.getByLabelText(/^manual total$/i))
 
-    expect(screen.getByLabelText(/^total calories$/i)).toHaveValue(null)
+    expect(screen.getByLabelText(/^total calories$/i)).toHaveValue(500)
   })
 
   it('preserves the last-used total sub-mode when returning from per-serving mode', async () => {
@@ -80,6 +80,29 @@ describe('App mode switching', () => {
     await user.click(screen.getByRole('button', { name: /^clear$/i }))
 
     expect(screen.getByLabelText(/^package label$/i)).toBeChecked()
+  })
+
+  it('preserves package-label values when toggling to manual total and back', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    await user.type(screen.getByLabelText(/^raw total weight$/i), '458')
+    await user.type(screen.getByLabelText(/^package serving weight$/i), '130')
+    await user.type(
+      screen.getByLabelText(/^package calories per serving$/i),
+      '370',
+    )
+    await user.click(screen.getByLabelText(/^manual total$/i))
+    await user.type(screen.getByLabelText(/^total calories$/i), '900')
+    await user.click(screen.getByLabelText(/^package label$/i))
+
+    expect(screen.getByLabelText(/^raw total weight$/i)).toHaveValue(458)
+    expect(screen.getByLabelText(/^package serving weight$/i)).toHaveValue(130)
+    expect(
+      screen.getByLabelText(/^package calories per serving$/i),
+    ).toHaveValue(370)
+    await user.click(screen.getByLabelText(/^manual total$/i))
+    expect(screen.getByLabelText(/^total calories$/i)).toHaveValue(900)
   })
 
   it('renders the live results panel metrics and assumption note', async () => {
