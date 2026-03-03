@@ -14,4 +14,17 @@ describe('index.css', () => {
     expect(css).toContain('.results-panel {\n  background: var(--label);')
     expect(css).toContain('.app-header h1,\n.panel-heading h2,\n.results-panel h2,')
   })
+
+  it('styles the saved meals shelf and prep cards', () => {
+    const cssPath = resolve(process.cwd(), 'src/index.css')
+    const css = readFileSync(cssPath, 'utf8')
+
+    expect(css).toContain('.saved-meals-grid')
+    expect(css).toContain('.saved-meals-empty')
+    expect(css).toContain('.meal-card')
+    expect(css).toContain('.meal-card--prep')
+    expect(css).toContain('.meal-card__header')
+    expect(css).toContain('.meal-card__metrics')
+    expect(css).toContain('.meal-card__actions')
+  })
 })

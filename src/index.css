@@ -178,6 +178,105 @@ input {
   margin-top: 1.25rem;
 }
 
+.saved-meals-empty {
+  margin: 0.85rem 0 0;
+  max-width: 32rem;
+}
+
+.saved-meals-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  margin-top: 1.25rem;
+}
+
+.meal-card,
+.meal-card--prep {
+  position: relative;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 24px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(255, 250, 242, 0.96)),
+    var(--label);
+  padding: 1rem 1rem 1.1rem;
+  box-shadow: 0 16px 40px rgba(148, 163, 184, 0.14);
+}
+
+.meal-card--prep::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto auto 1rem;
+  width: 3.25rem;
+  height: 0.28rem;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--terracotta), var(--herb));
+}
+
+.meal-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.meal-card__header .eyebrow {
+  margin-bottom: 0.35rem;
+}
+
+.meal-card__header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.meal-card__total {
+  margin: 0;
+  color: var(--ink);
+  font-size: 1.4rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.meal-card__metrics {
+  display: grid;
+  gap: 0.65rem;
+  margin: 1rem 0 0;
+}
+
+.meal-card__metrics div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid var(--rule);
+}
+
+.meal-card__metrics dt,
+.meal-card__metrics dd {
+  margin: 0;
+}
+
+.meal-card__metrics dt {
+  color: var(--steel);
+  font-size: 0.92rem;
+}
+
+.meal-card__metrics dd {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.meal-card__actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.meal-card__actions button {
+  flex: 1;
+  padding: 0.7rem 0.95rem;
+}
+
 @media (max-width: 780px) {
   .calculator-layout {
     grid-template-columns: 1fr;
@@ -185,5 +284,13 @@ input {
 
   .field-grid {
     grid-template-columns: 1fr;
+  }
+
+  .meal-card__header {
+    flex-direction: column;
+  }
+
+  .meal-card__total {
+    white-space: normal;
   }
 }
