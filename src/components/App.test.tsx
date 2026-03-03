@@ -38,11 +38,11 @@ describe('App mode switching', () => {
 
     await user.click(screen.getByLabelText(/^per serving$/i))
     await user.type(screen.getByLabelText(/^calories per serving$/i), '125')
-    await user.type(screen.getByLabelText(/^servings$/i), '4')
+    await user.type(screen.getByLabelText(/^servings/i), '4')
     await user.click(screen.getByLabelText(/total calories mode/i))
 
     expect(screen.getByLabelText(/^calories per serving$/i)).toHaveValue(null)
-    expect(screen.getByLabelText(/^servings$/i)).toHaveValue(null)
+    expect(screen.getByLabelText(/^servings/i)).toHaveValue(4)
   })
 
   it('renders the live results panel metrics and assumption note', async () => {
@@ -83,5 +83,18 @@ describe('App mode switching', () => {
 
     await user.click(screen.getByRole('button', { name: /^delete$/i }))
     expect(screen.queryByText(/chicken bowl/i)).not.toBeInTheDocument()
+  })
+
+  it('keeps servings available in total mode and derives calories per serving', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    const servingsInput = screen.getByLabelText(/^servings/i)
+    expect(servingsInput).toBeEnabled()
+
+    await user.type(screen.getByLabelText(/^total calories$/i), '600')
+    await user.type(servingsInput, '4')
+
+    expect(screen.getByText(/^150$/i)).toBeInTheDocument()
   })
 })

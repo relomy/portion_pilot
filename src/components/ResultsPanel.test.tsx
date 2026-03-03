@@ -8,7 +8,7 @@ describe('ResultsPanel', () => {
       <ResultsPanel
         result={{
           totalCalories: 500,
-          caloriesPerServing: 500,
+          caloriesPerServing: null,
           caloriesPerGram: null,
           caloriesPerOunce: null,
           caloriesPer100Grams: null,
@@ -28,6 +28,7 @@ describe('ResultsPanel', () => {
     )
 
     expect(screen.getByText(/source: total calories/i)).toBeInTheDocument()
+    expect(screen.getByText('—')).toBeInTheDocument()
     expect(screen.getAllByText(/need cooked weight/i)).toHaveLength(3)
     expect(screen.getByTestId('results-metrics').tagName).toBe('DL')
   })
