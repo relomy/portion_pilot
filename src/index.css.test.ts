@@ -39,4 +39,15 @@ describe('index.css', () => {
     expect(css).toContain('.dev-panel')
     expect(css).toContain('.assumption-note')
   })
+
+  it('keeps the header compact so the calculator starts near the top of the page', () => {
+    const cssPath = resolve(process.cwd(), 'src/index.css')
+    const css = readFileSync(cssPath, 'utf8')
+
+    expect(css).toContain('.app-shell {\n  max-width: 1120px;\n  margin: 0 auto;\n  padding: 1.5rem 1.25rem 3rem;')
+    expect(css).toContain('.app-header {\n  margin-bottom: 1rem;')
+    expect(css).toContain('.app-header h1 {\n  max-width: 14ch;')
+    expect(css).toContain("font-size: clamp(2rem, 3.6vw, 3.25rem);")
+    expect(css).toContain('.app-subtitle {\n  max-width: 34rem;\n  margin: 0.5rem 0 0;')
+  })
 })
