@@ -1,7 +1,14 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 import App from '../App'
+import { STORAGE_KEY } from '../hooks/useSavedMeals'
+
+beforeEach(() => {
+  if (typeof window.localStorage?.removeItem === 'function') {
+    window.localStorage.removeItem(STORAGE_KEY)
+  }
+})
 
 describe('App mode switching', () => {
   it('renders the worksheet, nutrition label, and saved meals regions', () => {
@@ -53,5 +60,28 @@ describe('App mode switching', () => {
       screen.getByText(/source: calories per serving/i),
     ).toBeInTheDocument()
     expect(screen.getAllByText(/need cooked weight/i)).toHaveLength(3)
+  })
+
+  it('saves meals, reloads them into the form, and deletes them from the shelf', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    await user.type(screen.getByLabelText(/^meal name$/i), 'Chicken Bowl')
+    await user.type(screen.getByLabelText(/^cooked weight \(g\)$/i), '250')
+    await user.type(screen.getByLabelText(/^total calories$/i), '500')
+    await user.click(screen.getByRole('button', { name: /^save meal$/i }))
+
+    const mealName = screen.getByText(/chicken bowl/i)
+    expect(mealName.closest('.meal-card--prep')).not.toBeNull()
+
+    await user.click(screen.getByRole('button', { name: /^clear$/i }))
+    expect(screen.getByLabelText(/^meal name$/i)).toHaveValue('')
+
+    await user.click(screen.getByRole('button', { name: /^load$/i }))
+    expect(screen.getByLabelText(/^meal name$/i)).toHaveValue('Chicken Bowl')
+    expect(screen.getByLabelText(/^total calories$/i)).toHaveValue(500)
+
+    await user.click(screen.getByRole('button', { name: /^delete$/i }))
+    expect(screen.queryByText(/chicken bowl/i)).not.toBeInTheDocument()
   })
 })

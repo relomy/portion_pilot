@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { ResultsPanel } from './components/ResultsPanel'
 import { InputPanel } from './components/InputPanel'
+import { SavedMealsList } from './components/SavedMealsList'
 import {
   type MealInputs,
   type MealMode,
@@ -21,7 +22,7 @@ function createEmptyForm(): MealInputs {
 
 function App() {
   const [form, setForm] = useState<MealInputs>(createEmptyForm)
-  const { saveMeal, savedMeals } = useSavedMeals()
+  const { deleteMeal, loadMeal, saveMeal, savedMeals } = useSavedMeals()
   const hasConflictingCalories =
     form.totalCalories !== null && form.caloriesPerServing !== null
 
@@ -64,6 +65,14 @@ function App() {
     setForm(createEmptyForm())
   }
 
+  function handleLoadMeal(id: string) {
+    const loadedMeal = loadMeal(id)
+
+    if (loadedMeal) {
+      setForm(loadedMeal.inputs)
+    }
+  }
+
   return (
     <main className="app-shell">
       <header className="app-header">
@@ -95,11 +104,11 @@ function App() {
         />
       </div>
 
-      <section className="saved-meals-placeholder" data-testid="saved-meals-region">
-        <p className="eyebrow">Saved meals</p>
-        <h2>Meal prep shelf</h2>
-        <p>{savedMeals.length} saved meal{savedMeals.length === 1 ? '' : 's'}</p>
-      </section>
+      <SavedMealsList
+        meals={savedMeals}
+        onLoad={handleLoadMeal}
+        onDelete={deleteMeal}
+      />
     </main>
   )
 }
