@@ -3,17 +3,17 @@ import { describe, expect, it } from 'vitest'
 import { ResultsPanel } from './ResultsPanel'
 
 describe('ResultsPanel', () => {
-  it('shows raw package servings and fractional package totals', () => {
+  it('shows source-neutral batch calorie stats and cooked batch stats in total mode', () => {
     render(
       <ResultsPanel
         result={{
           totalCalories: 1303.5384,
           caloriesPerServing: null,
-          caloriesPerGram: null,
-          caloriesPerOunce: null,
-          caloriesPer100Grams: null,
+          caloriesPerGram: 2,
+          caloriesPerOunce: 56.7,
+          caloriesPer100Grams: 200,
           rawPackageServings: 3.5230769,
-          portionCalories: null,
+          portionCalories: 300,
           totalCaloriesDisplaySource: 'packageLabel',
           calorie_source_used: 'total',
           assumptions: { servings_assumed: false },
@@ -28,8 +28,8 @@ describe('ResultsPanel', () => {
           caloriesPerServing: null,
           yourServings: null,
           servings: null,
-          cookedWeightGrams: null,
-          portionEaten: null,
+          cookedWeightGrams: 300,
+          portionEaten: 150,
           portionEatenUnit: 'g',
           rawTotalWeight: 458,
           rawTotalWeightUnit: 'g',
@@ -40,12 +40,17 @@ describe('ResultsPanel', () => {
       />,
     )
 
-    expect(screen.getByText(/^1303.5$/i)).toBeInTheDocument()
-    expect(screen.getByText(/^raw package servings$/i)).toBeInTheDocument()
+    expect(screen.getByText(/^batch calorie stats$/i)).toBeInTheDocument()
+    expect(
+      screen.getByText(/^based on raw package weight and label serving size$/i),
+    ).toBeInTheDocument()
+    expect(screen.getByText(/^cooked batch stats$/i)).toBeInTheDocument()
+    expect(screen.getByText(/^portion calories$/i)).toBeInTheDocument()
     expect(screen.getByText(/^3.523$/i)).toBeInTheDocument()
+    expect(screen.getByText(/^300$/i)).toBeInTheDocument()
   })
 
-  it('shows source used and need cooked weight warnings', () => {
+  it('shows cooked batch stats as unavailable when cooked batch weight is missing', () => {
     render(
       <ResultsPanel
         result={{
@@ -71,7 +76,7 @@ describe('ResultsPanel', () => {
           yourServings: null,
           servings: null,
           cookedWeightGrams: null,
-          portionEaten: null,
+          portionEaten: 150,
           portionEatenUnit: 'g',
           rawTotalWeight: null,
           rawTotalWeightUnit: 'g',
@@ -83,12 +88,13 @@ describe('ResultsPanel', () => {
     )
 
     expect(screen.getByText(/source: total calories/i)).toBeInTheDocument()
-    expect(screen.getAllByText('—')).toHaveLength(2)
-    expect(screen.getAllByText(/need cooked weight/i)).toHaveLength(3)
-    expect(screen.getByTestId('results-metrics').tagName).toBe('DL')
+    expect(screen.getByText(/^batch calorie stats$/i)).toBeInTheDocument()
+    expect(screen.getByText(/^cooked batch stats$/i)).toBeInTheDocument()
+    expect(screen.getByText(/^based on entered batch calories$/i)).toBeInTheDocument()
+    expect(screen.getByText(/^needs cooked batch weight$/i)).toBeInTheDocument()
   })
 
-  it('renders the dev diagnostics drawer for conflicting inputs in development', () => {
+  it('keeps the dev diagnostics drawer for conflicting inputs in development', () => {
     render(
       <ResultsPanel
         result={{
@@ -128,8 +134,5 @@ describe('ResultsPanel', () => {
     expect(
       screen.getByRole('button', { name: /show debug details/i }),
     ).toBeInTheDocument()
-    expect(
-      screen.queryByText(/multiple calorie sources entered/i),
-    ).not.toBeInTheDocument()
   })
 })

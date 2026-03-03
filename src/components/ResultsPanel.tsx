@@ -6,6 +6,7 @@ import {
   formatCaloriesPerGram,
   formatCaloriesPerOunce,
   formatCaloriesPerServing,
+  formatPortionCalories,
   formatRawPackageServings,
   formatTotalCalories,
 } from '../utils/format'
@@ -22,34 +23,89 @@ type ResultsPanelProps = {
   form: MealInputs
 }
 
-export function ResultsPanel({
-  result,
-  hasConflictingCalories,
+function TotalModeResults({
   form,
-}: ResultsPanelProps) {
-  return (
-    <section className="results-panel" data-testid="nutrition-label">
-      <p className="eyebrow">Nutrition label</p>
-      <h2>Live results</h2>
-      <p className="placeholder-value">
-        {formatTotalCalories(
-          result.totalCalories,
-          result.totalCaloriesDisplaySource,
-        )}
-      </p>
-      <p className="placeholder-copy">
-        {sourceLabels[result.calorie_source_used]}
-      </p>
+  result,
+}: Pick<ResultsPanelProps, 'form' | 'result'>) {
+  const batchHelper =
+    form.totalCaloriesSource === 'packageLabel'
+      ? 'Based on raw package weight and label serving size'
+      : 'Based on entered batch calories'
 
+  return (
+    <>
+      <section className="results-section results-section--batch">
+        <header>
+          <h3>Batch calorie stats</h3>
+          <p>{batchHelper}</p>
+        </header>
+
+        <dl className="results-metrics">
+          <div>
+            <dt>Total calories</dt>
+            <dd>
+              {formatTotalCalories(
+                result.totalCalories,
+                result.totalCaloriesDisplaySource,
+              )}
+            </dd>
+          </div>
+          {form.totalCaloriesSource === 'packageLabel' ? (
+            <>
+              <div>
+                <dt>Raw package servings</dt>
+                <dd>{formatRawPackageServings(result.rawPackageServings)}</dd>
+              </div>
+              <div>
+                <dt>Package calories per serving</dt>
+                <dd>{formatCaloriesPerServing(form.packageCaloriesPerServing)}</dd>
+              </div>
+            </>
+          ) : null}
+        </dl>
+      </section>
+
+      <section className="results-section results-section--cooked">
+        <header>
+          <h3>Cooked batch stats</h3>
+          <p>Based on cooked batch weight and portion eaten</p>
+        </header>
+
+        {form.cookedWeightGrams === null || form.cookedWeightGrams <= 0 ? (
+          <p className="results-unavailable">Needs cooked batch weight</p>
+        ) : null}
+
+        <dl className="results-metrics">
+          <div>
+            <dt>Calories per gram</dt>
+            <dd>{formatCaloriesPerGram(result.caloriesPerGram)}</dd>
+          </div>
+          <div>
+            <dt>Calories per ounce</dt>
+            <dd>{formatCaloriesPerOunce(result.caloriesPerOunce)}</dd>
+          </div>
+          <div>
+            <dt>Calories per 100g</dt>
+            <dd>{formatCaloriesPer100Grams(result.caloriesPer100Grams)}</dd>
+          </div>
+          <div>
+            <dt>Portion calories</dt>
+            <dd>{formatPortionCalories(result.portionCalories)}</dd>
+          </div>
+        </dl>
+      </section>
+    </>
+  )
+}
+
+function PerServingResults({
+  result,
+}: Pick<ResultsPanelProps, 'result'>) {
+  return (
+    <>
       {result.assumptions.servings_assumed ? (
         <p className="assumption-note">Assumed 1 serving because none was provided.</p>
       ) : null}
-
-      <DevPanel
-        hasConflictingCalories={hasConflictingCalories}
-        form={form}
-        result={result}
-      />
 
       <dl className="results-metrics" data-testid="results-metrics">
         <div>
@@ -73,6 +129,40 @@ export function ResultsPanel({
           <dd>{formatCaloriesPer100Grams(result.caloriesPer100Grams)}</dd>
         </div>
       </dl>
+    </>
+  )
+}
+
+export function ResultsPanel({
+  result,
+  hasConflictingCalories,
+  form,
+}: ResultsPanelProps) {
+  return (
+    <section className="results-panel" data-testid="nutrition-label">
+      <p className="eyebrow">Nutrition label</p>
+      <h2>Live results</h2>
+      <p className="placeholder-value">
+        {formatTotalCalories(
+          result.totalCalories,
+          result.totalCaloriesDisplaySource,
+        )}
+      </p>
+      <p className="placeholder-copy">
+        {sourceLabels[result.calorie_source_used]}
+      </p>
+
+      <DevPanel
+        hasConflictingCalories={hasConflictingCalories}
+        form={form}
+        result={result}
+      />
+
+      {form.mode === 'total' ? (
+        <TotalModeResults form={form} result={result} />
+      ) : (
+        <PerServingResults result={result} />
+      )}
     </section>
   )
 }

@@ -14,13 +14,17 @@ type InputPanelProps = {
       | 'caloriesPerServing'
       | 'yourServings'
       | 'cookedWeightGrams'
+      | 'portionEaten'
       | 'rawTotalWeight'
       | 'packageServingWeight'
       | 'packageCaloriesPerServing',
     value: number | null,
   ) => void
   onUnitChange: (
-    field: 'rawTotalWeightUnit' | 'packageServingWeightUnit',
+    field:
+      | 'rawTotalWeightUnit'
+      | 'packageServingWeightUnit'
+      | 'portionEatenUnit',
     value: WeightUnit,
   ) => void
   onModeChange: (mode: MealMode) => void
@@ -31,6 +35,258 @@ type InputPanelProps = {
 
 function toInputValue(value: number | null) {
   return value ?? ''
+}
+
+type WeightFieldProps = {
+  label: string
+  name: string
+  value: number | null
+  unit: WeightUnit
+  onValueChange: (value: number | null) => void
+  onUnitChange: (unit: WeightUnit) => void
+}
+
+function WeightField({
+  label,
+  name,
+  value,
+  unit,
+  onValueChange,
+  onUnitChange,
+}: WeightFieldProps) {
+  return (
+    <label className="field">
+      <span>{label}</span>
+      <div className="input-with-unit">
+        <input
+          aria-label={label}
+          type="number"
+          value={toInputValue(value)}
+          onChange={(event) =>
+            onValueChange(
+              event.target.value === '' ? null : Number(event.target.value),
+            )
+          }
+        />
+        <fieldset className="unit-segmented" aria-label={`${label} unit`}>
+          <label>
+            <input
+              checked={unit === 'g'}
+              name={name}
+              type="radio"
+              value="g"
+              onChange={() => onUnitChange('g')}
+            />
+            <span>g</span>
+          </label>
+          <label>
+            <input
+              checked={unit === 'oz'}
+              name={name}
+              type="radio"
+              value="oz"
+              onChange={() => onUnitChange('oz')}
+            />
+            <span>oz</span>
+          </label>
+        </fieldset>
+      </div>
+    </label>
+  )
+}
+
+function TotalModeFields({
+  form,
+  onNumberChange,
+  onUnitChange,
+  onTotalSourceChange,
+}: Pick<
+  InputPanelProps,
+  'form' | 'onNumberChange' | 'onUnitChange' | 'onTotalSourceChange'
+>) {
+  return (
+    <>
+      <section
+        className="worksheet-section"
+        aria-labelledby="package-label-inputs-heading"
+      >
+        <div className="section-heading">
+          <h3 id="package-label-inputs-heading">Package label inputs</h3>
+        </div>
+
+        <fieldset className="segmented-control" aria-label="Total source">
+          <label className="segmented-control__option">
+            <input
+              checked={form.totalCaloriesSource === 'packageLabel'}
+              name="total-source"
+              type="radio"
+              onChange={() => onTotalSourceChange('packageLabel')}
+            />
+            <span>Package label</span>
+          </label>
+
+          <label className="segmented-control__option">
+            <input
+              checked={form.totalCaloriesSource === 'manualTotal'}
+              name="total-source"
+              type="radio"
+              onChange={() => onTotalSourceChange('manualTotal')}
+            />
+            <span>Manual total</span>
+          </label>
+        </fieldset>
+
+        <div className="field-grid">
+          {form.totalCaloriesSource === 'packageLabel' ? (
+            <>
+              <WeightField
+                label="Raw total weight"
+                name="raw-total-weight-unit"
+                value={form.rawTotalWeight}
+                unit={form.rawTotalWeightUnit}
+                onValueChange={(value) => onNumberChange('rawTotalWeight', value)}
+                onUnitChange={(value) => onUnitChange('rawTotalWeightUnit', value)}
+              />
+
+              <WeightField
+                label="Package serving weight"
+                name="package-serving-weight-unit"
+                value={form.packageServingWeight}
+                unit={form.packageServingWeightUnit}
+                onValueChange={(value) =>
+                  onNumberChange('packageServingWeight', value)
+                }
+                onUnitChange={(value) =>
+                  onUnitChange('packageServingWeightUnit', value)
+                }
+              />
+
+              <label className="field">
+                <span>Package calories per serving</span>
+                <input
+                  aria-label="Package calories per serving"
+                  type="number"
+                  value={toInputValue(form.packageCaloriesPerServing)}
+                  onChange={(event) =>
+                    onNumberChange(
+                      'packageCaloriesPerServing',
+                      event.target.value === ''
+                        ? null
+                        : Number(event.target.value),
+                    )
+                  }
+                />
+              </label>
+            </>
+          ) : (
+            <label className="field">
+              <span>Total calories</span>
+              <input
+                aria-label="Total calories"
+                type="number"
+                value={toInputValue(form.manualTotalCalories)}
+                onChange={(event) =>
+                  onNumberChange(
+                    'manualTotalCalories',
+                    event.target.value === '' ? null : Number(event.target.value),
+                  )
+                }
+              />
+            </label>
+          )}
+        </div>
+      </section>
+
+      <section
+        className="worksheet-section"
+        aria-labelledby="cooked-batch-inputs-heading"
+      >
+        <div className="section-heading">
+          <h3 id="cooked-batch-inputs-heading">Cooked batch inputs</h3>
+        </div>
+
+        <div className="field-grid">
+          <label className="field">
+            <span>Cooked weight (g)</span>
+            <input
+              aria-label="Cooked weight (g)"
+              type="number"
+              value={toInputValue(form.cookedWeightGrams)}
+              onChange={(event) =>
+                onNumberChange(
+                  'cookedWeightGrams',
+                  event.target.value === '' ? null : Number(event.target.value),
+                )
+              }
+            />
+          </label>
+
+          <WeightField
+            label="Portion eaten (cooked weight)"
+            name="portion-eaten-unit"
+            value={form.portionEaten}
+            unit={form.portionEatenUnit}
+            onValueChange={(value) => onNumberChange('portionEaten', value)}
+            onUnitChange={(value) => onUnitChange('portionEatenUnit', value)}
+          />
+        </div>
+      </section>
+    </>
+  )
+}
+
+function PerServingFields({
+  form,
+  onNumberChange,
+}: Pick<InputPanelProps, 'form' | 'onNumberChange'>) {
+  return (
+    <div className="field-grid">
+      <label className="field">
+        <span>Cooked weight (g)</span>
+        <input
+          aria-label="Cooked weight (g)"
+          type="number"
+          value={toInputValue(form.cookedWeightGrams)}
+          onChange={(event) =>
+            onNumberChange(
+              'cookedWeightGrams',
+              event.target.value === '' ? null : Number(event.target.value),
+            )
+          }
+        />
+      </label>
+
+      <label className="field">
+        <span>Calories per serving</span>
+        <input
+          aria-label="Calories per serving"
+          type="number"
+          value={toInputValue(form.caloriesPerServing)}
+          onChange={(event) =>
+            onNumberChange(
+              'caloriesPerServing',
+              event.target.value === '' ? null : Number(event.target.value),
+            )
+          }
+        />
+      </label>
+
+      <label className="field">
+        <span>Servings (optional)</span>
+        <input
+          aria-label="Servings (optional)"
+          type="number"
+          value={toInputValue(form.yourServings)}
+          onChange={(event) =>
+            onNumberChange(
+              'yourServings',
+              event.target.value === '' ? null : Number(event.target.value),
+            )
+          }
+        />
+      </label>
+    </div>
+  )
 }
 
 export function InputPanel({
@@ -60,10 +316,8 @@ export function InputPanel({
         />
       </label>
 
-      <fieldset className="mode-group">
-        <legend>Calorie mode</legend>
-
-        <label className="mode-option">
+      <fieldset className="segmented-control" aria-label="Calorie mode">
+        <label className="segmented-control__option">
           <input
             checked={form.mode === 'total'}
             name="mode"
@@ -73,7 +327,7 @@ export function InputPanel({
           <span>Total calories mode</span>
         </label>
 
-        <label className="mode-option">
+        <label className="segmented-control__option">
           <input
             checked={form.mode === 'perServing'}
             name="mode"
@@ -85,169 +339,15 @@ export function InputPanel({
       </fieldset>
 
       {form.mode === 'total' ? (
-        <fieldset className="mode-group">
-          <legend>Total source</legend>
-
-          <label className="mode-option">
-            <input
-              checked={form.totalCaloriesSource === 'packageLabel'}
-              name="total-source"
-              type="radio"
-              onChange={() => onTotalSourceChange('packageLabel')}
-            />
-            <span>Package label</span>
-          </label>
-
-          <label className="mode-option">
-            <input
-              checked={form.totalCaloriesSource === 'manualTotal'}
-              name="total-source"
-              type="radio"
-              onChange={() => onTotalSourceChange('manualTotal')}
-            />
-            <span>Manual total</span>
-          </label>
-        </fieldset>
-      ) : null}
-
-      <div className="field-grid">
-        <label className="field">
-          <span>Cooked weight (g)</span>
-          <input
-            type="number"
-            value={toInputValue(form.cookedWeightGrams)}
-            onChange={(event) =>
-              onNumberChange(
-                'cookedWeightGrams',
-                event.target.value === '' ? null : Number(event.target.value),
-              )
-            }
-          />
-        </label>
-
-        {form.mode === 'total' && form.totalCaloriesSource === 'manualTotal' ? (
-          <label className="field">
-            <span>Total calories</span>
-            <input
-              type="number"
-              value={toInputValue(form.manualTotalCalories)}
-              onChange={(event) =>
-                onNumberChange(
-                  'manualTotalCalories',
-                  event.target.value === '' ? null : Number(event.target.value),
-                )
-              }
-            />
-          </label>
-        ) : null}
-
-        {form.mode === 'total' && form.totalCaloriesSource === 'packageLabel' ? (
-          <>
-            <label className="field">
-              <span>Raw total weight</span>
-              <input
-                type="number"
-                value={toInputValue(form.rawTotalWeight)}
-                onChange={(event) =>
-                  onNumberChange(
-                    'rawTotalWeight',
-                    event.target.value === '' ? null : Number(event.target.value),
-                  )
-                }
-              />
-            </label>
-
-            <label className="field">
-              <span>Raw total weight unit</span>
-              <select
-                value={form.rawTotalWeightUnit}
-                onChange={(event) =>
-                  onUnitChange(
-                    'rawTotalWeightUnit',
-                    event.target.value as WeightUnit,
-                  )
-                }
-              >
-                <option value="g">g</option>
-                <option value="oz">oz</option>
-              </select>
-            </label>
-
-            <label className="field">
-              <span>Package serving weight</span>
-              <input
-                type="number"
-                value={toInputValue(form.packageServingWeight)}
-                onChange={(event) =>
-                  onNumberChange(
-                    'packageServingWeight',
-                    event.target.value === '' ? null : Number(event.target.value),
-                  )
-                }
-              />
-            </label>
-
-            <label className="field">
-              <span>Package serving weight unit</span>
-              <select
-                value={form.packageServingWeightUnit}
-                onChange={(event) =>
-                  onUnitChange(
-                    'packageServingWeightUnit',
-                    event.target.value as WeightUnit,
-                  )
-                }
-              >
-                <option value="g">g</option>
-                <option value="oz">oz</option>
-              </select>
-            </label>
-
-            <label className="field">
-              <span>Package calories per serving</span>
-              <input
-                type="number"
-                value={toInputValue(form.packageCaloriesPerServing)}
-                onChange={(event) =>
-                  onNumberChange(
-                    'packageCaloriesPerServing',
-                    event.target.value === '' ? null : Number(event.target.value),
-                  )
-                }
-              />
-            </label>
-          </>
-        ) : null}
-
-        <label className="field">
-          <span>Calories per serving</span>
-          <input
-            disabled={form.mode !== 'perServing'}
-            type="number"
-            value={toInputValue(form.caloriesPerServing)}
-            onChange={(event) =>
-              onNumberChange(
-                'caloriesPerServing',
-                event.target.value === '' ? null : Number(event.target.value),
-              )
-            }
-          />
-        </label>
-
-        <label className="field">
-          <span>Your servings (optional)</span>
-          <input
-            type="number"
-            value={toInputValue(form.yourServings)}
-            onChange={(event) =>
-              onNumberChange(
-                'yourServings',
-                event.target.value === '' ? null : Number(event.target.value),
-              )
-            }
-          />
-        </label>
-      </div>
+        <TotalModeFields
+          form={form}
+          onNumberChange={onNumberChange}
+          onUnitChange={onUnitChange}
+          onTotalSourceChange={onTotalSourceChange}
+        />
+      ) : (
+        <PerServingFields form={form} onNumberChange={onNumberChange} />
+      )}
 
       <div className="action-row">
         <button type="button" onClick={onSave}>
