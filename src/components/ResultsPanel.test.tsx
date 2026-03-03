@@ -12,6 +12,8 @@ describe('ResultsPanel', () => {
           caloriesPerGram: null,
           caloriesPerOunce: null,
           caloriesPer100Grams: null,
+          rawPackageServings: null,
+          totalCaloriesDisplaySource: 'manualTotal',
           calorie_source_used: 'total',
           assumptions: { servings_assumed: false },
         }}
@@ -42,6 +44,8 @@ describe('ResultsPanel', () => {
           caloriesPerGram: null,
           caloriesPerOunce: null,
           caloriesPer100Grams: null,
+          rawPackageServings: null,
+          totalCaloriesDisplaySource: 'manualTotal',
           calorie_source_used: 'total',
           assumptions: { servings_assumed: false },
         }}

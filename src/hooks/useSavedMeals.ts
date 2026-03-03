@@ -51,11 +51,17 @@ function parseSavedMeals(rawValue: string | null): SavedMeal[] {
 
 function calculateFromInputs(inputs: MealInputs): CalculationResult {
   return calculateMealMetrics({
+    mode: inputs.mode,
+    totalCaloriesSource: 'manualTotal',
+    manualTotalCalories: inputs.mode === 'total' ? inputs.totalCalories : null,
     totalCalories: inputs.mode === 'total' ? inputs.totalCalories : null,
     cookedWeightGrams: inputs.cookedWeightGrams,
-    servings: inputs.servings,
+    yourServings: inputs.servings,
     caloriesPerServing:
       inputs.mode === 'perServing' ? inputs.caloriesPerServing : null,
+    rawTotalWeightGrams: null,
+    packageServingWeightGrams: null,
+    packageCaloriesPerServing: null,
   })
 }
 

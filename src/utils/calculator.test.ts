@@ -18,9 +18,15 @@ describe('weight conversions', () => {
 describe('calculateMealMetrics', () => {
   it('uses total calories when provided', () => {
     const result = calculateMealMetrics({
-      totalCalories: 500,
+      mode: 'total',
+      totalCaloriesSource: 'manualTotal',
+      manualTotalCalories: 500,
+      totalCalories: null,
       cookedWeightGrams: 250,
-      servings: null,
+      yourServings: null,
+      rawTotalWeightGrams: null,
+      packageServingWeightGrams: null,
+      packageCaloriesPerServing: null,
       caloriesPerServing: null,
     })
 
@@ -28,14 +34,79 @@ describe('calculateMealMetrics', () => {
     expect(result.calorie_source_used).toBe('total')
     expect(result.caloriesPerServing).toBeNull()
     expect(result.caloriesPerGram).toBeCloseTo(2, 10)
+    expect(result.totalCaloriesDisplaySource).toBe('manualTotal')
     expect(result.assumptions.servings_assumed).toBe(false)
+  })
+
+  it('derives package-label totals in grams', () => {
+    const result = calculateMealMetrics({
+      mode: 'total',
+      totalCaloriesSource: 'packageLabel',
+      manualTotalCalories: null,
+      totalCalories: null,
+      caloriesPerServing: null,
+      yourServings: null,
+      cookedWeightGrams: null,
+      rawTotalWeightGrams: 458,
+      packageServingWeightGrams: 130,
+      packageCaloriesPerServing: 370,
+    })
+
+    expect(result.rawPackageServings).toBeCloseTo(3.5230769, 6)
+    expect(result.totalCalories).toBeCloseTo(1303.5384615, 6)
+    expect(result.totalCaloriesDisplaySource).toBe('packageLabel')
+    expect(result.calorie_source_used).toBe('total')
+    expect(result.caloriesPerServing).toBeNull()
+  })
+
+  it('derives package-label totals in ounces', () => {
+    const result = calculateMealMetrics({
+      mode: 'total',
+      totalCaloriesSource: 'packageLabel',
+      manualTotalCalories: null,
+      totalCalories: null,
+      caloriesPerServing: null,
+      yourServings: null,
+      cookedWeightGrams: null,
+      rawTotalWeightGrams: ouncesToGrams(16.155),
+      packageServingWeightGrams: ouncesToGrams(4.586),
+      packageCaloriesPerServing: 370,
+    })
+
+    expect(result.rawPackageServings).toBeCloseTo(3.5229, 3)
+    expect(result.totalCalories).toBeCloseTo(1303.3907544, 6)
+    expect(result.totalCaloriesDisplaySource).toBe('packageLabel')
+  })
+
+  it('derives displayed calories per serving from package-label totals when user servings are known', () => {
+    const result = calculateMealMetrics({
+      mode: 'total',
+      totalCaloriesSource: 'packageLabel',
+      manualTotalCalories: null,
+      totalCalories: null,
+      caloriesPerServing: null,
+      yourServings: 4,
+      cookedWeightGrams: 600,
+      rawTotalWeightGrams: 458,
+      packageServingWeightGrams: 130,
+      packageCaloriesPerServing: 370,
+    })
+
+    expect(result.totalCalories).toBeCloseTo(1303.5384615, 6)
+    expect(result.caloriesPerServing).toBeCloseTo(325.8846153, 6)
   })
 
   it('derives calories per serving from the chosen total source when servings are known', () => {
     const result = calculateMealMetrics({
-      totalCalories: 500,
+      mode: 'total',
+      totalCaloriesSource: 'manualTotal',
+      manualTotalCalories: 500,
+      totalCalories: null,
       cookedWeightGrams: 250,
-      servings: 4,
+      yourServings: 4,
+      rawTotalWeightGrams: null,
+      packageServingWeightGrams: null,
+      packageCaloriesPerServing: null,
       caloriesPerServing: 300,
     })
 
@@ -44,24 +115,57 @@ describe('calculateMealMetrics', () => {
     expect(result.caloriesPerServing).toBe(125)
   })
 
+  it('uses manual totals without package-label output', () => {
+    const result = calculateMealMetrics({
+      mode: 'total',
+      totalCaloriesSource: 'manualTotal',
+      manualTotalCalories: 900,
+      totalCalories: null,
+      caloriesPerServing: null,
+      yourServings: 3,
+      cookedWeightGrams: 450,
+      rawTotalWeightGrams: 458,
+      packageServingWeightGrams: 130,
+      packageCaloriesPerServing: 370,
+    })
+
+    expect(result.totalCalories).toBe(900)
+    expect(result.rawPackageServings).toBeNull()
+    expect(result.totalCaloriesDisplaySource).toBe('manualTotal')
+    expect(result.caloriesPerServing).toBe(300)
+  })
+
   it('derives total calories from per-serving calories and servings', () => {
     const result = calculateMealMetrics({
+      mode: 'perServing',
+      totalCaloriesSource: 'manualTotal',
+      manualTotalCalories: null,
       totalCalories: null,
       cookedWeightGrams: 300,
-      servings: 4,
+      yourServings: 4,
+      rawTotalWeightGrams: null,
+      packageServingWeightGrams: null,
+      packageCaloriesPerServing: null,
       caloriesPerServing: 125,
     })
 
     expect(result.totalCalories).toBe(500)
     expect(result.calorie_source_used).toBe('per_serving')
+    expect(result.totalCaloriesDisplaySource).toBe('perServing')
     expect(result.caloriesPerServing).toBe(125)
   })
 
   it('marks servings as assumed when per-serving calories exist without servings', () => {
     const result = calculateMealMetrics({
+      mode: 'perServing',
+      totalCaloriesSource: 'manualTotal',
+      manualTotalCalories: null,
       totalCalories: null,
       cookedWeightGrams: 300,
-      servings: null,
+      yourServings: null,
+      rawTotalWeightGrams: null,
+      packageServingWeightGrams: null,
+      packageCaloriesPerServing: null,
       caloriesPerServing: 125,
     })
 
@@ -71,9 +175,15 @@ describe('calculateMealMetrics', () => {
 
   it('returns null per-weight values when cooked weight is missing', () => {
     const result = calculateMealMetrics({
-      totalCalories: 500,
+      mode: 'total',
+      totalCaloriesSource: 'manualTotal',
+      manualTotalCalories: 500,
+      totalCalories: null,
       cookedWeightGrams: null,
-      servings: null,
+      yourServings: null,
+      rawTotalWeightGrams: null,
+      packageServingWeightGrams: null,
+      packageCaloriesPerServing: null,
       caloriesPerServing: null,
     })
 
@@ -85,13 +195,39 @@ describe('calculateMealMetrics', () => {
 
   it('reports insufficient inputs when neither calorie source is usable', () => {
     const result = calculateMealMetrics({
+      mode: 'total',
+      totalCaloriesSource: 'manualTotal',
+      manualTotalCalories: null,
       totalCalories: null,
       cookedWeightGrams: 250,
-      servings: null,
+      yourServings: null,
+      rawTotalWeightGrams: null,
+      packageServingWeightGrams: null,
+      packageCaloriesPerServing: null,
       caloriesPerServing: null,
     })
 
     expect(result.calorie_source_used).toBe('insufficient')
     expect(result.totalCalories).toBeNull()
+  })
+
+  it('treats invalid package-label inputs as insufficient', () => {
+    const result = calculateMealMetrics({
+      mode: 'total',
+      totalCaloriesSource: 'packageLabel',
+      manualTotalCalories: null,
+      totalCalories: null,
+      caloriesPerServing: null,
+      yourServings: null,
+      cookedWeightGrams: null,
+      rawTotalWeightGrams: 458,
+      packageServingWeightGrams: 0,
+      packageCaloriesPerServing: 370,
+    })
+
+    expect(result.totalCalories).toBeNull()
+    expect(result.rawPackageServings).toBeNull()
+    expect(result.totalCaloriesDisplaySource).toBeNull()
+    expect(result.calorie_source_used).toBe('insufficient')
   })
 })

@@ -29,6 +29,8 @@ describe('SavedMealsList', () => {
               caloriesPerGram: 2,
               caloriesPerOunce: 56.7,
               caloriesPer100Grams: 200,
+              rawPackageServings: null,
+              totalCaloriesDisplaySource: 'manualTotal',
               calorie_source_used: 'total',
               assumptions: { servings_assumed: false },
             },

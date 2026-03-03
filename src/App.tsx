@@ -27,11 +27,17 @@ function App() {
     form.totalCalories !== null && form.caloriesPerServing !== null
 
   const result = calculateMealMetrics({
+    mode: form.mode,
+    totalCaloriesSource: 'manualTotal',
+    manualTotalCalories: form.mode === 'total' ? form.totalCalories : null,
     totalCalories: form.mode === 'total' ? form.totalCalories : null,
     cookedWeightGrams: form.cookedWeightGrams,
-    servings: form.servings,
+    yourServings: form.servings,
     caloriesPerServing:
       form.mode === 'perServing' ? form.caloriesPerServing : null,
+    rawTotalWeightGrams: null,
+    packageServingWeightGrams: null,
+    packageCaloriesPerServing: null,
   })
 
   function handleTextChange(field: 'mealName', value: string) {
