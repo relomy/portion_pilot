@@ -34,7 +34,11 @@ export function MealCard({ meal, onLoad, onDelete }: MealCardProps) {
           <h3>{title}</h3>
         </div>
         <p className="meal-card__total">
-          {formatTotalCalories(meal.cachedResult.totalCalories)} cal
+          {formatTotalCalories(
+            meal.cachedResult.totalCalories,
+            meal.cachedResult.totalCaloriesDisplaySource,
+          )}{' '}
+          cal
         </p>
       </div>
 

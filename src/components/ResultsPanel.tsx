@@ -6,6 +6,7 @@ import {
   formatCaloriesPerGram,
   formatCaloriesPerOunce,
   formatCaloriesPerServing,
+  formatRawPackageServings,
   formatTotalCalories,
 } from '../utils/format'
 
@@ -31,7 +32,10 @@ export function ResultsPanel({
       <p className="eyebrow">Nutrition label</p>
       <h2>Live results</h2>
       <p className="placeholder-value">
-        {formatTotalCalories(result.totalCalories)}
+        {formatTotalCalories(
+          result.totalCalories,
+          result.totalCaloriesDisplaySource,
+        )}
       </p>
       <p className="placeholder-copy">
         {sourceLabels[result.calorie_source_used]}
@@ -48,6 +52,10 @@ export function ResultsPanel({
       />
 
       <dl className="results-metrics" data-testid="results-metrics">
+        <div>
+          <dt>Raw package servings</dt>
+          <dd>{formatRawPackageServings(result.rawPackageServings)}</dd>
+        </div>
         <div>
           <dt>Calories per serving</dt>
           <dd>{formatCaloriesPerServing(result.caloriesPerServing)}</dd>
