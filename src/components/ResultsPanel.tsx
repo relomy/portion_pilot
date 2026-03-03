@@ -1,4 +1,6 @@
+import type { MealInputs } from '../hooks/useSavedMeals'
 import type { CalculationResult } from '../utils/calculator'
+import { DevPanel } from './DevPanel'
 import {
   formatCaloriesPer100Grams,
   formatCaloriesPerGram,
@@ -16,11 +18,13 @@ const sourceLabels = {
 type ResultsPanelProps = {
   result: CalculationResult
   hasConflictingCalories: boolean
+  form: MealInputs
 }
 
 export function ResultsPanel({
   result,
   hasConflictingCalories,
+  form,
 }: ResultsPanelProps) {
   return (
     <section className="results-panel" data-testid="nutrition-label">
@@ -37,9 +41,11 @@ export function ResultsPanel({
         <p className="assumption-note">Assumed 1 serving because none was provided.</p>
       ) : null}
 
-      {import.meta.env.DEV && hasConflictingCalories ? (
-        <p className="warning-note">Multiple calorie sources entered.</p>
-      ) : null}
+      <DevPanel
+        hasConflictingCalories={hasConflictingCalories}
+        form={form}
+        result={result}
+      />
 
       <dl className="results-metrics" data-testid="results-metrics">
         <div>

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { ResultsPanel } from './components/ResultsPanel'
 import { InputPanel } from './components/InputPanel'
 import {
   type MealInputs,
@@ -21,6 +22,8 @@ function createEmptyForm(): MealInputs {
 function App() {
   const [form, setForm] = useState<MealInputs>(createEmptyForm)
   const { saveMeal, savedMeals } = useSavedMeals()
+  const hasConflictingCalories =
+    form.totalCalories !== null && form.caloriesPerServing !== null
 
   const result = calculateMealMetrics({
     totalCalories: form.mode === 'total' ? form.totalCalories : null,
@@ -85,16 +88,11 @@ function App() {
           onClear={handleClear}
         />
 
-        <section className="results-placeholder" data-testid="nutrition-label">
-          <p className="eyebrow">Nutrition label</p>
-          <h2>Live results</h2>
-          <p className="placeholder-value">
-            {result.totalCalories === null ? '—' : result.totalCalories}
-          </p>
-          <p className="placeholder-copy">
-            Source: {result.calorie_source_used.replace('_', ' ')}
-          </p>
-        </section>
+        <ResultsPanel
+          result={result}
+          hasConflictingCalories={hasConflictingCalories}
+          form={form}
+        />
       </div>
 
       <section className="saved-meals-placeholder" data-testid="saved-meals-region">

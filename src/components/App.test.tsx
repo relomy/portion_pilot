@@ -37,4 +37,21 @@ describe('App mode switching', () => {
     expect(screen.getByLabelText(/^calories per serving$/i)).toHaveValue(null)
     expect(screen.getByLabelText(/^servings$/i)).toHaveValue(null)
   })
+
+  it('renders the live results panel metrics and assumption note', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    await user.click(screen.getByLabelText(/^per serving$/i))
+    await user.type(screen.getByLabelText(/^calories per serving$/i), '125')
+
+    expect(screen.getByTestId('results-metrics').tagName).toBe('DL')
+    expect(
+      screen.getByText(/assumed 1 serving because none was provided/i),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText(/source: calories per serving/i),
+    ).toBeInTheDocument()
+    expect(screen.getAllByText(/need cooked weight/i)).toHaveLength(3)
+  })
 })
