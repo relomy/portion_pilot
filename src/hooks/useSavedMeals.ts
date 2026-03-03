@@ -103,6 +103,7 @@ function calculateFromInputs(inputs: MealInputs): CalculationResult {
       inputs.mode === 'total' ? inputs.manualTotalCalories : null,
     totalCalories: inputs.mode === 'total' ? inputs.totalCalories : null,
     cookedWeightGrams: inputs.cookedWeightGrams,
+    portionEatenGrams: null,
     yourServings: inputs.yourServings ?? inputs.servings,
     caloriesPerServing:
       inputs.mode === 'perServing' ? inputs.caloriesPerServing : null,

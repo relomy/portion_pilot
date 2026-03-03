@@ -38,6 +38,7 @@ describe('SavedMealsList', () => {
               caloriesPerOunce: null,
               caloriesPer100Grams: null,
               rawPackageServings: 3.5230769,
+              portionCalories: null,
               totalCaloriesDisplaySource: 'packageLabel',
               calorie_source_used: 'total',
               assumptions: { servings_assumed: false },

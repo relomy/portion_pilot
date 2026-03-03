@@ -80,6 +80,7 @@ function App() {
         ? form.manualTotalCalories
         : null,
     cookedWeightGrams: form.cookedWeightGrams,
+    portionEatenGrams: null,
     yourServings: form.yourServings,
     caloriesPerServing:
       form.mode === 'perServing' ? form.caloriesPerServing : null,

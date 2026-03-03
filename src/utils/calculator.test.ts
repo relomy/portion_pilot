@@ -23,6 +23,7 @@ describe('calculateMealMetrics', () => {
       manualTotalCalories: 500,
       totalCalories: null,
       cookedWeightGrams: 250,
+      portionEatenGrams: null,
       yourServings: null,
       rawTotalWeightGrams: null,
       packageServingWeightGrams: null,
@@ -45,6 +46,7 @@ describe('calculateMealMetrics', () => {
       manualTotalCalories: null,
       totalCalories: null,
       caloriesPerServing: null,
+      portionEatenGrams: null,
       yourServings: null,
       cookedWeightGrams: null,
       rawTotalWeightGrams: 458,
@@ -66,6 +68,7 @@ describe('calculateMealMetrics', () => {
       manualTotalCalories: null,
       totalCalories: null,
       caloriesPerServing: null,
+      portionEatenGrams: null,
       yourServings: null,
       cookedWeightGrams: null,
       rawTotalWeightGrams: ouncesToGrams(16.155),
@@ -85,6 +88,7 @@ describe('calculateMealMetrics', () => {
       manualTotalCalories: null,
       totalCalories: null,
       caloriesPerServing: null,
+      portionEatenGrams: null,
       yourServings: 4,
       cookedWeightGrams: 600,
       rawTotalWeightGrams: 458,
@@ -103,6 +107,7 @@ describe('calculateMealMetrics', () => {
       manualTotalCalories: 500,
       totalCalories: null,
       cookedWeightGrams: 250,
+      portionEatenGrams: null,
       yourServings: 4,
       rawTotalWeightGrams: null,
       packageServingWeightGrams: null,
@@ -122,6 +127,7 @@ describe('calculateMealMetrics', () => {
       manualTotalCalories: 900,
       totalCalories: null,
       caloriesPerServing: null,
+      portionEatenGrams: null,
       yourServings: 3,
       cookedWeightGrams: 450,
       rawTotalWeightGrams: 458,
@@ -142,6 +148,7 @@ describe('calculateMealMetrics', () => {
       manualTotalCalories: null,
       totalCalories: null,
       cookedWeightGrams: 300,
+      portionEatenGrams: null,
       yourServings: 4,
       rawTotalWeightGrams: null,
       packageServingWeightGrams: null,
@@ -162,6 +169,7 @@ describe('calculateMealMetrics', () => {
       manualTotalCalories: null,
       totalCalories: null,
       cookedWeightGrams: 300,
+      portionEatenGrams: null,
       yourServings: null,
       rawTotalWeightGrams: null,
       packageServingWeightGrams: null,
@@ -180,6 +188,7 @@ describe('calculateMealMetrics', () => {
       manualTotalCalories: 500,
       totalCalories: null,
       cookedWeightGrams: null,
+      portionEatenGrams: null,
       yourServings: null,
       rawTotalWeightGrams: null,
       packageServingWeightGrams: null,
@@ -200,6 +209,7 @@ describe('calculateMealMetrics', () => {
       manualTotalCalories: null,
       totalCalories: null,
       cookedWeightGrams: 250,
+      portionEatenGrams: null,
       yourServings: null,
       rawTotalWeightGrams: null,
       packageServingWeightGrams: null,
@@ -218,6 +228,7 @@ describe('calculateMealMetrics', () => {
       manualTotalCalories: null,
       totalCalories: null,
       caloriesPerServing: null,
+      portionEatenGrams: null,
       yourServings: null,
       cookedWeightGrams: null,
       rawTotalWeightGrams: 458,
@@ -229,5 +240,69 @@ describe('calculateMealMetrics', () => {
     expect(result.rawPackageServings).toBeNull()
     expect(result.totalCaloriesDisplaySource).toBeNull()
     expect(result.calorie_source_used).toBe('insufficient')
+  })
+
+  it('derives portion calories in total manual mode from cooked batch weight and portion eaten', () => {
+    expect(
+      calculateMealMetrics({
+        mode: 'total',
+        totalCaloriesSource: 'manualTotal',
+        manualTotalCalories: 600,
+        totalCalories: 600,
+        cookedWeightGrams: 300,
+        portionEatenGrams: 150,
+        yourServings: null,
+        caloriesPerServing: null,
+        rawTotalWeightGrams: null,
+        packageServingWeightGrams: null,
+        packageCaloriesPerServing: null,
+      }),
+    ).toMatchObject({
+      totalCalories: 600,
+      caloriesPerGram: 2,
+      portionCalories: 300,
+      caloriesPerServing: null,
+    })
+  })
+
+  it('leaves total-mode portion calories unavailable without cooked batch weight', () => {
+    expect(
+      calculateMealMetrics({
+        mode: 'total',
+        totalCaloriesSource: 'manualTotal',
+        manualTotalCalories: 600,
+        totalCalories: 600,
+        cookedWeightGrams: null,
+        portionEatenGrams: 150,
+        yourServings: null,
+        caloriesPerServing: null,
+        rawTotalWeightGrams: null,
+        packageServingWeightGrams: null,
+        packageCaloriesPerServing: null,
+      }).portionCalories,
+    ).toBeNull()
+  })
+
+  it('keeps per-serving mode unchanged when servings are missing', () => {
+    expect(
+      calculateMealMetrics({
+        mode: 'perServing',
+        totalCaloriesSource: 'manualTotal',
+        manualTotalCalories: null,
+        totalCalories: null,
+        cookedWeightGrams: null,
+        portionEatenGrams: null,
+        yourServings: null,
+        caloriesPerServing: 125,
+        rawTotalWeightGrams: null,
+        packageServingWeightGrams: null,
+        packageCaloriesPerServing: null,
+      }),
+    ).toMatchObject({
+      totalCalories: 125,
+      caloriesPerServing: 125,
+      portionCalories: null,
+      assumptions: { servings_assumed: true },
+    })
   })
 })

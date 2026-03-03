@@ -4,6 +4,7 @@ export type CalculationInput = {
   manualTotalCalories: number | null
   totalCalories: number | null
   cookedWeightGrams: number | null
+  portionEatenGrams: number | null
   yourServings: number | null
   caloriesPerServing: number | null
   rawTotalWeightGrams: number | null
@@ -18,6 +19,7 @@ export type CalculationResult = {
   caloriesPerOunce: number | null
   caloriesPer100Grams: number | null
   rawPackageServings: number | null
+  portionCalories: number | null
   totalCaloriesDisplaySource:
     | 'manualTotal'
     | 'packageLabel'
@@ -90,9 +92,15 @@ export function calculateMealMetrics(input: CalculationInput): CalculationResult
 
   const hasWeight =
     typeof input.cookedWeightGrams === 'number' && input.cookedWeightGrams > 0
+  const hasUsablePortion =
+    typeof input.portionEatenGrams === 'number' && input.portionEatenGrams > 0
   const caloriesPerGram =
     totalCalories !== null && hasWeight
       ? totalCalories / input.cookedWeightGrams!
+      : null
+  const portionCalories =
+    totalCalories !== null && hasWeight && hasUsablePortion
+      ? (totalCalories / input.cookedWeightGrams!) * input.portionEatenGrams!
       : null
   const caloriesPerServing =
     source === 'per_serving'
@@ -110,6 +118,7 @@ export function calculateMealMetrics(input: CalculationInput): CalculationResult
     caloriesPer100Grams:
       caloriesPerGram === null ? null : caloriesPerGram * 100,
     rawPackageServings,
+    portionCalories,
     totalCaloriesDisplaySource,
     calorie_source_used: source,
     assumptions: {
