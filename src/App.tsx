@@ -52,7 +52,7 @@ function App() {
   function updateMode(mode: MealMode) {
     setForm((current) =>
       mode === 'total'
-        ? { ...current, mode, caloriesPerServing: null, servings: null }
+        ? { ...current, mode, caloriesPerServing: null }
         : { ...current, mode, totalCalories: null },
     )
   }

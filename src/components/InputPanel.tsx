@@ -115,9 +115,8 @@ export function InputPanel({
         </label>
 
         <label className="field">
-          <span>Servings</span>
+          <span>Servings (optional)</span>
           <input
-            disabled={form.mode !== 'perServing'}
             type="number"
             value={toInputValue(form.servings)}
             onChange={(event) =>
