@@ -5,15 +5,17 @@ import { SavedMealsList } from './components/SavedMealsList'
 import {
   type MealInputs,
   type MealMode,
+  type TotalCaloriesSource,
+  type WeightUnit,
   useSavedMeals,
 } from './hooks/useSavedMeals'
-import { calculateMealMetrics } from './utils/calculator'
+import { calculateMealMetrics, ouncesToGrams } from './utils/calculator'
 
 function createEmptyForm(): MealInputs {
   return {
     mealName: '',
     mode: 'total',
-    totalCaloriesSource: 'manualTotal',
+    totalCaloriesSource: 'packageLabel',
     manualTotalCalories: null,
     totalCalories: null,
     caloriesPerServing: null,
@@ -28,24 +30,51 @@ function createEmptyForm(): MealInputs {
   }
 }
 
+function toGrams(value: number | null, unit: WeightUnit): number | null {
+  if (value === null) {
+    return null
+  }
+
+  return unit === 'oz' ? ouncesToGrams(value) : value
+}
+
 function App() {
   const [form, setForm] = useState<MealInputs>(createEmptyForm)
   const { deleteMeal, loadMeal, saveMeal, savedMeals } = useSavedMeals()
   const hasConflictingCalories =
-    form.totalCalories !== null && form.caloriesPerServing !== null
+    (form.manualTotalCalories !== null || form.packageCaloriesPerServing !== null) &&
+    form.caloriesPerServing !== null
 
   const result = calculateMealMetrics({
     mode: form.mode,
-    totalCaloriesSource: 'manualTotal',
-    manualTotalCalories: form.mode === 'total' ? form.totalCalories : null,
-    totalCalories: form.mode === 'total' ? form.totalCalories : null,
+    totalCaloriesSource: form.totalCaloriesSource,
+    manualTotalCalories:
+      form.mode === 'total' && form.totalCaloriesSource === 'manualTotal'
+        ? form.manualTotalCalories
+        : null,
+    totalCalories:
+      form.mode === 'total' && form.totalCaloriesSource === 'manualTotal'
+        ? form.manualTotalCalories
+        : null,
     cookedWeightGrams: form.cookedWeightGrams,
-    yourServings: form.servings,
+    yourServings: form.yourServings,
     caloriesPerServing:
       form.mode === 'perServing' ? form.caloriesPerServing : null,
-    rawTotalWeightGrams: null,
-    packageServingWeightGrams: null,
-    packageCaloriesPerServing: null,
+    rawTotalWeightGrams:
+      form.mode === 'total' && form.totalCaloriesSource === 'packageLabel'
+        ? toGrams(form.rawTotalWeight, form.rawTotalWeightUnit)
+        : null,
+    packageServingWeightGrams:
+      form.mode === 'total' && form.totalCaloriesSource === 'packageLabel'
+        ? toGrams(
+            form.packageServingWeight,
+            form.packageServingWeightUnit,
+          )
+        : null,
+    packageCaloriesPerServing:
+      form.mode === 'total' && form.totalCaloriesSource === 'packageLabel'
+        ? form.packageCaloriesPerServing
+        : null,
   })
 
   function handleTextChange(field: 'mealName', value: string) {
@@ -54,20 +83,75 @@ function App() {
 
   function handleNumberChange(
     field:
-      | 'totalCalories'
+      | 'manualTotalCalories'
       | 'caloriesPerServing'
-      | 'servings'
-      | 'cookedWeightGrams',
+      | 'yourServings'
+      | 'cookedWeightGrams'
+      | 'rawTotalWeight'
+      | 'packageServingWeight'
+      | 'packageCaloriesPerServing',
     value: number | null,
   ) {
+    setForm((current) => {
+      if (field === 'manualTotalCalories') {
+        return {
+          ...current,
+          manualTotalCalories: value,
+          totalCalories: value,
+        }
+      }
+
+      if (field === 'yourServings') {
+        return {
+          ...current,
+          yourServings: value,
+          servings: value,
+        }
+      }
+
+      return { ...current, [field]: value }
+    })
+  }
+
+  function handleUnitChange(
+    field: 'rawTotalWeightUnit' | 'packageServingWeightUnit',
+    value: WeightUnit,
+  ) {
     setForm((current) => ({ ...current, [field]: value }))
+  }
+
+  function handleTotalSourceChange(value: TotalCaloriesSource) {
+    setForm((current) =>
+      value === 'manualTotal'
+        ? {
+            ...current,
+            totalCaloriesSource: value,
+            rawTotalWeight: null,
+            packageServingWeight: null,
+            packageCaloriesPerServing: null,
+          }
+        : {
+            ...current,
+            totalCaloriesSource: value,
+            manualTotalCalories: null,
+            totalCalories: null,
+          },
+    )
   }
 
   function updateMode(mode: MealMode) {
     setForm((current) =>
       mode === 'total'
         ? { ...current, mode, caloriesPerServing: null }
-        : { ...current, mode, totalCalories: null },
+        : {
+            ...current,
+            mode,
+            manualTotalCalories: null,
+            totalCalories: null,
+            rawTotalWeight: null,
+            packageServingWeight: null,
+            packageCaloriesPerServing: null,
+          },
     )
   }
 
@@ -106,7 +190,9 @@ function App() {
           form={form}
           onTextChange={handleTextChange}
           onNumberChange={handleNumberChange}
+          onUnitChange={handleUnitChange}
           onModeChange={updateMode}
+          onTotalSourceChange={handleTotalSourceChange}
           onSave={handleSave}
           onClear={handleClear}
         />

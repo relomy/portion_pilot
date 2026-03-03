@@ -22,14 +22,41 @@ describe('App mode switching', () => {
     expect(screen.getByTestId('saved-meals-region')).toBeInTheDocument()
   })
 
-  it('clears total calories when switching to per-serving mode', async () => {
+  it('defaults total mode to package label inputs', () => {
+    render(<App />)
+
+    expect(screen.getByLabelText(/^package label$/i)).toBeChecked()
+    expect(screen.getByLabelText(/^raw total weight$/i)).toBeInTheDocument()
+    expect(
+      screen.getByLabelText(/^package serving weight$/i),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByLabelText(/^package calories per serving$/i),
+    ).toBeInTheDocument()
+  })
+
+  it('clears manual total calories when switching to per-serving mode', async () => {
     const user = userEvent.setup()
     render(<App />)
 
+    await user.click(screen.getByLabelText(/^manual total$/i))
     await user.type(screen.getByLabelText(/^total calories$/i), '500')
     await user.click(screen.getByLabelText(/^per serving$/i))
+    await user.click(screen.getByLabelText(/total calories mode/i))
+    await user.click(screen.getByLabelText(/^manual total$/i))
 
     expect(screen.getByLabelText(/^total calories$/i)).toHaveValue(null)
+  })
+
+  it('preserves the last-used total sub-mode when returning from per-serving mode', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    await user.click(screen.getByLabelText(/^manual total$/i))
+    await user.click(screen.getByLabelText(/^per serving$/i))
+    await user.click(screen.getByLabelText(/total calories mode/i))
+
+    expect(screen.getByLabelText(/^manual total$/i)).toBeChecked()
   })
 
   it('clears per-serving inputs when switching to total mode', async () => {
@@ -38,11 +65,21 @@ describe('App mode switching', () => {
 
     await user.click(screen.getByLabelText(/^per serving$/i))
     await user.type(screen.getByLabelText(/^calories per serving$/i), '125')
-    await user.type(screen.getByLabelText(/^servings/i), '4')
+    await user.type(screen.getByLabelText(/servings/i), '4')
     await user.click(screen.getByLabelText(/total calories mode/i))
 
     expect(screen.getByLabelText(/^calories per serving$/i)).toHaveValue(null)
-    expect(screen.getByLabelText(/^servings/i)).toHaveValue(4)
+    expect(screen.getByLabelText(/servings/i)).toHaveValue(4)
+  })
+
+  it('clearing the form resets total mode to package label', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    await user.click(screen.getByLabelText(/^manual total$/i))
+    await user.click(screen.getByRole('button', { name: /^clear$/i }))
+
+    expect(screen.getByLabelText(/^package label$/i)).toBeChecked()
   })
 
   it('renders the live results panel metrics and assumption note', async () => {
@@ -68,8 +105,9 @@ describe('App mode switching', () => {
 
     await user.type(screen.getByLabelText(/^meal name$/i), 'Chicken Bowl')
     await user.type(screen.getByLabelText(/^cooked weight \(g\)$/i), '250')
+    await user.click(screen.getByLabelText(/^manual total$/i))
     await user.type(screen.getByLabelText(/^total calories$/i), '500')
-    await user.type(screen.getByLabelText(/^servings/i), '4')
+    await user.type(screen.getByLabelText(/servings/i), '4')
     await user.click(screen.getByRole('button', { name: /^save meal$/i }))
 
     const mealName = screen.getByText(/chicken bowl/i)
@@ -80,8 +118,9 @@ describe('App mode switching', () => {
 
     await user.click(screen.getByRole('button', { name: /^load$/i }))
     expect(screen.getByLabelText(/^meal name$/i)).toHaveValue('Chicken Bowl')
+    expect(screen.getByLabelText(/^manual total$/i)).toBeChecked()
     expect(screen.getByLabelText(/^total calories$/i)).toHaveValue(500)
-    expect(screen.getByLabelText(/^servings/i)).toHaveValue(4)
+    expect(screen.getByLabelText(/servings/i)).toHaveValue(4)
     expect(screen.getByText(/^125$/i)).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: /^delete$/i }))
@@ -92,7 +131,9 @@ describe('App mode switching', () => {
     const user = userEvent.setup()
     render(<App />)
 
-    const servingsInput = screen.getByLabelText(/^servings/i)
+    await user.click(screen.getByLabelText(/^manual total$/i))
+
+    const servingsInput = screen.getByLabelText(/servings/i)
     expect(servingsInput).toBeEnabled()
 
     await user.type(screen.getByLabelText(/^total calories$/i), '600')
