@@ -192,45 +192,120 @@ input:disabled {
 }
 
 .field,
-.mode-group {
+.worksheet-section {
   margin: 0 0 1rem;
 }
 
-.field span,
-.mode-group legend {
+.field span {
   display: block;
   margin-bottom: 0.45rem;
   font-weight: 600;
 }
 
-.mode-group {
+.segmented-control,
+.unit-segmented {
+  display: flex;
+  gap: 0.5rem;
   border: 0;
   padding: 0;
+  margin: 0 0 1rem;
 }
 
-.mode-group legend {
-  font-size: 0.95rem;
+.segmented-control {
+  padding: 0.35rem;
+  border: 1px solid var(--rule);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.72);
 }
 
-.mode-option {
+.segmented-control__option {
+  position: relative;
+  flex: 1;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  margin-bottom: 0.65rem;
-  padding: 0.8rem 0.95rem;
-  border: 1px solid var(--rule);
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.62);
+  justify-content: center;
+  min-height: 3rem;
+  padding: 0.7rem 0.95rem;
+  border-radius: 16px;
+  color: var(--steel);
+  cursor: pointer;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease,
+    box-shadow 160ms ease;
 }
 
-.mode-option input,
-.mode-option span {
+.segmented-control__option input,
+.unit-segmented input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.segmented-control__option:has(input:checked) {
+  background: var(--label);
+  color: var(--ink);
+  box-shadow: var(--shadow-soft);
+}
+
+.segmented-control__option span,
+.unit-segmented span {
   width: auto;
   margin: 0;
+  font-weight: 700;
 }
 
+.worksheet-section {
+  padding-top: 1rem;
+  border-top: 1px solid var(--rule);
+}
+
+.section-heading {
+  margin-bottom: 0.85rem;
+}
+
+.section-heading h3,
+.results-section h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.input-with-unit {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.75rem;
+  align-items: stretch;
+}
+
+.input-with-unit input,
 .field input {
   margin-top: 0.1rem;
+}
+
+.unit-segmented {
+  margin: 0;
+  padding: 0.3rem;
+  border: 1px solid var(--rule);
+  border-radius: 16px;
+  background: rgba(245, 239, 228, 0.72);
+}
+
+.unit-segmented label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 3rem;
+  padding: 0.55rem 0.7rem;
+  border-radius: 12px;
+  color: var(--steel);
+  cursor: pointer;
+}
+
+.unit-segmented label:has(input:checked) {
+  background: var(--label);
+  color: var(--ink);
+  box-shadow: 0 6px 18px rgba(148, 163, 184, 0.18);
 }
 
 .action-row {
@@ -274,6 +349,38 @@ input:disabled {
   font-size: 3rem;
   font-weight: 800;
   letter-spacing: -0.04em;
+}
+
+.results-section {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--rule);
+}
+
+.results-section header p {
+  margin: 0.4rem 0 0;
+  color: var(--steel);
+  font-size: 0.92rem;
+}
+
+.results-section--batch {
+  margin-top: 1rem;
+}
+
+.results-section--cooked {
+  background: rgba(245, 239, 228, 0.42);
+  border-radius: 22px;
+  padding: 1rem;
+}
+
+.results-section--cooked .results-metrics {
+  margin-top: 0.9rem;
+}
+
+.results-unavailable {
+  margin: 0.85rem 0 0;
+  color: var(--terracotta);
+  font-weight: 700;
 }
 
 .results-metrics {
@@ -441,6 +548,15 @@ input:disabled {
 
   .field-grid {
     grid-template-columns: 1fr;
+  }
+
+  .input-with-unit {
+    grid-template-columns: 1fr;
+  }
+
+  .segmented-control,
+  .unit-segmented {
+    flex-wrap: wrap;
   }
 
   .action-row {

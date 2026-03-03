@@ -40,6 +40,27 @@ describe('index.css', () => {
     expect(css).toContain('.assumption-note')
   })
 
+  it('styles the segmented controls and joined input-with-unit rows', () => {
+    const cssPath = resolve(process.cwd(), 'src/index.css')
+    const css = readFileSync(cssPath, 'utf8')
+
+    expect(css).toContain('.segmented-control')
+    expect(css).toContain('.segmented-control__option')
+    expect(css).toContain('.input-with-unit')
+    expect(css).toContain('.unit-segmented')
+  })
+
+  it('styles the worksheet and results subsections for raw vs cooked grouping', () => {
+    const cssPath = resolve(process.cwd(), 'src/index.css')
+    const css = readFileSync(cssPath, 'utf8')
+
+    expect(css).toContain('.worksheet-section')
+    expect(css).toContain('.results-section')
+    expect(css).toContain('.results-section--batch')
+    expect(css).toContain('.results-section--cooked')
+    expect(css).toContain('.results-unavailable')
+  })
+
   it('keeps the header compact so the calculator starts near the top of the page', () => {
     const cssPath = resolve(process.cwd(), 'src/index.css')
     const css = readFileSync(cssPath, 'utf8')
