@@ -26,8 +26,22 @@ describe('calculateMealMetrics', () => {
 
     expect(result.totalCalories).toBe(500)
     expect(result.calorie_source_used).toBe('total')
+    expect(result.caloriesPerServing).toBeNull()
     expect(result.caloriesPerGram).toBeCloseTo(2, 10)
     expect(result.assumptions.servings_assumed).toBe(false)
+  })
+
+  it('derives calories per serving from the chosen total source when servings are known', () => {
+    const result = calculateMealMetrics({
+      totalCalories: 500,
+      cookedWeightGrams: 250,
+      servings: 4,
+      caloriesPerServing: 300,
+    })
+
+    expect(result.calorie_source_used).toBe('total')
+    expect(result.totalCalories).toBe(500)
+    expect(result.caloriesPerServing).toBe(125)
   })
 
   it('derives total calories from per-serving calories and servings', () => {

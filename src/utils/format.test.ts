@@ -12,9 +12,17 @@ describe('formatters', () => {
     expect(formatTotalCalories(500.49)).toBe('500')
   })
 
+  it('shows unavailable totals instead of zero for null values', () => {
+    expect(formatTotalCalories(null)).toBe('—')
+  })
+
   it('formats calories per serving with up to one decimal place', () => {
     expect(formatCaloriesPerServing(125)).toBe('125')
     expect(formatCaloriesPerServing(125.25)).toBe('125.3')
+  })
+
+  it('shows unavailable calories per serving instead of zero for null values', () => {
+    expect(formatCaloriesPerServing(null)).toBe('—')
   })
 
   it('formats calories per gram with 2 to 3 decimals', () => {

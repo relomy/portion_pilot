@@ -1,3 +1,5 @@
+const UNAVAILABLE = '—'
+
 function formatFixedRange(value: number, min: number, max: number): string {
   if (max === 0) {
     return value.toFixed(0)
@@ -15,11 +17,11 @@ function formatFixedRange(value: number, min: number, max: number): string {
 }
 
 export function formatTotalCalories(value: number | null): string {
-  return value === null ? '0' : value.toFixed(0)
+  return value === null ? UNAVAILABLE : value.toFixed(0)
 }
 
 export function formatCaloriesPerServing(value: number | null): string {
-  return value === null ? '0' : formatFixedRange(value, 0, 1)
+  return value === null ? UNAVAILABLE : formatFixedRange(value, 0, 1)
 }
 
 export function formatCaloriesPerGram(value: number | null): string {

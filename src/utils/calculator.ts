@@ -34,8 +34,9 @@ export function calculateMealMetrics(input: CalculationInput): CalculationResult
   const hasPerServing =
     typeof input.caloriesPerServing === 'number' &&
     input.caloriesPerServing >= 0
+  const hasServings = typeof input.servings === 'number' && input.servings > 0
   const servingsAssumed =
-    hasPerServing && !(typeof input.servings === 'number' && input.servings > 0)
+    hasPerServing && !hasServings
 
   const totalCalories = hasUsableTotal
     ? input.totalCalories
@@ -55,10 +56,16 @@ export function calculateMealMetrics(input: CalculationInput): CalculationResult
     totalCalories !== null && hasWeight
       ? totalCalories / input.cookedWeightGrams!
       : null
+  const caloriesPerServing =
+    source === 'per_serving'
+      ? input.caloriesPerServing
+      : source === 'total' && totalCalories !== null && hasServings
+        ? totalCalories / input.servings!
+        : null
 
   return {
     totalCalories,
-    caloriesPerServing: hasPerServing ? input.caloriesPerServing : totalCalories,
+    caloriesPerServing,
     caloriesPerGram,
     caloriesPerOunce:
       caloriesPerGram === null ? null : caloriesPerGram * GRAMS_PER_OUNCE,
