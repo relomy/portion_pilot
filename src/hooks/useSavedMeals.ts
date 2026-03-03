@@ -59,10 +59,17 @@ function calculateFromInputs(inputs: MealInputs): CalculationResult {
   })
 }
 
+function normalizeSavedMeals(meals: SavedMeal[]): SavedMeal[] {
+  return meals.map((meal) => ({
+    ...meal,
+    cachedResult: calculateFromInputs(meal.inputs),
+  }))
+}
+
 export function useSavedMeals() {
   const storage = getStorage()
   const [savedMeals, setSavedMeals] = useState<SavedMeal[]>(() =>
-    parseSavedMeals(storage?.getItem(STORAGE_KEY) ?? null),
+    normalizeSavedMeals(parseSavedMeals(storage?.getItem(STORAGE_KEY) ?? null)),
   )
 
   useEffect(() => {

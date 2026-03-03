@@ -67,9 +67,15 @@ describe('useSavedMeals', () => {
 
     expect(result.current.savedMeals).toHaveLength(1)
     expect(result.current.savedMeals[0].id).toBe('seeded-meal')
+    expect(result.current.savedMeals[0].cachedResult.totalCalories).toBe(450)
+    expect(result.current.savedMeals[0].cachedResult.caloriesPerServing).toBeNull()
     expect(
       JSON.parse(storage.getItem('meal-calorie-calculator.saved-meals') ?? '[]'),
     ).toHaveLength(1)
+    expect(
+      JSON.parse(storage.getItem('meal-calorie-calculator.saved-meals') ?? '[]')[0]
+        .cachedResult.caloriesPerServing,
+    ).toBeNull()
   })
 
   it('saves a meal with cached computed results', () => {
