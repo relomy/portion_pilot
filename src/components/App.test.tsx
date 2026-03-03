@@ -69,6 +69,7 @@ describe('App mode switching', () => {
     await user.type(screen.getByLabelText(/^meal name$/i), 'Chicken Bowl')
     await user.type(screen.getByLabelText(/^cooked weight \(g\)$/i), '250')
     await user.type(screen.getByLabelText(/^total calories$/i), '500')
+    await user.type(screen.getByLabelText(/^servings/i), '4')
     await user.click(screen.getByRole('button', { name: /^save meal$/i }))
 
     const mealName = screen.getByText(/chicken bowl/i)
@@ -80,6 +81,8 @@ describe('App mode switching', () => {
     await user.click(screen.getByRole('button', { name: /^load$/i }))
     expect(screen.getByLabelText(/^meal name$/i)).toHaveValue('Chicken Bowl')
     expect(screen.getByLabelText(/^total calories$/i)).toHaveValue(500)
+    expect(screen.getByLabelText(/^servings/i)).toHaveValue(4)
+    expect(screen.getByText(/^125$/i)).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: /^delete$/i }))
     expect(screen.queryByText(/chicken bowl/i)).not.toBeInTheDocument()
