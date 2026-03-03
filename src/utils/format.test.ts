@@ -4,16 +4,26 @@ import {
   formatCaloriesPerGram,
   formatCaloriesPerOunce,
   formatCaloriesPerServing,
+  formatRawPackageServings,
   formatTotalCalories,
 } from './format'
 
 describe('formatters', () => {
-  it('formats total calories with zero decimals', () => {
-    expect(formatTotalCalories(500.49)).toBe('500')
+  it('formats manual total calories as integers', () => {
+    expect(formatTotalCalories(500.49, 'manualTotal')).toBe('500')
   })
 
-  it('shows unavailable totals instead of zero for null values', () => {
-    expect(formatTotalCalories(null)).toBe('—')
+  it('formats package-label total calories with up to one decimal place', () => {
+    expect(formatTotalCalories(1303.5384, 'packageLabel')).toBe('1303.5')
+    expect(formatTotalCalories(1304, 'packageLabel')).toBe('1304')
+  })
+
+  it('formats per-serving-derived total calories as integers', () => {
+    expect(formatTotalCalories(500.49, 'perServing')).toBe('500')
+  })
+
+  it('shows unavailable totals for null values regardless of source', () => {
+    expect(formatTotalCalories(null, null)).toBe('—')
   })
 
   it('formats calories per serving with up to one decimal place', () => {
@@ -42,5 +52,10 @@ describe('formatters', () => {
 
   it('returns the cooked-weight placeholder for null values', () => {
     expect(formatCaloriesPerGram(null)).toBe('Need cooked weight')
+  })
+
+  it('formats raw package servings with 2 to 3 decimals', () => {
+    expect(formatRawPackageServings(3.5)).toBe('3.50')
+    expect(formatRawPackageServings(3.5230769)).toBe('3.523')
   })
 })

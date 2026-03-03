@@ -16,8 +16,17 @@ function formatFixedRange(value: number, min: number, max: number): string {
   return trimmed.length > 0 ? `${whole}.${trimmed}` : whole
 }
 
-export function formatTotalCalories(value: number | null): string {
-  return value === null ? UNAVAILABLE : value.toFixed(0)
+export function formatTotalCalories(
+  value: number | null,
+  displaySource: 'manualTotal' | 'packageLabel' | 'perServing' | null = 'manualTotal',
+): string {
+  if (value === null) {
+    return UNAVAILABLE
+  }
+
+  return displaySource === 'packageLabel'
+    ? formatFixedRange(value, 0, 1)
+    : value.toFixed(0)
 }
 
 export function formatCaloriesPerServing(value: number | null): string {
@@ -34,4 +43,8 @@ export function formatCaloriesPerOunce(value: number | null): string {
 
 export function formatCaloriesPer100Grams(value: number | null): string {
   return value === null ? 'Need cooked weight' : formatFixedRange(value, 0, 1)
+}
+
+export function formatRawPackageServings(value: number | null): string {
+  return value === null ? UNAVAILABLE : formatFixedRange(value, 2, 3)
 }
