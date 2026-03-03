@@ -2,17 +2,28 @@ import { useEffect, useState } from 'react'
 import {
   type CalculationResult,
   calculateMealMetrics,
+  ouncesToGrams,
 } from '../utils/calculator'
 
 export type MealMode = 'total' | 'perServing'
+export type TotalCaloriesSource = 'manualTotal' | 'packageLabel'
+export type WeightUnit = 'g' | 'oz'
 
 export type MealInputs = {
   mealName: string
   mode: MealMode
+  totalCaloriesSource: TotalCaloriesSource
+  manualTotalCalories: number | null
   totalCalories: number | null
   caloriesPerServing: number | null
+  yourServings: number | null
   servings: number | null
   cookedWeightGrams: number | null
+  rawTotalWeight: number | null
+  rawTotalWeightUnit: WeightUnit
+  packageServingWeight: number | null
+  packageServingWeightUnit: WeightUnit
+  packageCaloriesPerServing: number | null
 }
 
 export type SavedMeal = {
@@ -49,26 +60,69 @@ function parseSavedMeals(rawValue: string | null): SavedMeal[] {
   }
 }
 
+type PersistedMealInputs = Partial<MealInputs> & {
+  servings?: number | null
+}
+
+function toGrams(value: number | null, unit: WeightUnit): number | null {
+  if (value === null) {
+    return null
+  }
+
+  return unit === 'oz' ? ouncesToGrams(value) : value
+}
+
+function normalizeInputs(inputs: PersistedMealInputs): MealInputs {
+  const normalizedServings = inputs.yourServings ?? inputs.servings ?? null
+  const manualTotalCalories =
+    inputs.manualTotalCalories ?? inputs.totalCalories ?? null
+
+  return {
+    mealName: inputs.mealName ?? '',
+    mode: inputs.mode ?? 'total',
+    totalCaloriesSource: inputs.totalCaloriesSource ?? 'manualTotal',
+    manualTotalCalories,
+    totalCalories: inputs.totalCalories ?? manualTotalCalories,
+    caloriesPerServing: inputs.caloriesPerServing ?? null,
+    yourServings: normalizedServings,
+    servings: normalizedServings,
+    cookedWeightGrams: inputs.cookedWeightGrams ?? null,
+    rawTotalWeight: inputs.rawTotalWeight ?? null,
+    rawTotalWeightUnit: inputs.rawTotalWeightUnit ?? 'g',
+    packageServingWeight: inputs.packageServingWeight ?? null,
+    packageServingWeightUnit: inputs.packageServingWeightUnit ?? 'g',
+    packageCaloriesPerServing: inputs.packageCaloriesPerServing ?? null,
+  }
+}
+
 function calculateFromInputs(inputs: MealInputs): CalculationResult {
   return calculateMealMetrics({
     mode: inputs.mode,
-    totalCaloriesSource: 'manualTotal',
-    manualTotalCalories: inputs.mode === 'total' ? inputs.totalCalories : null,
+    totalCaloriesSource: inputs.totalCaloriesSource,
+    manualTotalCalories:
+      inputs.mode === 'total' ? inputs.manualTotalCalories : null,
     totalCalories: inputs.mode === 'total' ? inputs.totalCalories : null,
     cookedWeightGrams: inputs.cookedWeightGrams,
-    yourServings: inputs.servings,
+    yourServings: inputs.yourServings ?? inputs.servings,
     caloriesPerServing:
       inputs.mode === 'perServing' ? inputs.caloriesPerServing : null,
-    rawTotalWeightGrams: null,
-    packageServingWeightGrams: null,
-    packageCaloriesPerServing: null,
+    rawTotalWeightGrams: toGrams(
+      inputs.rawTotalWeight,
+      inputs.rawTotalWeightUnit,
+    ),
+    packageServingWeightGrams: toGrams(
+      inputs.packageServingWeight,
+      inputs.packageServingWeightUnit,
+    ),
+    packageCaloriesPerServing: inputs.packageCaloriesPerServing,
   })
 }
 
 function normalizeSavedMeals(meals: SavedMeal[]): SavedMeal[] {
   return meals.map((meal) => ({
     ...meal,
-    cachedResult: calculateFromInputs(meal.inputs),
+    inputs: normalizeInputs(meal.inputs),
+    cachedResult: calculateFromInputs(normalizeInputs(meal.inputs)),
   }))
 }
 

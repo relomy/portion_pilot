@@ -18,10 +18,18 @@ describe('SavedMealsList', () => {
             inputs: {
               mealName: 'Chicken Bowl',
               mode: 'total',
+              totalCaloriesSource: 'manualTotal',
+              manualTotalCalories: 500,
               totalCalories: 500,
               caloriesPerServing: null,
+              yourServings: null,
               servings: null,
               cookedWeightGrams: 250,
+              rawTotalWeight: null,
+              rawTotalWeightUnit: 'g',
+              packageServingWeight: null,
+              packageServingWeightUnit: 'g',
+              packageCaloriesPerServing: null,
             },
             cachedResult: {
               totalCalories: 500,

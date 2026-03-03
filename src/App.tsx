@@ -13,10 +13,18 @@ function createEmptyForm(): MealInputs {
   return {
     mealName: '',
     mode: 'total',
+    totalCaloriesSource: 'manualTotal',
+    manualTotalCalories: null,
     totalCalories: null,
     caloriesPerServing: null,
+    yourServings: null,
     servings: null,
     cookedWeightGrams: null,
+    rawTotalWeight: null,
+    rawTotalWeightUnit: 'g',
+    packageServingWeight: null,
+    packageServingWeightUnit: 'g',
+    packageCaloriesPerServing: null,
   }
 }
 

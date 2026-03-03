@@ -21,10 +21,18 @@ describe('ResultsPanel', () => {
         form={{
           mealName: 'Roasted chicken',
           mode: 'total',
+          totalCaloriesSource: 'manualTotal',
+          manualTotalCalories: 500,
           totalCalories: 500,
           caloriesPerServing: null,
+          yourServings: null,
           servings: null,
           cookedWeightGrams: null,
+          rawTotalWeight: null,
+          rawTotalWeightUnit: 'g',
+          packageServingWeight: null,
+          packageServingWeightUnit: 'g',
+          packageCaloriesPerServing: null,
         }}
       />,
     )
@@ -53,10 +61,18 @@ describe('ResultsPanel', () => {
         form={{
           mealName: 'Roasted chicken',
           mode: 'total',
+          totalCaloriesSource: 'manualTotal',
+          manualTotalCalories: 500,
           totalCalories: 500,
           caloriesPerServing: 125,
+          yourServings: 4,
           servings: 4,
           cookedWeightGrams: null,
+          rawTotalWeight: null,
+          rawTotalWeightUnit: 'g',
+          packageServingWeight: null,
+          packageServingWeightUnit: 'g',
+          packageCaloriesPerServing: null,
         }}
       />,
     )
