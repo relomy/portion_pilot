@@ -141,4 +141,47 @@ describe('App mode switching', () => {
 
     expect(screen.getByText(/^150$/i)).toBeInTheDocument()
   })
+
+  it('derives package-label totals for the ravioli workflow', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    await user.type(screen.getByLabelText(/^raw total weight$/i), '458')
+    await user.type(screen.getByLabelText(/^package serving weight$/i), '130')
+    await user.type(
+      screen.getByLabelText(/^package calories per serving$/i),
+      '370',
+    )
+
+    expect(screen.getByText(/^1303.5$/i)).toBeInTheDocument()
+    expect(screen.getByText(/^3.523$/i)).toBeInTheDocument()
+  })
+
+  it('saves and reloads an ounce-based package-label meal with units intact', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    await user.selectOptions(screen.getByLabelText(/^raw total weight unit$/i), 'oz')
+    await user.selectOptions(
+      screen.getByLabelText(/^package serving weight unit$/i),
+      'oz',
+    )
+    await user.type(screen.getByLabelText(/^raw total weight$/i), '16.155')
+    await user.type(screen.getByLabelText(/^package serving weight$/i), '4.586')
+    await user.type(
+      screen.getByLabelText(/^package calories per serving$/i),
+      '370',
+    )
+    await user.type(screen.getByLabelText(/^meal name$/i), 'Ravioli')
+    await user.click(screen.getByRole('button', { name: /^save meal$/i }))
+    await user.click(screen.getByRole('button', { name: /^clear$/i }))
+    await user.click(screen.getByRole('button', { name: /^load$/i }))
+
+    expect(screen.getByLabelText(/^raw total weight unit$/i)).toHaveValue('oz')
+    expect(screen.getByLabelText(/^package serving weight unit$/i)).toHaveValue(
+      'oz',
+    )
+    expect(screen.getByLabelText(/^raw total weight$/i)).toHaveValue(16.155)
+    expect(screen.getByText(/^1303.4$/i)).toBeInTheDocument()
+  })
 })
