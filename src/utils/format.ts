@@ -48,3 +48,7 @@ export function formatCaloriesPer100Grams(value: number | null): string {
 export function formatRawPackageServings(value: number | null): string {
   return value === null ? UNAVAILABLE : formatFixedRange(value, 2, 3)
 }
+
+export function formatPortionCalories(value: number | null): string {
+  return value === null ? UNAVAILABLE : value.toFixed(0)
+}

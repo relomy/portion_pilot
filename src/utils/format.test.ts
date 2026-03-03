@@ -4,6 +4,7 @@ import {
   formatCaloriesPerGram,
   formatCaloriesPerOunce,
   formatCaloriesPerServing,
+  formatPortionCalories,
   formatRawPackageServings,
   formatTotalCalories,
 } from './format'
@@ -57,5 +58,13 @@ describe('formatters', () => {
   it('formats raw package servings with 2 to 3 decimals', () => {
     expect(formatRawPackageServings(3.5)).toBe('3.50')
     expect(formatRawPackageServings(3.5230769)).toBe('3.523')
+  })
+
+  it('formats portion calories as integers', () => {
+    expect(formatPortionCalories(299.9)).toBe('300')
+  })
+
+  it('shows a neutral unavailable marker when portion calories are unavailable', () => {
+    expect(formatPortionCalories(null)).toBe('—')
   })
 })
