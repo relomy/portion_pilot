@@ -122,6 +122,41 @@ describe('useSavedMeals', () => {
     expect(result.current.savedMeals[0].inputs.yourServings).toBe(4)
   })
 
+  it('hydrates missing portion fields to null and g for legacy meals', () => {
+    storage.setItem(
+      STORAGE_KEY,
+      JSON.stringify([
+        {
+          id: 'legacy-meal',
+          createdAt: '2026-03-03T12:00:00.000Z',
+          inputs: {
+            mealName: 'Legacy Bowl',
+            mode: 'total',
+            totalCalories: 500,
+            servings: 4,
+          },
+          cachedResult: {
+            totalCalories: 500,
+            caloriesPerServing: 125,
+            caloriesPerGram: null,
+            caloriesPerOunce: null,
+            caloriesPer100Grams: null,
+            rawPackageServings: null,
+            portionCalories: null,
+            totalCaloriesDisplaySource: 'manualTotal',
+            calorie_source_used: 'total',
+            assumptions: { servings_assumed: false },
+          },
+        },
+      ]),
+    )
+
+    const { result } = renderHook(() => useSavedMeals())
+
+    expect(result.current.savedMeals[0].inputs.portionEaten).toBeNull()
+    expect(result.current.savedMeals[0].inputs.portionEatenUnit).toBe('g')
+  })
+
   it('saves a meal with cached computed results', () => {
     const { result } = renderHook(() => useSavedMeals())
 
@@ -136,6 +171,8 @@ describe('useSavedMeals', () => {
         yourServings: null,
         servings: null,
         cookedWeightGrams: 250,
+        portionEaten: null,
+        portionEatenUnit: 'g',
         rawTotalWeight: null,
         rawTotalWeightUnit: 'g',
         packageServingWeight: null,
@@ -162,6 +199,8 @@ describe('useSavedMeals', () => {
         yourServings: null,
         servings: null,
         cookedWeightGrams: null,
+        portionEaten: null,
+        portionEatenUnit: 'g',
         rawTotalWeight: 16.155,
         rawTotalWeightUnit: 'oz',
         packageServingWeight: 4.586,
@@ -172,6 +211,34 @@ describe('useSavedMeals', () => {
 
     expect(result.current.savedMeals[0].inputs.rawTotalWeightUnit).toBe('oz')
     expect(result.current.savedMeals[0].inputs.rawTotalWeight).toBe(16.155)
+  })
+
+  it('saves and reloads total-mode portion-eaten value and unit', () => {
+    const { result } = renderHook(() => useSavedMeals())
+
+    act(() => {
+      result.current.saveMeal({
+        mealName: 'Ravioli',
+        mode: 'total',
+        totalCaloriesSource: 'manualTotal',
+        manualTotalCalories: 600,
+        totalCalories: 600,
+        caloriesPerServing: null,
+        yourServings: null,
+        servings: null,
+        cookedWeightGrams: 300,
+        portionEaten: 5,
+        portionEatenUnit: 'oz',
+        rawTotalWeight: null,
+        rawTotalWeightUnit: 'g',
+        packageServingWeight: null,
+        packageServingWeightUnit: 'g',
+        packageCaloriesPerServing: null,
+      })
+    })
+
+    expect(result.current.savedMeals[0].inputs.portionEaten).toBe(5)
+    expect(result.current.savedMeals[0].inputs.portionEatenUnit).toBe('oz')
   })
 
   it('recomputes from inputs when loading a saved meal', () => {
@@ -188,6 +255,8 @@ describe('useSavedMeals', () => {
         yourServings: null,
         servings: null,
         cookedWeightGrams: 250,
+        portionEaten: null,
+        portionEatenUnit: 'g',
         rawTotalWeight: null,
         rawTotalWeightUnit: 'g',
         packageServingWeight: null,

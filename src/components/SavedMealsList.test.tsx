@@ -25,6 +25,8 @@ describe('SavedMealsList', () => {
               yourServings: null,
               servings: null,
               cookedWeightGrams: null,
+              portionEaten: null,
+              portionEatenUnit: 'g',
               rawTotalWeight: 458,
               rawTotalWeightUnit: 'g',
               packageServingWeight: 130,

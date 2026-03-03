@@ -19,6 +19,8 @@ export type MealInputs = {
   yourServings: number | null
   servings: number | null
   cookedWeightGrams: number | null
+  portionEaten: number | null
+  portionEatenUnit: WeightUnit
   rawTotalWeight: number | null
   rawTotalWeightUnit: WeightUnit
   packageServingWeight: number | null
@@ -87,6 +89,8 @@ function normalizeInputs(inputs: PersistedMealInputs): MealInputs {
     yourServings: normalizedServings,
     servings: normalizedServings,
     cookedWeightGrams: inputs.cookedWeightGrams ?? null,
+    portionEaten: inputs.portionEaten ?? null,
+    portionEatenUnit: inputs.portionEatenUnit ?? 'g',
     rawTotalWeight: inputs.rawTotalWeight ?? null,
     rawTotalWeightUnit: inputs.rawTotalWeightUnit ?? 'g',
     packageServingWeight: inputs.packageServingWeight ?? null,
@@ -103,7 +107,10 @@ function calculateFromInputs(inputs: MealInputs): CalculationResult {
       inputs.mode === 'total' ? inputs.manualTotalCalories : null,
     totalCalories: inputs.mode === 'total' ? inputs.totalCalories : null,
     cookedWeightGrams: inputs.cookedWeightGrams,
-    portionEatenGrams: null,
+    portionEatenGrams:
+      inputs.mode === 'total'
+        ? toGrams(inputs.portionEaten, inputs.portionEatenUnit)
+        : null,
     yourServings: inputs.yourServings ?? inputs.servings,
     caloriesPerServing:
       inputs.mode === 'perServing' ? inputs.caloriesPerServing : null,

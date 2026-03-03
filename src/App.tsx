@@ -22,6 +22,8 @@ function createEmptyForm(): MealInputs {
     yourServings: null,
     servings: null,
     cookedWeightGrams: null,
+    portionEaten: null,
+    portionEatenUnit: 'g',
     rawTotalWeight: null,
     rawTotalWeightUnit: 'g',
     packageServingWeight: null,
@@ -80,7 +82,10 @@ function App() {
         ? form.manualTotalCalories
         : null,
     cookedWeightGrams: form.cookedWeightGrams,
-    portionEatenGrams: null,
+    portionEatenGrams:
+      form.mode === 'total'
+        ? toGrams(form.portionEaten, form.portionEatenUnit)
+        : null,
     yourServings: form.yourServings,
     caloriesPerServing:
       form.mode === 'perServing' ? form.caloriesPerServing : null,
@@ -111,6 +116,7 @@ function App() {
       | 'caloriesPerServing'
       | 'yourServings'
       | 'cookedWeightGrams'
+      | 'portionEaten'
       | 'rawTotalWeight'
       | 'packageServingWeight'
       | 'packageCaloriesPerServing',
@@ -138,7 +144,10 @@ function App() {
   }
 
   function handleUnitChange(
-    field: 'rawTotalWeightUnit' | 'packageServingWeightUnit',
+    field:
+      | 'rawTotalWeightUnit'
+      | 'packageServingWeightUnit'
+      | 'portionEatenUnit',
     value: WeightUnit,
   ) {
     setForm((current) => ({ ...current, [field]: value }))
