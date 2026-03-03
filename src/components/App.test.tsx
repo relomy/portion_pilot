@@ -105,6 +105,38 @@ describe('App mode switching', () => {
     expect(screen.getByLabelText(/^total calories$/i)).toHaveValue(900)
   })
 
+  it('flags real competing calorie entries in dev details', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    await user.click(screen.getByLabelText(/^manual total$/i))
+    await user.type(screen.getByLabelText(/^total calories$/i), '500')
+    await user.click(screen.getByLabelText(/^per serving$/i))
+    await user.type(screen.getByLabelText(/^calories per serving$/i), '125')
+    await user.click(screen.getByRole('button', { name: /show debug details/i }))
+
+    expect(screen.getByText(/"hasConflictingCalories": true/i)).toBeInTheDocument()
+  })
+
+  it('does not flag preserved inactive total-submode values as conflicting', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    await user.type(screen.getByLabelText(/^raw total weight$/i), '458')
+    await user.type(screen.getByLabelText(/^package serving weight$/i), '130')
+    await user.type(
+      screen.getByLabelText(/^package calories per serving$/i),
+      '370',
+    )
+    await user.click(screen.getByLabelText(/^manual total$/i))
+    await user.type(screen.getByLabelText(/^total calories$/i), '900')
+    await user.click(screen.getByRole('button', { name: /show debug details/i }))
+
+    expect(
+      screen.getByText(/"hasConflictingCalories": false/i),
+    ).toBeInTheDocument()
+  })
+
   it('renders the live results panel metrics and assumption note', async () => {
     const user = userEvent.setup()
     render(<App />)

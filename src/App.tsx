@@ -38,10 +38,35 @@ function toGrams(value: number | null, unit: WeightUnit): number | null {
   return unit === 'oz' ? ouncesToGrams(value) : value
 }
 
+function hasEnteredPackageLabelSource(form: MealInputs): boolean {
+  return (
+    form.rawTotalWeight !== null ||
+    form.packageServingWeight !== null ||
+    form.packageCaloriesPerServing !== null
+  )
+}
+
+function computeHasConflictingCalories(form: MealInputs): boolean {
+  if (form.mode === 'perServing') {
+    return (
+      form.caloriesPerServing !== null &&
+      (form.manualTotalCalories !== null || hasEnteredPackageLabelSource(form))
+    )
+  }
+
+  if (form.totalCaloriesSource === 'manualTotal') {
+    return (
+      form.manualTotalCalories !== null && form.caloriesPerServing !== null
+    )
+  }
+
+  return hasEnteredPackageLabelSource(form) && form.caloriesPerServing !== null
+}
+
 function App() {
   const [form, setForm] = useState<MealInputs>(createEmptyForm)
   const { deleteMeal, loadMeal, saveMeal, savedMeals } = useSavedMeals()
-  const hasConflictingCalories = false
+  const hasConflictingCalories = computeHasConflictingCalories(form)
 
   const result = calculateMealMetrics({
     mode: form.mode,
