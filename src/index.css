@@ -1,68 +1,189 @@
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
+  font-family: 'Manrope', 'Segoe UI', sans-serif;
+  color-scheme: light;
+  --counter: #f5efe4;
+  --worksheet: rgba(255, 252, 247, 0.94);
+  --label: #fffaf2;
+  --ink: #1f2937;
+  --steel: #6b7280;
+  --herb: #0f766e;
+  --herb-strong: #115e59;
+  --terracotta: #c2410c;
+  --warning: #dc2626;
+  --rule: rgba(15, 23, 42, 0.08);
+  --shadow: 0 24px 80px rgba(148, 163, 184, 0.18);
+  --layout-columns-desktop: minmax(0, 1.5fr) minmax(20rem, 1fr);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  line-height: 1.5;
+  font-weight: 400;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
+* {
+  box-sizing: border-box;
 }
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
   min-width: 320px;
   min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, #e9f7f3, transparent 30%),
+    var(--counter);
+  color: var(--ink);
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+button,
+input {
+  font: inherit;
 }
 
 button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  background: var(--label);
+  color: var(--ink);
   cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--herb);
+  outline-offset: 2px;
+}
+
+input {
+  width: 100%;
+  border: 1px solid var(--rule);
+  border-radius: 16px;
+  background: #fffdf9;
+  color: var(--ink);
+  padding: 0.8rem 0.9rem;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.app-shell {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 3rem 1.25rem 4rem;
+}
+
+.app-header {
+  margin-bottom: 2rem;
+}
+
+.app-header h1,
+.panel-heading h2,
+.results-placeholder h2,
+.saved-meals-placeholder h2 {
+  margin: 0;
+}
+
+.app-subtitle,
+.placeholder-copy,
+.saved-meals-placeholder p {
+  color: var(--steel);
+}
+
+.eyebrow {
+  margin: 0 0 0.5rem;
+  color: var(--herb-strong);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.calculator-layout {
+  display: grid;
+  gap: 1.25rem;
+  grid-template-columns: var(--layout-columns-desktop);
+}
+
+.worksheet-panel,
+.results-placeholder,
+.saved-meals-placeholder {
+  border: 1px solid var(--rule);
+  border-radius: 28px;
+  box-shadow: var(--shadow);
+  padding: 1.5rem;
+}
+
+.worksheet-panel,
+.saved-meals-placeholder {
+  background: var(--worksheet);
+}
+
+.results-placeholder {
+  background: var(--label);
+}
+
+.field-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.field,
+.mode-group {
+  margin: 0 0 1rem;
+}
+
+.field span,
+.mode-group legend {
+  display: block;
+  margin-bottom: 0.45rem;
+  font-weight: 600;
+}
+
+.mode-group {
+  border: 0;
+  padding: 0;
+}
+
+.mode-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.mode-option input,
+.mode-option span {
+  width: auto;
+  margin: 0;
+}
+
+.action-row {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.action-row button {
+  padding: 0.7rem 1.1rem;
+}
+
+.placeholder-value {
+  margin: 0.25rem 0;
+  font-size: 3rem;
+  font-weight: 800;
+}
+
+.saved-meals-placeholder {
+  margin-top: 1.25rem;
+}
+
+@media (max-width: 780px) {
+  .calculator-layout {
+    grid-template-columns: 1fr;
   }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
+
+  .field-grid {
+    grid-template-columns: 1fr;
   }
 }

@@ -24,6 +24,18 @@ export type SavedMeal = {
 
 export const STORAGE_KEY = 'meal-calorie-calculator.saved-meals'
 
+function getStorage() {
+  if (
+    typeof localStorage === 'undefined' ||
+    typeof localStorage.getItem !== 'function' ||
+    typeof localStorage.setItem !== 'function'
+  ) {
+    return null
+  }
+
+  return localStorage
+}
+
 function parseSavedMeals(rawValue: string | null): SavedMeal[] {
   if (!rawValue) {
     return []
@@ -48,13 +60,14 @@ function calculateFromInputs(inputs: MealInputs): CalculationResult {
 }
 
 export function useSavedMeals() {
+  const storage = getStorage()
   const [savedMeals, setSavedMeals] = useState<SavedMeal[]>(() =>
-    parseSavedMeals(localStorage.getItem(STORAGE_KEY)),
+    parseSavedMeals(storage?.getItem(STORAGE_KEY) ?? null),
   )
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(savedMeals))
-  }, [savedMeals])
+    storage?.setItem(STORAGE_KEY, JSON.stringify(savedMeals))
+  }, [savedMeals, storage])
 
   function saveMeal(inputs: MealInputs) {
     const nextMeal: SavedMeal = {
