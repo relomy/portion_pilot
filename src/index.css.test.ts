@@ -27,4 +27,16 @@ describe('index.css', () => {
     expect(css).toContain('.meal-card__metrics')
     expect(css).toContain('.meal-card__actions')
   })
+
+  it('defines motion with a reduced-motion escape hatch and row-based result styling', () => {
+    const cssPath = resolve(process.cwd(), 'src/index.css')
+    const css = readFileSync(cssPath, 'utf8')
+
+    expect(css).toContain('@keyframes rise-in')
+    expect(css).toContain('@media (prefers-reduced-motion: reduce)')
+    expect(css).toContain('.results-metrics')
+    expect(css).toContain('.results-metrics div')
+    expect(css).toContain('.dev-panel')
+    expect(css).toContain('.assumption-note')
+  })
 })
