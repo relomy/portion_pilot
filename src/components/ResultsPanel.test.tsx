@@ -781,4 +781,59 @@ describe('ResultsPanel', () => {
       within(guide).queryByText(/^portion eaten \(cooked weight\)$/i),
     ).not.toBeInTheDocument()
   })
+
+  it('removes the long cooked helper sentence', () => {
+    render(
+      <ResultsPanel
+        result={{
+          totalCalories: 1303.5384,
+          caloriesPerServing: null,
+          caloriesPerGram: 2,
+          caloriesPerOunce: 56.7,
+          caloriesPer100Grams: 200,
+          rawPackageServings: 3.5230769,
+          portionCalories: 300,
+          cookedWeightPerPackageServingGrams: 178.0286,
+          equivalentPackageServingsEaten: 1.08,
+          weightChangeGrams: 184,
+          weightChangePercent: 32.857,
+          weightChangeDirection: 'gain',
+          totalCaloriesDisplaySource: 'packageLabel',
+          calorie_source_used: 'total',
+          assumptions: { servings_assumed: false },
+        }}
+        hasConflictingCalories={false}
+        form={{
+          mealName: 'Ravioli',
+          mode: 'total',
+          totalCaloriesSource: 'packageLabel',
+          manualTotalCalories: null,
+          totalCalories: 1303.5384,
+          caloriesPerServing: null,
+          yourServings: null,
+          servings: null,
+          cookedWeightGrams: 744,
+          portionEaten: 192.5,
+          portionEatenUnit: 'g',
+          rawTotalWeight: 560,
+          rawTotalWeightUnit: 'g',
+          packageServingWeight: 134,
+          packageServingWeightUnit: 'g',
+          packageCaloriesPerServing: 370,
+        }}
+        portionEaten={192.5}
+        portionEatenUnit="g"
+        onPortionEatenChange={() => {}}
+        onPortionEatenUnitChange={() => {}}
+        targetCalories={400}
+        onTargetCaloriesChange={() => {}}
+        cookedOutputUnit="g"
+        onCookedOutputUnitChange={() => {}}
+      />,
+    )
+
+    expect(
+      screen.queryByText(/^based on cooked batch weight and portion eaten$/i),
+    ).not.toBeInTheDocument()
+  })
 })

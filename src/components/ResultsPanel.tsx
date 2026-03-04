@@ -118,7 +118,6 @@ function TotalModeResults({
         <header data-testid="results-section-cooked">
           <p className="results-section__eyebrow">Cooked facts</p>
           <h3>Cooked batch stats</h3>
-          <p>Based on cooked batch weight and portion eaten</p>
         </header>
 
         {form.cookedWeightGrams === null || form.cookedWeightGrams <= 0 ? (

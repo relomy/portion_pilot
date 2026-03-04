@@ -61,6 +61,7 @@ describe('index.css', () => {
     expect(css).toContain('.results-section__eyebrow')
     expect(css).toContain('.results-section--portion-guide')
     expect(css).toContain('.portion-guide-header')
+    expect(css).toContain('.portion-guide-header__row')
     expect(css).toContain('.portion-guide-controls')
     expect(css).toContain('.density-secondary')
     expect(css).toContain('.density-secondary__item')
