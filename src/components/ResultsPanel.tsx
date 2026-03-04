@@ -177,56 +177,62 @@ function TotalModeResults({
           data-testid="results-section-portion-guide"
         >
           <header className="portion-guide-header">
-            <div>
+            <div
+              className="portion-guide-header__row"
+              data-testid="portion-guide-header-row"
+            >
               <p className="results-section__eyebrow">Portion planning</p>
-              <h3>Portion guide</h3>
-            </div>
-            <div className="portion-guide-controls">
-              <fieldset
-                className="unit-segmented"
-                aria-label="Display unit"
-                role="radiogroup"
+              <div
+                className="portion-guide-controls"
+                data-testid="portion-guide-controls"
               >
-                <label>
-                  <input
-                    checked={activeOutputUnit === 'g'}
-                    name="display-unit"
-                    type="radio"
-                    value="g"
-                    onChange={() => onCookedOutputUnitChange?.('g')}
-                  />
-                  <span>g</span>
-                </label>
-                <label>
-                  <input
-                    checked={activeOutputUnit === 'oz'}
-                    name="display-unit"
-                    type="radio"
-                    value="oz"
-                    onChange={() => onCookedOutputUnitChange?.('oz')}
-                  />
-                  <span>oz</span>
-                </label>
-              </fieldset>
+                <fieldset
+                  className="unit-segmented"
+                  aria-label="Display unit"
+                  role="radiogroup"
+                >
+                  <label>
+                    <input
+                      checked={activeOutputUnit === 'g'}
+                      name="display-unit"
+                      type="radio"
+                      value="g"
+                      onChange={() => onCookedOutputUnitChange?.('g')}
+                    />
+                    <span>g</span>
+                  </label>
+                  <label>
+                    <input
+                      checked={activeOutputUnit === 'oz'}
+                      name="display-unit"
+                      type="radio"
+                      value="oz"
+                      onChange={() => onCookedOutputUnitChange?.('oz')}
+                    />
+                    <span>oz</span>
+                  </label>
+                </fieldset>
 
-              <label className="field portion-guide-target">
-                <span>Target calories</span>
-                <input
-                  aria-label="Target calories"
-                  type="number"
-                  value={normalizedTargetCalories ?? ''}
-                  onChange={(event) =>
-                    onTargetCaloriesChange?.(
-                      event.target.value === '' ? null : Number(event.target.value),
-                    )
-                  }
-                />
-              </label>
+                <label className="field portion-guide-target">
+                  <span>Target calories</span>
+                  <input
+                    aria-label="Target calories"
+                    type="number"
+                    value={normalizedTargetCalories ?? ''}
+                    onChange={(event) =>
+                      onTargetCaloriesChange?.(
+                        event.target.value === '' ? null : Number(event.target.value),
+                      )
+                    }
+                  />
+                </label>
+              </div>
             </div>
+            <h3 data-testid="portion-guide-title">Portion guide</h3>
           </header>
 
           <label className="field">
-            <span>Portion eaten (cooked weight)</span>
+            <span>Portion eaten</span>
             <div className="input-with-unit">
               <input
                 aria-label="Portion eaten (cooked weight)"

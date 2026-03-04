@@ -480,4 +480,123 @@ describe('ResultsPanel', () => {
     const guide = screen.getByTestId('results-section-portion-guide')
     expect(within(guide).getAllByText('—').length).toBeGreaterThan(0)
   })
+
+  it('renders portion guide as eyebrow/control row plus a full-width title below', () => {
+    render(
+      <ResultsPanel
+        result={{
+          totalCalories: 1303.5384,
+          caloriesPerServing: null,
+          caloriesPerGram: 2,
+          caloriesPerOunce: 56.7,
+          caloriesPer100Grams: 200,
+          rawPackageServings: 3.5230769,
+          portionCalories: 300,
+          cookedWeightPerPackageServingGrams: 178.0286,
+          equivalentPackageServingsEaten: 1.08,
+          weightChangeGrams: 184,
+          weightChangePercent: 32.857,
+          weightChangeDirection: 'gain',
+          totalCaloriesDisplaySource: 'packageLabel',
+          calorie_source_used: 'total',
+          assumptions: { servings_assumed: false },
+        }}
+        hasConflictingCalories={false}
+        form={{
+          mealName: 'Ravioli',
+          mode: 'total',
+          totalCaloriesSource: 'packageLabel',
+          manualTotalCalories: null,
+          totalCalories: 1303.5384,
+          caloriesPerServing: null,
+          yourServings: null,
+          servings: null,
+          cookedWeightGrams: 744,
+          portionEaten: 192.5,
+          portionEatenUnit: 'g',
+          rawTotalWeight: 560,
+          rawTotalWeightUnit: 'g',
+          packageServingWeight: 134,
+          packageServingWeightUnit: 'g',
+          packageCaloriesPerServing: 370,
+        }}
+        portionEaten={192.5}
+        portionEatenUnit="g"
+        onPortionEatenChange={() => {}}
+        onPortionEatenUnitChange={() => {}}
+        targetCalories={400}
+        onTargetCaloriesChange={() => {}}
+        cookedOutputUnit="g"
+        onCookedOutputUnitChange={() => {}}
+      />,
+    )
+
+    const guide = screen.getByTestId('results-section-portion-guide')
+    const headerRow = within(guide).getByTestId('portion-guide-header-row')
+
+    expect(within(headerRow).getByText(/portion planning/i)).toBeInTheDocument()
+    expect(within(headerRow).getByTestId('portion-guide-controls')).toBeInTheDocument()
+    expect(within(headerRow).queryByText(/^portion guide$/i)).not.toBeInTheDocument()
+    expect(within(guide).getByTestId('portion-guide-title')).toHaveTextContent(
+      'Portion guide',
+    )
+  })
+
+  it('shortens the visible portion row copy to portion eaten', () => {
+    render(
+      <ResultsPanel
+        result={{
+          totalCalories: 1303.5384,
+          caloriesPerServing: null,
+          caloriesPerGram: 2,
+          caloriesPerOunce: 56.7,
+          caloriesPer100Grams: 200,
+          rawPackageServings: 3.5230769,
+          portionCalories: 300,
+          cookedWeightPerPackageServingGrams: 178.0286,
+          equivalentPackageServingsEaten: 1.08,
+          weightChangeGrams: 184,
+          weightChangePercent: 32.857,
+          weightChangeDirection: 'gain',
+          totalCaloriesDisplaySource: 'packageLabel',
+          calorie_source_used: 'total',
+          assumptions: { servings_assumed: false },
+        }}
+        hasConflictingCalories={false}
+        form={{
+          mealName: 'Ravioli',
+          mode: 'total',
+          totalCaloriesSource: 'packageLabel',
+          manualTotalCalories: null,
+          totalCalories: 1303.5384,
+          caloriesPerServing: null,
+          yourServings: null,
+          servings: null,
+          cookedWeightGrams: 744,
+          portionEaten: 192.5,
+          portionEatenUnit: 'g',
+          rawTotalWeight: 560,
+          rawTotalWeightUnit: 'g',
+          packageServingWeight: 134,
+          packageServingWeightUnit: 'g',
+          packageCaloriesPerServing: 370,
+        }}
+        portionEaten={192.5}
+        portionEatenUnit="g"
+        onPortionEatenChange={() => {}}
+        onPortionEatenUnitChange={() => {}}
+        targetCalories={400}
+        onTargetCaloriesChange={() => {}}
+        cookedOutputUnit="g"
+        onCookedOutputUnitChange={() => {}}
+      />,
+    )
+
+    const guide = screen.getByTestId('results-section-portion-guide')
+
+    expect(within(guide).getByText(/^portion eaten$/i)).toBeInTheDocument()
+    expect(
+      within(guide).queryByText(/^portion eaten \(cooked weight\)$/i),
+    ).not.toBeInTheDocument()
+  })
 })
