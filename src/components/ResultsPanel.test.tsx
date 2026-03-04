@@ -185,6 +185,9 @@ describe('ResultsPanel', () => {
     expect(
       screen.getByRole('button', { name: /show debug details/i }),
     ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: /show debug details/i }),
+    ).toHaveClass('dev-panel__toggle--quiet')
   })
 
   it('still updates portion eaten unit from the portion guide', async () => {

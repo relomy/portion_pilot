@@ -84,6 +84,7 @@ function TotalModeResults({
     <>
       <section className="results-section results-section--batch">
         <header data-testid="results-section-batch">
+          <p className="results-section__eyebrow">Batch facts</p>
           <h3>Batch calorie stats</h3>
           <p>{batchHelper}</p>
         </header>
@@ -115,6 +116,7 @@ function TotalModeResults({
 
       <section className="results-section results-section--cooked">
         <header data-testid="results-section-cooked">
+          <p className="results-section__eyebrow">Cooked facts</p>
           <h3>Cooked batch stats</h3>
           <p>Based on cooked batch weight and portion eaten</p>
         </header>
@@ -176,6 +178,7 @@ function TotalModeResults({
         >
           <header className="portion-guide-header">
             <div>
+              <p className="results-section__eyebrow">Portion planning</p>
               <h3>Portion guide</h3>
             </div>
             <div className="portion-guide-controls">

@@ -352,8 +352,8 @@ input:disabled {
 }
 
 .results-section {
-  margin-top: 1.25rem;
-  padding-top: 1rem;
+  margin-top: 1rem;
+  padding-top: 0.85rem;
   border-top: 1px solid var(--rule);
 }
 
@@ -363,18 +363,31 @@ input:disabled {
   font-size: 0.92rem;
 }
 
+.results-section__eyebrow {
+  margin: 0 0 0.3rem;
+  color: var(--herb-strong);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 .results-section--batch {
   margin-top: 1rem;
 }
 
 .results-section--cooked {
-  background: rgba(245, 239, 228, 0.42);
-  border-radius: 22px;
-  padding: 1rem;
+  padding-bottom: 0.15rem;
 }
 
 .results-section--cooked .results-metrics {
-  margin-top: 0.9rem;
+  margin-top: 0.75rem;
+}
+
+.results-section--portion-guide {
+  background: rgba(233, 247, 243, 0.42);
+  border-radius: 20px;
+  padding: 0.9rem 1rem 1rem;
 }
 
 .results-unavailable {
@@ -386,7 +399,7 @@ input:disabled {
 .results-metrics {
   display: grid;
   gap: 0.75rem;
-  margin: 1.25rem 0 0;
+  margin: 0.9rem 0 0;
 }
 
 .results-metrics div {
@@ -414,13 +427,66 @@ input:disabled {
   text-align: right;
 }
 
+.density-reference dt,
+.density-reference dd {
+  color: var(--steel);
+}
+
+.portion-guide-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.portion-guide-controls {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.portion-guide-target {
+  margin: 0;
+  min-width: 10rem;
+}
+
+.portion-guide-target input {
+  margin-top: 0;
+}
+
+.weight-change-callout {
+  margin: 0.35rem 0 0;
+  color: var(--steel);
+  font-size: 0.84rem;
+  text-align: right;
+}
+
 .dev-panel {
-  margin-top: 0.9rem;
+  margin-top: 0.5rem;
 }
 
 .dev-panel button {
   padding: 0.55rem 0.85rem;
   font-size: 0.92rem;
+}
+
+.dev-panel__toggle--quiet {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--steel);
+  box-shadow: none;
+  font-size: 0.9rem;
+  text-decoration: underline;
+  text-underline-offset: 0.14em;
+}
+
+.dev-panel__toggle--quiet:hover {
+  color: var(--ink);
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  transform: none;
 }
 
 .dev-panel pre {
@@ -557,6 +623,12 @@ input:disabled {
   .segmented-control,
   .unit-segmented {
     flex-wrap: wrap;
+  }
+
+  .portion-guide-header,
+  .portion-guide-controls {
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .action-row {
