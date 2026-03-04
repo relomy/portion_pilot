@@ -1,4 +1,4 @@
-import type { MealInputs } from '../hooks/useSavedMeals'
+import type { MealInputs, WeightUnit } from '../hooks/useSavedMeals'
 import type { CalculationResult } from '../utils/calculator'
 import { DevPanel } from './DevPanel'
 import {
@@ -21,12 +21,21 @@ type ResultsPanelProps = {
   result: CalculationResult
   hasConflictingCalories: boolean
   form: MealInputs
+  targetCalories?: number | null
+  onTargetCaloriesChange?: (value: number | null) => void
+  cookedOutputUnit?: WeightUnit
+  onCookedOutputUnitChange?: (value: WeightUnit) => void
 }
 
 function TotalModeResults({
   form,
   result,
-}: Pick<ResultsPanelProps, 'form' | 'result'>) {
+  targetCalories,
+  onTargetCaloriesChange,
+}: Pick<
+  ResultsPanelProps,
+  'form' | 'result' | 'targetCalories' | 'onTargetCaloriesChange'
+>) {
   const batchHelper =
     form.totalCaloriesSource === 'packageLabel'
       ? 'Based on raw package weight and label serving size'
@@ -94,6 +103,24 @@ function TotalModeResults({
           </div>
         </dl>
       </section>
+
+      {form.totalCaloriesSource === 'packageLabel' ? (
+        <section className="results-section">
+          <label className="field">
+            <span>Target calories</span>
+            <input
+              aria-label="Target calories"
+              type="number"
+              value={targetCalories ?? ''}
+              onChange={(event) =>
+                onTargetCaloriesChange?.(
+                  event.target.value === '' ? null : Number(event.target.value),
+                )
+              }
+            />
+          </label>
+        </section>
+      ) : null}
     </>
   )
 }
@@ -137,6 +164,10 @@ export function ResultsPanel({
   result,
   hasConflictingCalories,
   form,
+  targetCalories,
+  onTargetCaloriesChange,
+  cookedOutputUnit: _cookedOutputUnit,
+  onCookedOutputUnitChange: _onCookedOutputUnitChange,
 }: ResultsPanelProps) {
   return (
     <section className="results-panel" data-testid="nutrition-label">
@@ -159,7 +190,12 @@ export function ResultsPanel({
       />
 
       {form.mode === 'total' ? (
-        <TotalModeResults form={form} result={result} />
+        <TotalModeResults
+          form={form}
+          result={result}
+          targetCalories={targetCalories}
+          onTargetCaloriesChange={onTargetCaloriesChange}
+        />
       ) : (
         <PerServingResults result={result} />
       )}

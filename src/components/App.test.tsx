@@ -280,6 +280,43 @@ describe('App mode switching', () => {
     expect(screen.queryByText(/^calories per serving$/i)).not.toBeInTheDocument()
   })
 
+  it('keeps target calories ephemeral and resets it on clear', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    await user.type(screen.getByLabelText(/^raw total weight$/i), '560')
+    await user.type(screen.getByLabelText(/^package serving weight$/i), '134')
+    await user.type(
+      screen.getByLabelText(/^package calories per serving$/i),
+      '370',
+    )
+    await user.type(screen.getByLabelText(/^cooked weight \(g\)$/i), '744')
+    await user.type(screen.getByLabelText(/^target calories$/i), '400')
+    await user.click(screen.getByRole('button', { name: /^clear$/i }))
+
+    expect(screen.getByLabelText(/^target calories$/i)).toHaveValue(null)
+  })
+
+  it('does not persist target calories when a saved meal is reloaded', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    await user.type(screen.getByLabelText(/^meal name$/i), 'Ravioli')
+    await user.type(screen.getByLabelText(/^raw total weight$/i), '560')
+    await user.type(screen.getByLabelText(/^package serving weight$/i), '134')
+    await user.type(
+      screen.getByLabelText(/^package calories per serving$/i),
+      '370',
+    )
+    await user.type(screen.getByLabelText(/^cooked weight \(g\)$/i), '744')
+    await user.type(screen.getByLabelText(/^target calories$/i), '400')
+    await user.click(screen.getByRole('button', { name: /^save meal$/i }))
+    await user.click(screen.getByRole('button', { name: /^clear$/i }))
+    await user.click(screen.getByRole('button', { name: /^load$/i }))
+
+    expect(screen.getByLabelText(/^target calories$/i)).toHaveValue(null)
+  })
+
   it('saves and reloads an ounce-based package-label meal with units intact', async () => {
     const user = userEvent.setup()
     render(<App />)

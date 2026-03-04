@@ -67,6 +67,8 @@ function computeHasConflictingCalories(form: MealInputs): boolean {
 
 function App() {
   const [form, setForm] = useState<MealInputs>(createEmptyForm)
+  const [targetCalories, setTargetCalories] = useState<number | null>(null)
+  const [cookedOutputUnit, setCookedOutputUnit] = useState<WeightUnit>('g')
   const { deleteMeal, loadMeal, saveMeal, savedMeals } = useSavedMeals()
   const hasConflictingCalories = computeHasConflictingCalories(form)
 
@@ -171,6 +173,8 @@ function App() {
 
   function handleClear() {
     setForm(createEmptyForm())
+    setTargetCalories(null)
+    setCookedOutputUnit('g')
   }
 
   function handleLoadMeal(id: string) {
@@ -178,6 +182,8 @@ function App() {
 
     if (loadedMeal) {
       setForm(loadedMeal.inputs)
+      setTargetCalories(null)
+      setCookedOutputUnit('g')
     }
   }
 
@@ -211,6 +217,10 @@ function App() {
           result={result}
           hasConflictingCalories={hasConflictingCalories}
           form={form}
+          targetCalories={targetCalories}
+          onTargetCaloriesChange={setTargetCalories}
+          cookedOutputUnit={cookedOutputUnit}
+          onCookedOutputUnitChange={setCookedOutputUnit}
         />
       </div>
 
