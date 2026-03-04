@@ -4,9 +4,13 @@ import {
   formatCaloriesPerGram,
   formatCaloriesPerOunce,
   formatCaloriesPerServing,
+  formatCookedWeightValue,
+  formatEquivalentPackageServings,
+  getWeightChangeCopy,
   formatPortionCalories,
   formatRawPackageServings,
   formatTotalCalories,
+  formatWeightChange,
 } from './format'
 
 describe('formatters', () => {
@@ -66,5 +70,20 @@ describe('formatters', () => {
 
   it('shows a neutral unavailable marker when portion calories are unavailable', () => {
     expect(formatPortionCalories(null)).toBe('—')
+  })
+
+  it('formats cooked weight values in grams or ounces', () => {
+    expect(formatCookedWeightValue(178.041, 'g')).toBe('178 g')
+    expect(formatCookedWeightValue(178.041, 'oz')).toBe('6.3 oz')
+  })
+
+  it('formats equivalent package servings with up to two decimals', () => {
+    expect(formatEquivalentPackageServings(1.0812)).toBe('1.08')
+    expect(formatEquivalentPackageServings(null)).toBe('—')
+  })
+
+  it('formats weight change with combined mass and percent plus direction copy', () => {
+    expect(formatWeightChange(184, 32.857, 'g')).toBe('+184 g (+32.9%)')
+    expect(getWeightChangeCopy('gain')).toBe('Gained during cooking')
   })
 })
