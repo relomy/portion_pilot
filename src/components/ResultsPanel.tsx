@@ -130,17 +130,23 @@ function TotalModeResults({
             <dt>{densityPrimaryLabel}</dt>
             <dd>{densityPrimaryValue}</dd>
           </div>
-          <div className="density-reference">
-            <dt>{activeOutputUnit === 'oz' ? 'Calories per gram' : 'Calories per ounce'}</dt>
-            <dd>
-              {activeOutputUnit === 'oz'
-                ? formatCaloriesPerGram(result.caloriesPerGram)
-                : formatCaloriesPerOunce(result.caloriesPerOunce)}
-            </dd>
-          </div>
-          <div className="density-reference">
-            <dt>Calories per 100g</dt>
-            <dd>{formatCaloriesPer100Grams(result.caloriesPer100Grams)}</dd>
+          <div className="density-secondary" data-testid="density-secondary">
+            <div className="density-secondary__item">
+              <dt>
+                {activeOutputUnit === 'oz'
+                  ? 'Calories per gram'
+                  : 'Calories per ounce'}
+              </dt>
+              <dd>
+                {activeOutputUnit === 'oz'
+                  ? formatCaloriesPerGram(result.caloriesPerGram)
+                  : formatCaloriesPerOunce(result.caloriesPerOunce)}
+              </dd>
+            </div>
+            <div className="density-secondary__item">
+              <dt>Calories per 100g</dt>
+              <dd>{formatCaloriesPer100Grams(result.caloriesPer100Grams)}</dd>
+            </div>
           </div>
           {form.totalCaloriesSource === 'packageLabel' ? (
             <>
