@@ -456,8 +456,8 @@ input:disabled {
 
 .portion-guide-header__row {
   display: flex;
-  align-items: flex-start;
   justify-content: space-between;
+  align-items: center;
   gap: 0.85rem;
   flex-wrap: wrap;
 }
