@@ -64,6 +64,8 @@ describe('index.css', () => {
     expect(css).toContain('.portion-guide-controls')
     expect(css).toContain('.density-reference')
     expect(css).toContain('.weight-change-callout')
+    expect(css).toContain('.weight-change-callout__value')
+    expect(css).toContain('.weight-change-callout__copy')
     expect(css).toContain('.results-unavailable')
   })
 

@@ -455,10 +455,33 @@ input:disabled {
 }
 
 .weight-change-callout {
-  margin: 0.35rem 0 0;
+  margin-top: 0.85rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid var(--rule);
+}
+
+.weight-change-callout__label,
+.weight-change-callout__value,
+.weight-change-callout__copy {
+  margin: 0;
+}
+
+.weight-change-callout__label {
   color: var(--steel);
-  font-size: 0.84rem;
-  text-align: right;
+  font-size: 0.92rem;
+}
+
+.weight-change-callout__value {
+  margin-top: 0.2rem;
+  color: var(--ink);
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.weight-change-callout__copy {
+  margin-top: 0.2rem;
+  color: var(--steel);
+  font-size: 0.88rem;
 }
 
 .dev-panel {

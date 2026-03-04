@@ -153,22 +153,28 @@ function TotalModeResults({
                   )}
                 </dd>
               </div>
-              <div>
-                <dt>Weight change</dt>
-                <dd>
-                  {formatWeightChange(
-                    result.weightChangeGrams,
-                    result.weightChangePercent,
-                    activeOutputUnit,
-                  )}
-                </dd>
-                <p className="weight-change-callout">
-                  {getWeightChangeCopy(result.weightChangeDirection)}
-                </p>
-              </div>
             </>
           ) : null}
         </dl>
+
+        {form.totalCaloriesSource === 'packageLabel' ? (
+          <div
+            className="weight-change-callout"
+            data-testid="weight-change-callout"
+          >
+            <p className="weight-change-callout__label">Weight change</p>
+            <p className="weight-change-callout__value">
+              {formatWeightChange(
+                result.weightChangeGrams,
+                result.weightChangePercent,
+                activeOutputUnit,
+              )}
+            </p>
+            <p className="weight-change-callout__copy">
+              {getWeightChangeCopy(result.weightChangeDirection)}
+            </p>
+          </div>
+        ) : null}
       </section>
 
       {form.mode === 'total' ? (

@@ -427,6 +427,66 @@ describe('ResultsPanel', () => {
     expect(screen.getByText(/gained during cooking/i)).toBeInTheDocument()
   })
 
+  it('renders weight change as a stacked callout instead of a normal metric row', () => {
+    render(
+      <ResultsPanel
+        result={{
+          totalCalories: 1546.3,
+          caloriesPerServing: null,
+          caloriesPerGram: 2.008,
+          caloriesPerOunce: 56.93,
+          caloriesPer100Grams: 200.8,
+          rawPackageServings: 4.179,
+          portionCalories: 300,
+          cookedWeightPerPackageServingGrams: 184.3,
+          equivalentPackageServingsEaten: 1.08,
+          weightChangeGrams: 210,
+          weightChangePercent: 37.5,
+          weightChangeDirection: 'gain',
+          totalCaloriesDisplaySource: 'packageLabel',
+          calorie_source_used: 'total',
+          assumptions: { servings_assumed: false },
+        }}
+        hasConflictingCalories={false}
+        form={{
+          mealName: 'Ravioli',
+          mode: 'total',
+          totalCaloriesSource: 'packageLabel',
+          manualTotalCalories: null,
+          totalCalories: 1546.3,
+          caloriesPerServing: null,
+          yourServings: null,
+          servings: null,
+          cookedWeightGrams: 770,
+          portionEaten: 192.5,
+          portionEatenUnit: 'g',
+          rawTotalWeight: 560,
+          rawTotalWeightUnit: 'g',
+          packageServingWeight: 134,
+          packageServingWeightUnit: 'g',
+          packageCaloriesPerServing: 370,
+        }}
+        portionEaten={192.5}
+        portionEatenUnit="g"
+        onPortionEatenChange={() => {}}
+        onPortionEatenUnitChange={() => {}}
+        targetCalories={400}
+        onTargetCaloriesChange={() => {}}
+        cookedOutputUnit="g"
+        onCookedOutputUnitChange={() => {}}
+      />,
+    )
+
+    const cookedSection = screen.getByTestId('results-section-cooked')
+    const callout = screen.getByTestId('weight-change-callout')
+
+    expect(within(callout).getByText(/\+210 g \(\+37.5%\)/i)).toBeInTheDocument()
+    expect(within(callout).getByText(/gained during cooking/i)).toBeInTheDocument()
+    expect(
+      within(cookedSection).queryByRole('term', { name: /^weight change$/i }),
+    ).not.toBeInTheDocument()
+  })
+
   it('renders portion-guide rows with muted unavailable values when prerequisites are missing', () => {
     render(
       <ResultsPanel
