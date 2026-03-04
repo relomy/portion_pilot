@@ -217,6 +217,12 @@ function App() {
           result={result}
           hasConflictingCalories={hasConflictingCalories}
           form={form}
+          portionEaten={form.portionEaten}
+          portionEatenUnit={form.portionEatenUnit}
+          onPortionEatenChange={(value) => handleNumberChange('portionEaten', value)}
+          onPortionEatenUnitChange={(value) =>
+            handleUnitChange('portionEatenUnit', value)
+          }
           targetCalories={targetCalories}
           onTargetCaloriesChange={setTargetCalories}
           cookedOutputUnit={cookedOutputUnit}

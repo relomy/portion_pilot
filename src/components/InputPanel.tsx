@@ -218,15 +218,6 @@ function TotalModeFields({
               }
             />
           </label>
-
-          <WeightField
-            label="Portion eaten (cooked weight)"
-            name="portion-eaten-unit"
-            value={form.portionEaten}
-            unit={form.portionEatenUnit}
-            onValueChange={(value) => onNumberChange('portionEaten', value)}
-            onUnitChange={(value) => onUnitChange('portionEatenUnit', value)}
-          />
         </div>
       </section>
     </>

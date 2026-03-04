@@ -25,11 +25,16 @@ describe('App mode switching', () => {
   it('defaults total mode to package label inputs', () => {
     render(<App />)
 
+    const worksheet = screen.getByTestId('input-worksheet')
+
     expect(screen.getByLabelText(/^package label$/i)).toBeChecked()
     expect(screen.getByText(/^package label inputs$/i)).toBeInTheDocument()
     expect(screen.getByText(/^cooked batch inputs$/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/^raw total weight$/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/^portion eaten \(cooked weight\)$/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/^target calories$/i)).toBeInTheDocument()
+    expect(
+      within(worksheet).queryByLabelText(/^portion eaten \(cooked weight\)$/i),
+    ).not.toBeInTheDocument()
   })
 
   it('preserves manual total calories when switching to per-serving mode and back', async () => {
@@ -278,6 +283,28 @@ describe('App mode switching', () => {
     ).toBeInTheDocument()
     expect(screen.getByText(/^portion calories$/i)).toBeInTheDocument()
     expect(screen.queryByText(/^calories per serving$/i)).not.toBeInTheDocument()
+  })
+
+  it('keeps total-mode cooked batch inputs batch-only in the worksheet', () => {
+    render(<App />)
+
+    const worksheet = screen.getByTestId('input-worksheet')
+
+    expect(screen.getByText(/^cooked batch inputs$/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/^cooked weight \(g\)$/i)).toBeInTheDocument()
+    expect(
+      within(worksheet).queryByLabelText(/^portion eaten/i),
+    ).not.toBeInTheDocument()
+  })
+
+  it('renders portion guide on the right side with portion eaten and target calories controls', () => {
+    render(<App />)
+
+    expect(screen.getByText(/^portion guide$/i)).toBeInTheDocument()
+    expect(
+      screen.getByLabelText(/^portion eaten \(cooked weight\)$/i),
+    ).toBeInTheDocument()
+    expect(screen.getByLabelText(/^target calories$/i)).toBeInTheDocument()
   })
 
   it('keeps target calories ephemeral and resets it on clear', async () => {

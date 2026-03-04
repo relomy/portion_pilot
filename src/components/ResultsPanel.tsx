@@ -21,20 +21,39 @@ type ResultsPanelProps = {
   result: CalculationResult
   hasConflictingCalories: boolean
   form: MealInputs
+  portionEaten?: number | null
+  portionEatenUnit?: WeightUnit
+  onPortionEatenChange?: (value: number | null) => void
+  onPortionEatenUnitChange?: (value: WeightUnit) => void
   targetCalories?: number | null
   onTargetCaloriesChange?: (value: number | null) => void
   cookedOutputUnit?: WeightUnit
   onCookedOutputUnitChange?: (value: WeightUnit) => void
 }
 
+function toInputValue(value: number | null | undefined) {
+  return value ?? ''
+}
+
 function TotalModeResults({
   form,
   result,
+  portionEaten,
+  portionEatenUnit,
+  onPortionEatenChange,
+  onPortionEatenUnitChange,
   targetCalories,
   onTargetCaloriesChange,
 }: Pick<
   ResultsPanelProps,
-  'form' | 'result' | 'targetCalories' | 'onTargetCaloriesChange'
+  | 'form'
+  | 'result'
+  | 'portionEaten'
+  | 'portionEatenUnit'
+  | 'onPortionEatenChange'
+  | 'onPortionEatenUnitChange'
+  | 'targetCalories'
+  | 'onTargetCaloriesChange'
 >) {
   const batchHelper =
     form.totalCaloriesSource === 'packageLabel'
@@ -44,7 +63,7 @@ function TotalModeResults({
   return (
     <>
       <section className="results-section results-section--batch">
-        <header>
+        <header data-testid="results-section-batch">
           <h3>Batch calorie stats</h3>
           <p>{batchHelper}</p>
         </header>
@@ -75,7 +94,7 @@ function TotalModeResults({
       </section>
 
       <section className="results-section results-section--cooked">
-        <header>
+        <header data-testid="results-section-cooked">
           <h3>Cooked batch stats</h3>
           <p>Based on cooked batch weight and portion eaten</p>
         </header>
@@ -104,21 +123,71 @@ function TotalModeResults({
         </dl>
       </section>
 
-      {form.totalCaloriesSource === 'packageLabel' ? (
-        <section className="results-section">
-          <label className="field">
-            <span>Target calories</span>
-            <input
-              aria-label="Target calories"
-              type="number"
-              value={targetCalories ?? ''}
-              onChange={(event) =>
-                onTargetCaloriesChange?.(
-                  event.target.value === '' ? null : Number(event.target.value),
-                )
-              }
-            />
-          </label>
+      {form.mode === 'total' ? (
+        <section
+          className="results-section results-section--portion-guide"
+          data-testid="results-section-portion-guide"
+        >
+          <header>
+            <h3>Portion guide</h3>
+          </header>
+
+          <div className="field-grid">
+            <label className="field">
+              <span>Portion eaten (cooked weight)</span>
+              <div className="input-with-unit">
+                <input
+                  aria-label="Portion eaten (cooked weight)"
+                  type="number"
+                  value={toInputValue(portionEaten)}
+                  onChange={(event) =>
+                    onPortionEatenChange?.(
+                      event.target.value === '' ? null : Number(event.target.value),
+                    )
+                  }
+                />
+                <fieldset
+                  className="unit-segmented"
+                  aria-label="Portion eaten (cooked weight) unit"
+                >
+                  <label>
+                    <input
+                      checked={portionEatenUnit !== 'oz'}
+                      name="portion-eaten-unit"
+                      type="radio"
+                      value="g"
+                      onChange={() => onPortionEatenUnitChange?.('g')}
+                    />
+                    <span>g</span>
+                  </label>
+                  <label>
+                    <input
+                      checked={portionEatenUnit === 'oz'}
+                      name="portion-eaten-unit"
+                      type="radio"
+                      value="oz"
+                      onChange={() => onPortionEatenUnitChange?.('oz')}
+                    />
+                    <span>oz</span>
+                  </label>
+                </fieldset>
+              </div>
+            </label>
+
+            <label className="field">
+              <span>Target calories</span>
+              <input
+                aria-label="Target calories"
+                type="number"
+                value={targetCalories ?? ''}
+                onChange={(event) =>
+                  onTargetCaloriesChange?.(
+                    event.target.value === '' ? null : Number(event.target.value),
+                  )
+                }
+              />
+            </label>
+          </div>
         </section>
       ) : null}
     </>
@@ -164,6 +233,10 @@ export function ResultsPanel({
   result,
   hasConflictingCalories,
   form,
+  portionEaten,
+  portionEatenUnit,
+  onPortionEatenChange,
+  onPortionEatenUnitChange,
   targetCalories,
   onTargetCaloriesChange,
   cookedOutputUnit: _cookedOutputUnit,
@@ -193,6 +266,10 @@ export function ResultsPanel({
         <TotalModeResults
           form={form}
           result={result}
+          portionEaten={portionEaten}
+          portionEatenUnit={portionEatenUnit}
+          onPortionEatenChange={onPortionEatenChange}
+          onPortionEatenUnitChange={onPortionEatenUnitChange}
           targetCalories={targetCalories}
           onTargetCaloriesChange={onTargetCaloriesChange}
         />

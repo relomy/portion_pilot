@@ -1,4 +1,6 @@
-import { render, screen } from '@testing-library/react'
+import { useState } from 'react'
+import { render, screen, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import { ResultsPanel } from './ResultsPanel'
 
@@ -42,15 +44,33 @@ describe('ResultsPanel', () => {
           packageServingWeightUnit: 'g',
           packageCaloriesPerServing: 370,
         }}
+        portionEaten={150}
+        portionEatenUnit="g"
+        onPortionEatenChange={() => {}}
+        onPortionEatenUnitChange={() => {}}
+        targetCalories={null}
+        onTargetCaloriesChange={() => {}}
+        cookedOutputUnit="g"
+        onCookedOutputUnitChange={() => {}}
       />,
     )
+
+    const panel = screen.getByTestId('nutrition-label')
 
     expect(screen.getByText(/^batch calorie stats$/i)).toBeInTheDocument()
     expect(
       screen.getByText(/^based on raw package weight and label serving size$/i),
     ).toBeInTheDocument()
     expect(screen.getByText(/^cooked batch stats$/i)).toBeInTheDocument()
-    expect(screen.getByText(/^portion calories$/i)).toBeInTheDocument()
+    expect(
+      within(panel).getByTestId('results-section-batch'),
+    ).toBeInTheDocument()
+    expect(
+      within(panel).getByTestId('results-section-cooked'),
+    ).toBeInTheDocument()
+    expect(
+      within(panel).getByTestId('results-section-portion-guide'),
+    ).toBeInTheDocument()
     expect(screen.getByText(/^3.523$/i)).toBeInTheDocument()
     expect(screen.getByText(/^300$/i)).toBeInTheDocument()
   })
@@ -94,6 +114,14 @@ describe('ResultsPanel', () => {
           packageServingWeightUnit: 'g',
           packageCaloriesPerServing: null,
         }}
+        portionEaten={150}
+        portionEatenUnit="g"
+        onPortionEatenChange={() => {}}
+        onPortionEatenUnitChange={() => {}}
+        targetCalories={null}
+        onTargetCaloriesChange={() => {}}
+        cookedOutputUnit="g"
+        onCookedOutputUnitChange={() => {}}
       />,
     )
 
@@ -143,11 +171,83 @@ describe('ResultsPanel', () => {
           packageServingWeightUnit: 'g',
           packageCaloriesPerServing: null,
         }}
+        portionEaten={null}
+        portionEatenUnit="g"
+        onPortionEatenChange={() => {}}
+        onPortionEatenUnitChange={() => {}}
+        targetCalories={null}
+        onTargetCaloriesChange={() => {}}
+        cookedOutputUnit="g"
+        onCookedOutputUnitChange={() => {}}
       />,
     )
 
     expect(
       screen.getByRole('button', { name: /show debug details/i }),
     ).toBeInTheDocument()
+  })
+
+  it('still updates portion eaten unit from the portion guide', async () => {
+    const user = userEvent.setup()
+
+    function WrappedResultsPanel() {
+      const [portionEatenUnit, setPortionEatenUnit] = useState<'g' | 'oz'>('g')
+
+      return (
+        <ResultsPanel
+          result={{
+            totalCalories: 1303.5384,
+            caloriesPerServing: null,
+            caloriesPerGram: 2,
+            caloriesPerOunce: 56.7,
+            caloriesPer100Grams: 200,
+            rawPackageServings: 3.5230769,
+            portionCalories: 300,
+            cookedWeightPerPackageServingGrams: null,
+            equivalentPackageServingsEaten: null,
+            weightChangeGrams: null,
+            weightChangePercent: null,
+            weightChangeDirection: null,
+            totalCaloriesDisplaySource: 'packageLabel',
+            calorie_source_used: 'total',
+            assumptions: { servings_assumed: false },
+          }}
+          hasConflictingCalories={false}
+          form={{
+            mealName: 'Ravioli',
+            mode: 'total',
+            totalCaloriesSource: 'packageLabel',
+            manualTotalCalories: null,
+            totalCalories: 1303.5384,
+            caloriesPerServing: null,
+            yourServings: null,
+            servings: null,
+            cookedWeightGrams: 300,
+            portionEaten: 150,
+            portionEatenUnit,
+            rawTotalWeight: 458,
+            rawTotalWeightUnit: 'g',
+            packageServingWeight: 130,
+            packageServingWeightUnit: 'g',
+            packageCaloriesPerServing: 370,
+          }}
+          portionEaten={150}
+          portionEatenUnit={portionEatenUnit}
+          onPortionEatenChange={() => {}}
+          onPortionEatenUnitChange={setPortionEatenUnit}
+          targetCalories={null}
+          onTargetCaloriesChange={() => {}}
+          cookedOutputUnit="g"
+          onCookedOutputUnitChange={() => {}}
+        />
+      )
+    }
+
+    render(<WrappedResultsPanel />)
+
+    const guide = screen.getByTestId('results-section-portion-guide')
+    await user.click(within(guide).getByRole('radio', { name: /^oz$/i }))
+
+    expect(within(guide).getByRole('radio', { name: /^oz$/i })).toBeChecked()
   })
 })
