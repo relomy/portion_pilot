@@ -6,9 +6,13 @@ import {
   formatCaloriesPerGram,
   formatCaloriesPerOunce,
   formatCaloriesPerServing,
+  formatCookedWeightValue,
+  formatEquivalentPackageServings,
+  getWeightChangeCopy,
   formatPortionCalories,
   formatRawPackageServings,
   formatTotalCalories,
+  formatWeightChange,
 } from '../utils/format'
 
 const sourceLabels = {
@@ -44,6 +48,8 @@ function TotalModeResults({
   onPortionEatenUnitChange,
   targetCalories,
   onTargetCaloriesChange,
+  cookedOutputUnit,
+  onCookedOutputUnitChange,
 }: Pick<
   ResultsPanelProps,
   | 'form'
@@ -54,11 +60,25 @@ function TotalModeResults({
   | 'onPortionEatenUnitChange'
   | 'targetCalories'
   | 'onTargetCaloriesChange'
+  | 'cookedOutputUnit'
+  | 'onCookedOutputUnitChange'
 >) {
   const batchHelper =
     form.totalCaloriesSource === 'packageLabel'
       ? 'Based on raw package weight and label serving size'
       : 'Based on entered batch calories'
+  const activeOutputUnit = cookedOutputUnit ?? 'g'
+  const densityPrimaryLabel =
+    activeOutputUnit === 'oz' ? 'Calories per ounce' : 'Calories per gram'
+  const densityPrimaryValue =
+    activeOutputUnit === 'oz'
+      ? formatCaloriesPerOunce(result.caloriesPerOunce)
+      : formatCaloriesPerGram(result.caloriesPerGram)
+  const normalizedTargetCalories = targetCalories ?? null
+  const targetPortionGrams =
+    normalizedTargetCalories !== null && result.caloriesPerGram !== null
+      ? normalizedTargetCalories / result.caloriesPerGram
+      : null
 
   return (
     <>
@@ -104,22 +124,48 @@ function TotalModeResults({
         ) : null}
 
         <dl className="results-metrics">
-          <div>
-            <dt>Calories per gram</dt>
-            <dd>{formatCaloriesPerGram(result.caloriesPerGram)}</dd>
+          <div data-testid="density-primary">
+            <dt>{densityPrimaryLabel}</dt>
+            <dd>{densityPrimaryValue}</dd>
           </div>
-          <div>
-            <dt>Calories per ounce</dt>
-            <dd>{formatCaloriesPerOunce(result.caloriesPerOunce)}</dd>
+          <div className="density-reference">
+            <dt>{activeOutputUnit === 'oz' ? 'Calories per gram' : 'Calories per ounce'}</dt>
+            <dd>
+              {activeOutputUnit === 'oz'
+                ? formatCaloriesPerGram(result.caloriesPerGram)
+                : formatCaloriesPerOunce(result.caloriesPerOunce)}
+            </dd>
           </div>
-          <div>
+          <div className="density-reference">
             <dt>Calories per 100g</dt>
             <dd>{formatCaloriesPer100Grams(result.caloriesPer100Grams)}</dd>
           </div>
-          <div>
-            <dt>Portion calories</dt>
-            <dd>{formatPortionCalories(result.portionCalories)}</dd>
-          </div>
+          {form.totalCaloriesSource === 'packageLabel' ? (
+            <>
+              <div>
+                <dt>Cooked weight per package serving</dt>
+                <dd>
+                  {formatCookedWeightValue(
+                    result.cookedWeightPerPackageServingGrams,
+                    activeOutputUnit,
+                  )}
+                </dd>
+              </div>
+              <div>
+                <dt>Weight change</dt>
+                <dd>
+                  {formatWeightChange(
+                    result.weightChangeGrams,
+                    result.weightChangePercent,
+                    activeOutputUnit,
+                  )}
+                </dd>
+                <p className="weight-change-callout">
+                  {getWeightChangeCopy(result.weightChangeDirection)}
+                </p>
+              </div>
+            </>
+          ) : null}
         </dl>
       </section>
 
@@ -128,66 +174,113 @@ function TotalModeResults({
           className="results-section results-section--portion-guide"
           data-testid="results-section-portion-guide"
         >
-          <header>
-            <h3>Portion guide</h3>
-          </header>
+          <header className="portion-guide-header">
+            <div>
+              <h3>Portion guide</h3>
+            </div>
+            <div className="portion-guide-controls">
+              <fieldset
+                className="unit-segmented"
+                aria-label="Display unit"
+                role="radiogroup"
+              >
+                <label>
+                  <input
+                    checked={activeOutputUnit === 'g'}
+                    name="display-unit"
+                    type="radio"
+                    value="g"
+                    onChange={() => onCookedOutputUnitChange?.('g')}
+                  />
+                  <span>g</span>
+                </label>
+                <label>
+                  <input
+                    checked={activeOutputUnit === 'oz'}
+                    name="display-unit"
+                    type="radio"
+                    value="oz"
+                    onChange={() => onCookedOutputUnitChange?.('oz')}
+                  />
+                  <span>oz</span>
+                </label>
+              </fieldset>
 
-          <div className="field-grid">
-            <label className="field">
-              <span>Portion eaten (cooked weight)</span>
-              <div className="input-with-unit">
+              <label className="field portion-guide-target">
+                <span>Target calories</span>
                 <input
-                  aria-label="Portion eaten (cooked weight)"
+                  aria-label="Target calories"
                   type="number"
-                  value={toInputValue(portionEaten)}
+                  value={normalizedTargetCalories ?? ''}
                   onChange={(event) =>
-                    onPortionEatenChange?.(
+                    onTargetCaloriesChange?.(
                       event.target.value === '' ? null : Number(event.target.value),
                     )
                   }
                 />
-                <fieldset
-                  className="unit-segmented"
-                  aria-label="Portion eaten (cooked weight) unit"
-                >
-                  <label>
-                    <input
-                      checked={portionEatenUnit !== 'oz'}
-                      name="portion-eaten-unit"
-                      type="radio"
-                      value="g"
-                      onChange={() => onPortionEatenUnitChange?.('g')}
-                    />
-                    <span>g</span>
-                  </label>
-                  <label>
-                    <input
-                      checked={portionEatenUnit === 'oz'}
-                      name="portion-eaten-unit"
-                      type="radio"
-                      value="oz"
-                      onChange={() => onPortionEatenUnitChange?.('oz')}
-                    />
-                    <span>oz</span>
-                  </label>
-                </fieldset>
-              </div>
-            </label>
+              </label>
+            </div>
+          </header>
 
-            <label className="field">
-              <span>Target calories</span>
+          <label className="field">
+            <span>Portion eaten (cooked weight)</span>
+            <div className="input-with-unit">
               <input
-                aria-label="Target calories"
+                aria-label="Portion eaten (cooked weight)"
                 type="number"
-                value={targetCalories ?? ''}
+                value={toInputValue(portionEaten)}
                 onChange={(event) =>
-                  onTargetCaloriesChange?.(
+                  onPortionEatenChange?.(
                     event.target.value === '' ? null : Number(event.target.value),
                   )
                 }
               />
-            </label>
-          </div>
+              <fieldset
+                className="unit-segmented"
+                aria-label="Portion eaten (cooked weight) unit"
+              >
+                <label>
+                  <input
+                    checked={portionEatenUnit !== 'oz'}
+                    name="portion-eaten-unit"
+                    type="radio"
+                    value="g"
+                    onChange={() => onPortionEatenUnitChange?.('g')}
+                  />
+                  <span>g</span>
+                </label>
+                <label>
+                  <input
+                    checked={portionEatenUnit === 'oz'}
+                    name="portion-eaten-unit"
+                    type="radio"
+                    value="oz"
+                    onChange={() => onPortionEatenUnitChange?.('oz')}
+                  />
+                  <span>oz</span>
+                </label>
+              </fieldset>
+            </div>
+          </label>
+
+          <dl className="results-metrics">
+            <div>
+              <dt>Target portion</dt>
+              <dd>{formatCookedWeightValue(targetPortionGrams, activeOutputUnit)}</dd>
+            </div>
+            <div>
+              <dt>Package servings eaten</dt>
+              <dd>
+                {formatEquivalentPackageServings(
+                  result.equivalentPackageServingsEaten,
+                )}
+              </dd>
+            </div>
+            <div>
+              <dt>Portion calories</dt>
+              <dd>{formatPortionCalories(result.portionCalories)}</dd>
+            </div>
+          </dl>
         </section>
       ) : null}
     </>
@@ -239,8 +332,8 @@ export function ResultsPanel({
   onPortionEatenUnitChange,
   targetCalories,
   onTargetCaloriesChange,
-  cookedOutputUnit: _cookedOutputUnit,
-  onCookedOutputUnitChange: _onCookedOutputUnitChange,
+  cookedOutputUnit,
+  onCookedOutputUnitChange,
 }: ResultsPanelProps) {
   return (
     <section className="results-panel" data-testid="nutrition-label">
@@ -272,6 +365,8 @@ export function ResultsPanel({
           onPortionEatenUnitChange={onPortionEatenUnitChange}
           targetCalories={targetCalories}
           onTargetCaloriesChange={onTargetCaloriesChange}
+          cookedOutputUnit={cookedOutputUnit}
+          onCookedOutputUnitChange={onCookedOutputUnitChange}
         />
       ) : (
         <PerServingResults result={result} />

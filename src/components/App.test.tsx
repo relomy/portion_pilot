@@ -307,6 +307,16 @@ describe('App mode switching', () => {
     expect(screen.getByLabelText(/^target calories$/i)).toBeInTheDocument()
   })
 
+  it('keeps the cooked-output toggle and target calories paired in portion guide', () => {
+    render(<App />)
+
+    const guide = screen.getByTestId('results-section-portion-guide')
+    expect(
+      within(guide).getByRole('radiogroup', { name: /display unit/i }),
+    ).toBeInTheDocument()
+    expect(within(guide).getByLabelText(/^target calories$/i)).toBeInTheDocument()
+  })
+
   it('keeps target calories ephemeral and resets it on clear', async () => {
     const user = userEvent.setup()
     render(<App />)

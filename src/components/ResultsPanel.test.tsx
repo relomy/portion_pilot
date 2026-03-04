@@ -246,8 +246,235 @@ describe('ResultsPanel', () => {
     render(<WrappedResultsPanel />)
 
     const guide = screen.getByTestId('results-section-portion-guide')
-    await user.click(within(guide).getByRole('radio', { name: /^oz$/i }))
+    const portionUnitGroup = within(guide).getByRole('group', {
+      name: /^portion eaten \(cooked weight\) unit$/i,
+    })
+    await user.click(within(portionUnitGroup).getByRole('radio', { name: /^oz$/i }))
 
-    expect(within(guide).getByRole('radio', { name: /^oz$/i })).toBeChecked()
+    expect(
+      within(portionUnitGroup).getByRole('radio', { name: /^oz$/i }),
+    ).toBeChecked()
+  })
+
+  it('keeps all cooked density metrics visible while emphasizing only the active unit row', () => {
+    render(
+      <ResultsPanel
+        result={{
+          totalCalories: 1303.5384,
+          caloriesPerServing: null,
+          caloriesPerGram: 2,
+          caloriesPerOunce: 56.7,
+          caloriesPer100Grams: 200,
+          rawPackageServings: 3.5230769,
+          portionCalories: 300,
+          cookedWeightPerPackageServingGrams: 178.0286,
+          equivalentPackageServingsEaten: 1.08,
+          weightChangeGrams: 184,
+          weightChangePercent: 32.857,
+          weightChangeDirection: 'gain',
+          totalCaloriesDisplaySource: 'packageLabel',
+          calorie_source_used: 'total',
+          assumptions: { servings_assumed: false },
+        }}
+        hasConflictingCalories={false}
+        form={{
+          mealName: 'Ravioli',
+          mode: 'total',
+          totalCaloriesSource: 'packageLabel',
+          manualTotalCalories: null,
+          totalCalories: 1303.5384,
+          caloriesPerServing: null,
+          yourServings: null,
+          servings: null,
+          cookedWeightGrams: 744,
+          portionEaten: 192.5,
+          portionEatenUnit: 'g',
+          rawTotalWeight: 560,
+          rawTotalWeightUnit: 'g',
+          packageServingWeight: 134,
+          packageServingWeightUnit: 'g',
+          packageCaloriesPerServing: 370,
+        }}
+        portionEaten={192.5}
+        portionEatenUnit="g"
+        onPortionEatenChange={() => {}}
+        onPortionEatenUnitChange={() => {}}
+        targetCalories={400}
+        onTargetCaloriesChange={() => {}}
+        cookedOutputUnit="g"
+        onCookedOutputUnitChange={() => {}}
+      />,
+    )
+
+    expect(screen.getByText(/^calories per gram$/i)).toBeInTheDocument()
+    expect(screen.getByText(/^calories per ounce$/i)).toBeInTheDocument()
+    expect(screen.getByText(/^calories per 100g$/i)).toBeInTheDocument()
+    expect(screen.getByTestId('density-primary')).toHaveTextContent(
+      /calories per gram/i,
+    )
+  })
+
+  it('switches the primary density emphasis when cookedOutputUnit is oz', () => {
+    render(
+      <ResultsPanel
+        result={{
+          totalCalories: 1303.5384,
+          caloriesPerServing: null,
+          caloriesPerGram: 2,
+          caloriesPerOunce: 56.7,
+          caloriesPer100Grams: 200,
+          rawPackageServings: 3.5230769,
+          portionCalories: 300,
+          cookedWeightPerPackageServingGrams: 178.0286,
+          equivalentPackageServingsEaten: 1.08,
+          weightChangeGrams: 184,
+          weightChangePercent: 32.857,
+          weightChangeDirection: 'gain',
+          totalCaloriesDisplaySource: 'packageLabel',
+          calorie_source_used: 'total',
+          assumptions: { servings_assumed: false },
+        }}
+        hasConflictingCalories={false}
+        form={{
+          mealName: 'Ravioli',
+          mode: 'total',
+          totalCaloriesSource: 'packageLabel',
+          manualTotalCalories: null,
+          totalCalories: 1303.5384,
+          caloriesPerServing: null,
+          yourServings: null,
+          servings: null,
+          cookedWeightGrams: 744,
+          portionEaten: 192.5,
+          portionEatenUnit: 'oz',
+          rawTotalWeight: 560,
+          rawTotalWeightUnit: 'g',
+          packageServingWeight: 134,
+          packageServingWeightUnit: 'g',
+          packageCaloriesPerServing: 370,
+        }}
+        portionEaten={192.5}
+        portionEatenUnit="oz"
+        onPortionEatenChange={() => {}}
+        onPortionEatenUnitChange={() => {}}
+        targetCalories={400}
+        onTargetCaloriesChange={() => {}}
+        cookedOutputUnit="oz"
+        onCookedOutputUnitChange={() => {}}
+      />,
+    )
+
+    expect(screen.getByTestId('density-primary')).toHaveTextContent(
+      /calories per ounce/i,
+    )
+  })
+
+  it('places cooked weight per package serving and weight change in cooked batch stats', () => {
+    render(
+      <ResultsPanel
+        result={{
+          totalCalories: 1303.5384,
+          caloriesPerServing: null,
+          caloriesPerGram: 2,
+          caloriesPerOunce: 56.7,
+          caloriesPer100Grams: 200,
+          rawPackageServings: 3.5230769,
+          portionCalories: 300,
+          cookedWeightPerPackageServingGrams: 178.0286,
+          equivalentPackageServingsEaten: 1.08,
+          weightChangeGrams: 184,
+          weightChangePercent: 32.857,
+          weightChangeDirection: 'gain',
+          totalCaloriesDisplaySource: 'packageLabel',
+          calorie_source_used: 'total',
+          assumptions: { servings_assumed: false },
+        }}
+        hasConflictingCalories={false}
+        form={{
+          mealName: 'Ravioli',
+          mode: 'total',
+          totalCaloriesSource: 'packageLabel',
+          manualTotalCalories: null,
+          totalCalories: 1303.5384,
+          caloriesPerServing: null,
+          yourServings: null,
+          servings: null,
+          cookedWeightGrams: 744,
+          portionEaten: 192.5,
+          portionEatenUnit: 'g',
+          rawTotalWeight: 560,
+          rawTotalWeightUnit: 'g',
+          packageServingWeight: 134,
+          packageServingWeightUnit: 'g',
+          packageCaloriesPerServing: 370,
+        }}
+        portionEaten={192.5}
+        portionEatenUnit="g"
+        onPortionEatenChange={() => {}}
+        onPortionEatenUnitChange={() => {}}
+        targetCalories={400}
+        onTargetCaloriesChange={() => {}}
+        cookedOutputUnit="g"
+        onCookedOutputUnitChange={() => {}}
+      />,
+    )
+
+    expect(screen.getByText(/^cooked weight per package serving$/i)).toBeInTheDocument()
+    expect(screen.getByText(/^weight change$/i)).toBeInTheDocument()
+    expect(screen.getByText(/gained during cooking/i)).toBeInTheDocument()
+  })
+
+  it('renders portion-guide rows with muted unavailable values when prerequisites are missing', () => {
+    render(
+      <ResultsPanel
+        result={{
+          totalCalories: 1303.5384,
+          caloriesPerServing: null,
+          caloriesPerGram: 2,
+          caloriesPerOunce: 56.7,
+          caloriesPer100Grams: 200,
+          rawPackageServings: 3.5230769,
+          portionCalories: null,
+          cookedWeightPerPackageServingGrams: 178.0286,
+          equivalentPackageServingsEaten: null,
+          weightChangeGrams: 184,
+          weightChangePercent: 32.857,
+          weightChangeDirection: 'gain',
+          totalCaloriesDisplaySource: 'packageLabel',
+          calorie_source_used: 'total',
+          assumptions: { servings_assumed: false },
+        }}
+        hasConflictingCalories={false}
+        form={{
+          mealName: 'Ravioli',
+          mode: 'total',
+          totalCaloriesSource: 'packageLabel',
+          manualTotalCalories: null,
+          totalCalories: 1303.5384,
+          caloriesPerServing: null,
+          yourServings: null,
+          servings: null,
+          cookedWeightGrams: 744,
+          portionEaten: null,
+          portionEatenUnit: 'g',
+          rawTotalWeight: 560,
+          rawTotalWeightUnit: 'g',
+          packageServingWeight: 134,
+          packageServingWeightUnit: 'g',
+          packageCaloriesPerServing: 370,
+        }}
+        portionEaten={null}
+        portionEatenUnit="g"
+        onPortionEatenChange={() => {}}
+        onPortionEatenUnitChange={() => {}}
+        targetCalories={null}
+        onTargetCaloriesChange={() => {}}
+        cookedOutputUnit="g"
+        onCookedOutputUnitChange={() => {}}
+      />,
+    )
+
+    const guide = screen.getByTestId('results-section-portion-guide')
+    expect(within(guide).getAllByText('—').length).toBeGreaterThan(0)
   })
 })
