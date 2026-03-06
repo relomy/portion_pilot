@@ -85,6 +85,29 @@ function buildProps(overrides: Partial<MealInputs> = {}): ZoneLayoutProps {
 }
 
 describe('ZoneLayout', () => {
+  it('renders the masthead kicker, title, and subtitle', () => {
+    render(<ZoneLayout {...buildProps()} />)
+
+    expect(screen.getByText(/meal calorie calculator/i)).toBeInTheDocument()
+    expect(screen.getByText(/cook once/i)).toBeInTheDocument()
+  })
+
+  it('renders total calories mode and per serving mode toggles', () => {
+    render(<ZoneLayout {...buildProps()} />)
+
+    expect(
+      screen.getByRole('radio', { name: /total calories/i }),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('radio', { name: /per serving/i })).toBeInTheDocument()
+  })
+
+  it('renders save meal and clear buttons', () => {
+    render(<ZoneLayout {...buildProps()} />)
+
+    expect(screen.getByRole('button', { name: /save meal/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /^clear$/i })).toBeInTheDocument()
+  })
+
   it('renders three zones in order', () => {
     render(<ZoneLayout {...buildProps()} />)
 
@@ -98,7 +121,9 @@ describe('ZoneLayout', () => {
     render(<ZoneLayout {...buildProps()} />)
 
     expect(screen.getByText(/before cooking/i)).toBeInTheDocument()
-    expect(screen.getByText(/package/i)).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { level: 2, name: /^package$/i }),
+    ).toBeInTheDocument()
     expect(screen.getByText(/after cooking/i)).toBeInTheDocument()
     expect(screen.getByText(/cooked batch/i)).toBeInTheDocument()
     expect(screen.getByText(/at the plate/i)).toBeInTheDocument()
@@ -136,5 +161,96 @@ describe('ZoneLayout', () => {
 
     const zone = screen.getByTestId('zone-package')
     expect(within(zone).getByTestId('derived-total-cal')).not.toHaveTextContent('—')
+  })
+
+  it('renders Zone 2 cooked weight input', () => {
+    render(<ZoneLayout {...buildProps()} />)
+
+    const zone = screen.getByTestId('zone-cooked')
+    expect(within(zone).getByLabelText(/cooked.*weight/i)).toBeInTheDocument()
+  })
+
+  it('renders Zone 2 density block with formatter copy when cooked weight is absent', () => {
+    render(
+      <ZoneLayout
+        {...buildProps({
+          rawTotalWeight: 458,
+          packageServingWeight: 130,
+          packageCaloriesPerServing: 370,
+        })}
+      />,
+    )
+
+    const zone = screen.getByTestId('zone-cooked')
+    expect(within(zone).getByTestId('density-primary')).toHaveTextContent(
+      /need cooked weight/i,
+    )
+    expect(within(zone).getByTestId('density-secondary')).toBeInTheDocument()
+  })
+
+  it('renders Zone 2 weight change callout with dash when weights are absent', () => {
+    render(<ZoneLayout {...buildProps()} />)
+
+    expect(screen.getByTestId('weight-change-callout')).toHaveTextContent('—')
+  })
+
+  it('renders Zone 2 weight change callout with value and direction copy when weights are present', () => {
+    render(
+      <ZoneLayout
+        {...buildProps({
+          rawTotalWeight: 560,
+          packageServingWeight: 134,
+          packageCaloriesPerServing: 370,
+          cookedWeightGrams: 744,
+        })}
+      />,
+    )
+
+    expect(screen.getByTestId('weight-change-callout')).toHaveTextContent(
+      /gained|lost/i,
+    )
+  })
+
+  it('renders Zone 3 portion eaten and target calories inputs', () => {
+    render(<ZoneLayout {...buildProps()} />)
+
+    const zone = screen.getByTestId('zone-portion')
+    expect(within(zone).getByLabelText(/portion eaten/i)).toBeInTheDocument()
+    expect(within(zone).getByLabelText(/target cal/i)).toBeInTheDocument()
+  })
+
+  it('renders the pkg serving reference row as muted and always visible', () => {
+    render(<ZoneLayout {...buildProps()} />)
+
+    const zone = screen.getByTestId('zone-portion')
+    expect(within(zone).getByTestId('ref-pkg-serving')).toBeInTheDocument()
+    expect(within(zone).getByTestId('ref-pkg-serving')).toHaveTextContent('—')
+  })
+
+  it('renders answer rows with dashes when prerequisites are missing', () => {
+    render(<ZoneLayout {...buildProps()} />)
+
+    const zone = screen.getByTestId('zone-portion')
+    expect(within(zone).getByTestId('answer-target-portion')).toHaveTextContent('—')
+    expect(within(zone).getByTestId('answer-pkg-servings-eaten')).toHaveTextContent(
+      '—',
+    )
+    expect(within(zone).getByTestId('hero-portion-cal')).toHaveTextContent('—')
+  })
+
+  it('renders hero portion calories when all inputs are present', () => {
+    render(
+      <ZoneLayout
+        {...buildProps({
+          rawTotalWeight: 560,
+          packageServingWeight: 134,
+          packageCaloriesPerServing: 370,
+          cookedWeightGrams: 744,
+          portionEaten: 192.5,
+        })}
+      />,
+    )
+
+    expect(screen.getByTestId('hero-portion-cal')).not.toHaveTextContent('—')
   })
 })

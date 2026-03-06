@@ -6,7 +6,15 @@ import type {
 } from '../hooks/useSavedMeals'
 import type { CalculationResult } from '../utils/calculator'
 import {
+  formatCaloriesPer100Grams,
+  formatCaloriesPerGram,
+  formatCaloriesPerOunce,
   formatCaloriesPerServing,
+  formatCookedWeightValue,
+  formatEquivalentPackageServings,
+  formatPortionCalories,
+  formatWeightChange,
+  getWeightChangeCopy,
   formatRawPackageServings,
   formatTotalCalories,
 } from '../utils/format'
@@ -71,8 +79,18 @@ function DerivedValue({
 export function ZoneLayout({
   form,
   result,
+  hasConflictingCalories,
+  targetCalories,
+  cookedOutputUnit,
+  onTextChange,
   onNumberChange,
+  onModeChange,
+  onTotalSourceChange,
+  onTargetCaloriesChange,
+  onCookedOutputUnitChange,
   onUnitChange,
+  onSave,
+  onClear,
 }: ZoneLayoutProps) {
   const totalCaloriesText = formatTotalCalories(
     result.totalCalories,
@@ -82,12 +100,137 @@ export function ZoneLayout({
   const caloriesPerServingText = formatCaloriesPerServing(
     form.packageCaloriesPerServing,
   )
+  const activeOutputUnit = cookedOutputUnit
+  const primaryDensityLabel =
+    activeOutputUnit === 'oz' ? 'Calories per ounce' : 'Calories per gram'
+  const primaryDensityValue =
+    activeOutputUnit === 'oz'
+      ? formatCaloriesPerOunce(result.caloriesPerOunce)
+      : formatCaloriesPerGram(result.caloriesPerGram)
+  const secondaryDensityValue =
+    activeOutputUnit === 'oz'
+      ? formatCaloriesPerGram(result.caloriesPerGram)
+      : formatCaloriesPerOunce(result.caloriesPerOunce)
+  const weightChangeText = formatWeightChange(
+    result.weightChangeGrams,
+    result.weightChangePercent,
+    activeOutputUnit,
+  )
+  const weightChangeCopy = getWeightChangeCopy(result.weightChangeDirection)
+  const hasWeightChange = weightChangeText !== '—'
+  const targetPortionGrams =
+    targetCalories !== null && result.caloriesPerGram !== null
+      ? targetCalories / result.caloriesPerGram
+      : null
+  const referenceServingText = formatCookedWeightValue(
+    result.cookedWeightPerPackageServingGrams,
+    activeOutputUnit,
+  )
+  const targetPortionText = formatCookedWeightValue(
+    targetPortionGrams,
+    activeOutputUnit,
+  )
+  const servingsEatenText = formatEquivalentPackageServings(
+    result.equivalentPackageServingsEaten,
+  )
+  const portionCaloriesText = formatPortionCalories(result.portionCalories)
 
   return (
     <div className="zone-layout">
+      <header className="masthead">
+        <p className="masthead__kicker">Meal calorie calculator</p>
+        <h1 className="masthead__title">Cook once, keep the numbers straight.</h1>
+        <p className="masthead__sub">
+          A kitchen worksheet for home cooks who still want disciplined calorie
+          math.
+        </p>
+      </header>
+
+      <div className="zone-layout__diagnostics">
+        <p>
+          Source:{' '}
+          {result.calorie_source_used === 'total'
+            ? 'total calories'
+            : 'calories per serving'}
+        </p>
+        <details>
+          <summary>Show debug details</summary>
+          <pre>
+            {JSON.stringify(
+              {
+                hasConflictingCalories,
+                calorieSourceUsed: result.calorie_source_used,
+              },
+              null,
+              2,
+            )}
+          </pre>
+        </details>
+      </div>
+
       <section className="zone zone--package" data-testid="zone-package">
         <p className="zone__eyebrow">Zone 1 · Before cooking</p>
         <h2 className="zone__title">Package</h2>
+
+        <div className="field">
+          <label className="field__label" htmlFor="meal-name">
+            Meal name
+          </label>
+          <input
+            id="meal-name"
+            aria-label="Meal name"
+            className="field__input"
+            type="text"
+            value={form.mealName}
+            onChange={(event) => onTextChange('mealName', event.target.value)}
+          />
+        </div>
+
+        <fieldset className="mode-group" aria-label="Calorie mode">
+          <legend className="mode-group__label">Calorie mode</legend>
+          <label className="mode-group__option">
+            <input
+              type="radio"
+              name="calorie-mode"
+              checked={form.mode === 'total'}
+              onChange={() => onModeChange('total')}
+            />
+            Total calories
+          </label>
+          <label className="mode-group__option">
+            <input
+              type="radio"
+              name="calorie-mode"
+              checked={form.mode === 'perServing'}
+              onChange={() => onModeChange('perServing')}
+            />
+            Per serving
+          </label>
+        </fieldset>
+
+        {form.mode === 'total' ? (
+          <fieldset className="mode-group" aria-label="Total source">
+            <legend className="mode-group__label">Total source</legend>
+            <label className="mode-group__option">
+              <input
+                type="radio"
+                name="total-source"
+                checked={form.totalCaloriesSource === 'packageLabel'}
+                onChange={() => onTotalSourceChange('packageLabel')}
+              />
+              Package label
+            </label>
+            <label className="mode-group__option">
+              <input
+                type="radio"
+                name="total-source"
+                checked={form.totalCaloriesSource === 'manualTotal'}
+                onChange={() => onTotalSourceChange('manualTotal')}
+              />
+              Manual total
+            </label>
+          </fieldset>
+        ) : null}
 
         <div className="field-pair">
           <div className="field">
@@ -206,12 +349,197 @@ export function ZoneLayout({
       <section className="zone zone--cooked" data-testid="zone-cooked">
         <p className="zone__eyebrow">Zone 2 · After cooking</p>
         <h2 className="zone__title">Cooked batch</h2>
+
+        <div className="field">
+          <label className="field__label" htmlFor="cooked-weight">
+            Cooked weight
+          </label>
+          <input
+            id="cooked-weight"
+            aria-label="Cooked weight"
+            className="field__input"
+            type="number"
+            value={toInputValue(form.cookedWeightGrams)}
+            onChange={(event) =>
+              onNumberChange(
+                'cookedWeightGrams',
+                event.target.value === '' ? null : Number(event.target.value),
+              )
+            }
+          />
+        </div>
+
+        <div className="density-block">
+          <div className="density-primary" data-testid="density-primary">
+            <span className="density-primary__label">{primaryDensityLabel}</span>
+            <span
+              className={`density-primary__value${primaryDensityValue === '—' ? ' density-primary__value--empty' : ''}`}
+            >
+              {primaryDensityValue}
+            </span>
+          </div>
+
+          <div className="density-secondary" data-testid="density-secondary">
+            <div className="density-secondary__item">
+              <span className="density-secondary__label">
+                {activeOutputUnit === 'oz'
+                  ? 'Calories per gram'
+                  : 'Calories per ounce'}
+              </span>
+              <span className="density-secondary__value">{secondaryDensityValue}</span>
+            </div>
+            <div className="density-secondary__item">
+              <span className="density-secondary__label">Calories per 100g</span>
+              <span className="density-secondary__value">
+                {formatCaloriesPer100Grams(result.caloriesPer100Grams)}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="wc-callout" data-testid="weight-change-callout">
+          <p className="wc-callout__label">Weight change</p>
+          <p
+            className={`wc-callout__value${hasWeightChange ? '' : ' wc-callout__value--empty'}`}
+          >
+            {weightChangeText}
+          </p>
+          {hasWeightChange ? <p className="wc-callout__copy">{weightChangeCopy}</p> : null}
+        </div>
       </section>
 
       <section className="zone zone--portion" data-testid="zone-portion">
         <p className="zone__eyebrow">Zone 3 · At the plate</p>
         <h2 className="zone__title">Portion guide</h2>
+
+        <div className="portion-inputs">
+          <div className="field">
+            <div className="field__label-row">
+              <label className="field__label" htmlFor="portion-eaten">
+                Portion eaten
+              </label>
+              <div className="unit-toggle" role="group" aria-label="Portion unit">
+                <button
+                  type="button"
+                  className={`unit-toggle__btn${form.portionEatenUnit === 'g' ? ' unit-toggle__btn--active' : ''}`}
+                  onClick={() => onUnitChange('portionEatenUnit', 'g')}
+                >
+                  g
+                </button>
+                <button
+                  type="button"
+                  className={`unit-toggle__btn${form.portionEatenUnit === 'oz' ? ' unit-toggle__btn--active' : ''}`}
+                  onClick={() => onUnitChange('portionEatenUnit', 'oz')}
+                >
+                  oz
+                </button>
+              </div>
+            </div>
+            <input
+              id="portion-eaten"
+              aria-label="Portion eaten"
+              className="field__input"
+              type="number"
+              value={toInputValue(form.portionEaten)}
+              onChange={(event) =>
+                onNumberChange(
+                  'portionEaten',
+                  event.target.value === '' ? null : Number(event.target.value),
+                )
+              }
+            />
+          </div>
+
+          <div className="field">
+            <div className="field__label-row">
+              <label className="field__label" htmlFor="target-calories">
+                Target cal
+              </label>
+              <div className="unit-toggle" role="group" aria-label="Display unit">
+                <button
+                  type="button"
+                  className={`unit-toggle__btn${activeOutputUnit === 'g' ? ' unit-toggle__btn--active' : ''}`}
+                  onClick={() => onCookedOutputUnitChange('g')}
+                >
+                  g
+                </button>
+                <button
+                  type="button"
+                  className={`unit-toggle__btn${activeOutputUnit === 'oz' ? ' unit-toggle__btn--active' : ''}`}
+                  onClick={() => onCookedOutputUnitChange('oz')}
+                >
+                  oz
+                </button>
+              </div>
+            </div>
+            <input
+              id="target-calories"
+              aria-label="Target cal"
+              className="field__input"
+              type="number"
+              value={toInputValue(targetCalories)}
+              onChange={(event) =>
+                onTargetCaloriesChange(
+                  event.target.value === '' ? null : Number(event.target.value),
+                )
+              }
+            />
+          </div>
+        </div>
+
+        <div className="answers">
+          <div className="answer-row answer-row--reference" data-testid="ref-pkg-serving">
+            <span className="answer-row__label answer-row__label--italic">
+              1 pkg serving cooked
+            </span>
+            <span
+              className={`answer-row__value${referenceServingText === '—' ? ' answer-row__value--empty' : ''}`}
+            >
+              {referenceServingText}
+            </span>
+          </div>
+
+          <div className="answer-row" data-testid="answer-target-portion">
+            <span className="answer-row__label">Target portion</span>
+            <span
+              className={`answer-row__value${targetPortionText === '—' ? ' answer-row__value--empty' : ''}`}
+            >
+              {targetPortionText}
+            </span>
+          </div>
+
+          <div className="answer-row" data-testid="answer-pkg-servings-eaten">
+            <span className="answer-row__label">Pkg servings eaten</span>
+            <span
+              className={`answer-row__value${servingsEatenText === '—' ? ' answer-row__value--empty' : ''}`}
+            >
+              {servingsEatenText}
+            </span>
+          </div>
+        </div>
+
+        <div className="hero-answer">
+          <span className="hero-answer__label">Portion calories</span>
+          <div>
+            <span
+              className={`hero-answer__value${portionCaloriesText === '—' ? ' hero-answer__value--empty' : ''}`}
+              data-testid="hero-portion-cal"
+            >
+              {portionCaloriesText}
+            </span>
+            <span className="hero-answer__unit">cal</span>
+          </div>
+        </div>
       </section>
+
+      <footer className="action-row zone-layout__actions">
+        <button type="button" onClick={onSave}>
+          Save meal
+        </button>
+        <button type="button" onClick={onClear}>
+          Clear
+        </button>
+      </footer>
     </div>
   )
 }
