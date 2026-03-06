@@ -25,11 +25,16 @@ describe('App mode switching', () => {
   it('defaults total mode to package label inputs', () => {
     render(<App />)
 
+    const worksheet = screen.getByTestId('input-worksheet')
+
     expect(screen.getByLabelText(/^package label$/i)).toBeChecked()
     expect(screen.getByText(/^package label inputs$/i)).toBeInTheDocument()
     expect(screen.getByText(/^cooked batch inputs$/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/^raw total weight$/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/^portion eaten \(cooked weight\)$/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/^target calories$/i)).toBeInTheDocument()
+    expect(
+      within(worksheet).queryByLabelText(/^portion eaten \(cooked weight\)$/i),
+    ).not.toBeInTheDocument()
   })
 
   it('preserves manual total calories when switching to per-serving mode and back', async () => {
@@ -278,6 +283,75 @@ describe('App mode switching', () => {
     ).toBeInTheDocument()
     expect(screen.getByText(/^portion calories$/i)).toBeInTheDocument()
     expect(screen.queryByText(/^calories per serving$/i)).not.toBeInTheDocument()
+  })
+
+  it('keeps total-mode cooked batch inputs batch-only in the worksheet', () => {
+    render(<App />)
+
+    const worksheet = screen.getByTestId('input-worksheet')
+
+    expect(screen.getByText(/^cooked batch inputs$/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/^cooked weight \(g\)$/i)).toBeInTheDocument()
+    expect(
+      within(worksheet).queryByLabelText(/^portion eaten/i),
+    ).not.toBeInTheDocument()
+  })
+
+  it('renders portion guide on the right side with portion eaten and target calories controls', () => {
+    render(<App />)
+
+    expect(screen.getByText(/^portion guide$/i)).toBeInTheDocument()
+    expect(
+      screen.getByLabelText(/^portion eaten \(cooked weight\)$/i),
+    ).toBeInTheDocument()
+    expect(screen.getByLabelText(/^target calories$/i)).toBeInTheDocument()
+  })
+
+  it('keeps the cooked-output toggle and target calories paired in portion guide', () => {
+    render(<App />)
+
+    const guide = screen.getByTestId('results-section-portion-guide')
+    expect(
+      within(guide).getByRole('radiogroup', { name: /display unit/i }),
+    ).toBeInTheDocument()
+    expect(within(guide).getByLabelText(/^target calories$/i)).toBeInTheDocument()
+  })
+
+  it('keeps target calories ephemeral and resets it on clear', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    await user.type(screen.getByLabelText(/^raw total weight$/i), '560')
+    await user.type(screen.getByLabelText(/^package serving weight$/i), '134')
+    await user.type(
+      screen.getByLabelText(/^package calories per serving$/i),
+      '370',
+    )
+    await user.type(screen.getByLabelText(/^cooked weight \(g\)$/i), '744')
+    await user.type(screen.getByLabelText(/^target calories$/i), '400')
+    await user.click(screen.getByRole('button', { name: /^clear$/i }))
+
+    expect(screen.getByLabelText(/^target calories$/i)).toHaveValue(null)
+  })
+
+  it('does not persist target calories when a saved meal is reloaded', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    await user.type(screen.getByLabelText(/^meal name$/i), 'Ravioli')
+    await user.type(screen.getByLabelText(/^raw total weight$/i), '560')
+    await user.type(screen.getByLabelText(/^package serving weight$/i), '134')
+    await user.type(
+      screen.getByLabelText(/^package calories per serving$/i),
+      '370',
+    )
+    await user.type(screen.getByLabelText(/^cooked weight \(g\)$/i), '744')
+    await user.type(screen.getByLabelText(/^target calories$/i), '400')
+    await user.click(screen.getByRole('button', { name: /^save meal$/i }))
+    await user.click(screen.getByRole('button', { name: /^clear$/i }))
+    await user.click(screen.getByRole('button', { name: /^load$/i }))
+
+    expect(screen.getByLabelText(/^target calories$/i)).toHaveValue(null)
   })
 
   it('saves and reloads an ounce-based package-label meal with units intact', async () => {

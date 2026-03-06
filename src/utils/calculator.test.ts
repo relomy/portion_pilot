@@ -305,4 +305,43 @@ describe('calculateMealMetrics', () => {
       assumptions: { servings_assumed: true },
     })
   })
+
+  it('derives cooked weight per package serving when package-label and cooked weight are known', () => {
+    const result = calculateMealMetrics({
+      mode: 'total',
+      totalCaloriesSource: 'packageLabel',
+      manualTotalCalories: null,
+      totalCalories: null,
+      cookedWeightGrams: 744,
+      portionEatenGrams: 192.5,
+      yourServings: null,
+      caloriesPerServing: null,
+      rawTotalWeightGrams: 560,
+      packageServingWeightGrams: 134,
+      packageCaloriesPerServing: 370,
+    })
+
+    expect(result.cookedWeightPerPackageServingGrams).toBeCloseTo(178.0286, 3)
+    expect(result.equivalentPackageServingsEaten).toBeCloseTo(1.0812, 3)
+  })
+
+  it('derives weight change grams and percent from raw and cooked batch weights', () => {
+    const result = calculateMealMetrics({
+      mode: 'total',
+      totalCaloriesSource: 'packageLabel',
+      manualTotalCalories: null,
+      totalCalories: null,
+      cookedWeightGrams: 744,
+      portionEatenGrams: null,
+      yourServings: null,
+      caloriesPerServing: null,
+      rawTotalWeightGrams: 560,
+      packageServingWeightGrams: 134,
+      packageCaloriesPerServing: 370,
+    })
+
+    expect(result.weightChangeGrams).toBe(184)
+    expect(result.weightChangePercent).toBeCloseTo(32.857, 3)
+    expect(result.weightChangeDirection).toBe('gain')
+  })
 })

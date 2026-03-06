@@ -20,6 +20,11 @@ export type CalculationResult = {
   caloriesPer100Grams: number | null
   rawPackageServings: number | null
   portionCalories: number | null
+  cookedWeightPerPackageServingGrams: number | null
+  equivalentPackageServingsEaten: number | null
+  weightChangeGrams: number | null
+  weightChangePercent: number | null
+  weightChangeDirection: 'gain' | 'loss' | 'none' | null
   totalCaloriesDisplaySource:
     | 'manualTotal'
     | 'packageLabel'
@@ -102,6 +107,35 @@ export function calculateMealMetrics(input: CalculationInput): CalculationResult
     totalCalories !== null && hasWeight && hasUsablePortion
       ? (totalCalories / input.cookedWeightGrams!) * input.portionEatenGrams!
       : null
+  const isPackageLabelTotal =
+    input.mode === 'total' && input.totalCaloriesSource === 'packageLabel'
+  const cookedWeightPerPackageServingGrams =
+    isPackageLabelTotal && rawPackageServings !== null && hasWeight
+      ? input.cookedWeightGrams! / rawPackageServings
+      : null
+  const equivalentPackageServingsEaten =
+    cookedWeightPerPackageServingGrams !== null && hasUsablePortion
+      ? input.portionEatenGrams! / cookedWeightPerPackageServingGrams
+      : null
+  const weightChangeGrams =
+    isPackageLabelTotal &&
+    hasWeight &&
+    typeof input.rawTotalWeightGrams === 'number' &&
+    input.rawTotalWeightGrams > 0
+      ? input.cookedWeightGrams! - input.rawTotalWeightGrams
+      : null
+  const weightChangePercent =
+    weightChangeGrams !== null && input.rawTotalWeightGrams
+      ? (weightChangeGrams / input.rawTotalWeightGrams) * 100
+      : null
+  const weightChangeDirection =
+    weightChangeGrams === null
+      ? null
+      : weightChangeGrams > 0
+        ? 'gain'
+        : weightChangeGrams < 0
+          ? 'loss'
+          : 'none'
   const caloriesPerServing =
     source === 'per_serving'
       ? input.caloriesPerServing
@@ -119,6 +153,11 @@ export function calculateMealMetrics(input: CalculationInput): CalculationResult
       caloriesPerGram === null ? null : caloriesPerGram * 100,
     rawPackageServings,
     portionCalories,
+    cookedWeightPerPackageServingGrams,
+    equivalentPackageServingsEaten,
+    weightChangeGrams,
+    weightChangePercent,
+    weightChangeDirection,
     totalCaloriesDisplaySource,
     calorie_source_used: source,
     assumptions: {

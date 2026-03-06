@@ -21,7 +21,11 @@ export function DevPanel({
 
   return (
     <section className="dev-panel">
-      <button type="button" onClick={() => setOpen((current) => !current)}>
+      <button
+        className="dev-panel__toggle dev-panel__toggle--quiet"
+        type="button"
+        onClick={() => setOpen((current) => !current)}
+      >
         {open ? 'Hide debug details' : 'Show debug details'}
       </button>
 
