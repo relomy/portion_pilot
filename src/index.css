@@ -114,6 +114,50 @@ input:disabled {
   min-height: 100vh;
 }
 
+.zone-layout {
+  max-width: 540px;
+  margin: 0 auto;
+  padding: 32px 24px 80px;
+}
+
+.zone {
+  margin-bottom: 12px;
+  border-radius: 10px;
+  padding: 22px 18px 18px;
+  background: var(--zone-bg);
+}
+
+.zone--package,
+.zone--cooked {
+  background: var(--zone-bg);
+}
+
+.zone--portion {
+  background: var(--zone-3-bg);
+}
+
+.zone__eyebrow {
+  margin: 0 0 3px;
+  color: #b0aea4;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.zone--portion .zone__eyebrow {
+  color: var(--teal);
+}
+
+.zone__title {
+  margin: 0 0 18px;
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 400;
+}
+
 .app-shell {
   max-width: 1120px;
   margin: 0 auto;

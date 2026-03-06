@@ -87,6 +87,19 @@ describe('index.css', () => {
     expect(css).toContain('.results-unavailable')
   })
 
+  it('styles the zone layout shell selectors', () => {
+    const cssPath = resolve(process.cwd(), 'src/index.css')
+    const css = readFileSync(cssPath, 'utf8')
+
+    expect(css).toContain('.zone-layout')
+    expect(css).toContain('.zone')
+    expect(css).toContain('.zone--package')
+    expect(css).toContain('.zone--cooked')
+    expect(css).toContain('.zone--portion')
+    expect(css).toContain('.zone__eyebrow')
+    expect(css).toContain('.zone__title')
+  })
+
   it('keeps the header compact so the calculator starts near the top of the page', () => {
     const cssPath = resolve(process.cwd(), 'src/index.css')
     const css = readFileSync(cssPath, 'utf8')
