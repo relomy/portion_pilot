@@ -5,6 +5,7 @@ import type {
   WeightUnit,
 } from '../hooks/useSavedMeals'
 import type { CalculationResult } from '../utils/calculator'
+import { DevPanel } from './DevPanel'
 import {
   formatCaloriesPer100Grams,
   formatCaloriesPerGram,
@@ -18,6 +19,12 @@ import {
   formatRawPackageServings,
   formatTotalCalories,
 } from '../utils/format'
+
+const sourceLabels = {
+  total: 'Source: total calories',
+  per_serving: 'Source: calories per serving',
+  insufficient: 'Source: insufficient data',
+} as const
 
 export type ZoneLayoutProps = {
   form: MealInputs
@@ -98,8 +105,11 @@ export function ZoneLayout({
   )
   const rawServingsText = formatRawPackageServings(result.rawPackageServings)
   const caloriesPerServingText = formatCaloriesPerServing(
-    form.packageCaloriesPerServing,
+    form.mode === 'total' && form.totalCaloriesSource === 'packageLabel'
+      ? form.packageCaloriesPerServing
+      : result.caloriesPerServing,
   )
+  const sourceLabel = sourceLabels[result.calorie_source_used]
   const activeOutputUnit = cookedOutputUnit
   const primaryDensityLabel =
     activeOutputUnit === 'oz' ? 'Calories per ounce' : 'Calories per gram'
@@ -134,6 +144,8 @@ export function ZoneLayout({
     result.equivalentPackageServingsEaten,
   )
   const portionCaloriesText = formatPortionCalories(result.portionCalories)
+  const isPrimaryDensityMuted =
+    primaryDensityValue === '—' || primaryDensityValue === 'Need cooked weight'
 
   return (
     <div className="zone-layout">
@@ -147,25 +159,12 @@ export function ZoneLayout({
       </header>
 
       <div className="zone-layout__diagnostics">
-        <p>
-          Source:{' '}
-          {result.calorie_source_used === 'total'
-            ? 'total calories'
-            : 'calories per serving'}
-        </p>
-        <details>
-          <summary>Show debug details</summary>
-          <pre>
-            {JSON.stringify(
-              {
-                hasConflictingCalories,
-                calorieSourceUsed: result.calorie_source_used,
-              },
-              null,
-              2,
-            )}
-          </pre>
-        </details>
+        <p>{sourceLabel}</p>
+        <DevPanel
+          hasConflictingCalories={hasConflictingCalories}
+          form={form}
+          result={result}
+        />
       </div>
 
       <section className="zone zone--package" data-testid="zone-package">
@@ -232,100 +231,175 @@ export function ZoneLayout({
           </fieldset>
         ) : null}
 
-        <div className="field-pair">
+        {form.mode === 'total' && form.totalCaloriesSource === 'packageLabel' ? (
+          <>
+            <div className="field-pair">
+              <div className="field">
+                <label className="field__label" htmlFor="package-serving-weight">
+                  Serving weight
+                </label>
+                <div className="field-with-unit">
+                  <input
+                    id="package-serving-weight"
+                    aria-label="Serving weight"
+                    className="field__input"
+                    type="number"
+                    value={toInputValue(form.packageServingWeight)}
+                    onChange={(event) =>
+                      onNumberChange(
+                        'packageServingWeight',
+                        event.target.value === '' ? null : Number(event.target.value),
+                      )
+                    }
+                  />
+                  <div
+                    className="unit-toggle"
+                    role="group"
+                    aria-label="Serving weight unit"
+                  >
+                    <button
+                      type="button"
+                      className={`unit-toggle__btn${form.packageServingWeightUnit === 'g' ? ' unit-toggle__btn--active' : ''}`}
+                      onClick={() => onUnitChange('packageServingWeightUnit', 'g')}
+                    >
+                      g
+                    </button>
+                    <button
+                      type="button"
+                      className={`unit-toggle__btn${form.packageServingWeightUnit === 'oz' ? ' unit-toggle__btn--active' : ''}`}
+                      onClick={() => onUnitChange('packageServingWeightUnit', 'oz')}
+                    >
+                      oz
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="field">
+                <label className="field__label" htmlFor="package-cal-serving">
+                  Calories / serving
+                </label>
+                <input
+                  id="package-cal-serving"
+                  aria-label="Calories / serving"
+                  className="field__input"
+                  type="number"
+                  value={toInputValue(form.packageCaloriesPerServing)}
+                  onChange={(event) =>
+                    onNumberChange(
+                      'packageCaloriesPerServing',
+                      event.target.value === '' ? null : Number(event.target.value),
+                    )
+                  }
+                />
+              </div>
+            </div>
+
+            <div className="field">
+              <label className="field__label" htmlFor="raw-total-weight">
+                Raw total weight
+              </label>
+              <div className="field-with-unit">
+                <input
+                  id="raw-total-weight"
+                  aria-label="Raw total weight"
+                  className="field__input"
+                  type="number"
+                  value={toInputValue(form.rawTotalWeight)}
+                  onChange={(event) =>
+                    onNumberChange(
+                      'rawTotalWeight',
+                      event.target.value === '' ? null : Number(event.target.value),
+                    )
+                  }
+                />
+                <div
+                  className="unit-toggle"
+                  role="group"
+                  aria-label="Raw total weight unit"
+                >
+                  <button
+                    type="button"
+                    className={`unit-toggle__btn${form.rawTotalWeightUnit === 'g' ? ' unit-toggle__btn--active' : ''}`}
+                    onClick={() => onUnitChange('rawTotalWeightUnit', 'g')}
+                  >
+                    g
+                  </button>
+                  <button
+                    type="button"
+                    className={`unit-toggle__btn${form.rawTotalWeightUnit === 'oz' ? ' unit-toggle__btn--active' : ''}`}
+                    onClick={() => onUnitChange('rawTotalWeightUnit', 'oz')}
+                  >
+                    oz
+                  </button>
+                </div>
+              </div>
+            </div>
+          </>
+        ) : null}
+
+        {form.mode === 'total' && form.totalCaloriesSource === 'manualTotal' ? (
           <div className="field">
-            <label className="field__label" htmlFor="package-serving-weight">
-              Serving weight
+            <label className="field__label" htmlFor="manual-total-calories">
+              Total calories
             </label>
-            <div className="field-with-unit">
+            <input
+              id="manual-total-calories"
+              aria-label="Total calories"
+              className="field__input"
+              type="number"
+              value={toInputValue(form.manualTotalCalories)}
+              onChange={(event) =>
+                onNumberChange(
+                  'manualTotalCalories',
+                  event.target.value === '' ? null : Number(event.target.value),
+                )
+              }
+            />
+          </div>
+        ) : null}
+
+        {form.mode === 'perServing' ? (
+          <div className="field-pair">
+            <div className="field">
+              <label className="field__label" htmlFor="calories-per-serving">
+                Calories per serving
+              </label>
               <input
-                id="package-serving-weight"
-                aria-label="Serving weight"
+                id="calories-per-serving"
+                aria-label="Calories per serving"
                 className="field__input"
                 type="number"
-                value={toInputValue(form.packageServingWeight)}
+                value={toInputValue(form.caloriesPerServing)}
                 onChange={(event) =>
                   onNumberChange(
-                    'packageServingWeight',
+                    'caloriesPerServing',
                     event.target.value === '' ? null : Number(event.target.value),
                   )
                 }
               />
-              <div className="unit-toggle" role="group" aria-label="Serving weight unit">
-                <button
-                  type="button"
-                  className={`unit-toggle__btn${form.packageServingWeightUnit === 'g' ? ' unit-toggle__btn--active' : ''}`}
-                  onClick={() => onUnitChange('packageServingWeightUnit', 'g')}
-                >
-                  g
-                </button>
-                <button
-                  type="button"
-                  className={`unit-toggle__btn${form.packageServingWeightUnit === 'oz' ? ' unit-toggle__btn--active' : ''}`}
-                  onClick={() => onUnitChange('packageServingWeightUnit', 'oz')}
-                >
-                  oz
-                </button>
-              </div>
+            </div>
+
+            <div className="field">
+              <label className="field__label" htmlFor="servings-optional">
+                Servings (optional)
+              </label>
+              <input
+                id="servings-optional"
+                aria-label="Servings (optional)"
+                className="field__input"
+                type="number"
+                value={toInputValue(form.yourServings)}
+                onChange={(event) =>
+                  onNumberChange(
+                    'yourServings',
+                    event.target.value === '' ? null : Number(event.target.value),
+                  )
+                }
+              />
             </div>
           </div>
-
-          <div className="field">
-            <label className="field__label" htmlFor="package-cal-serving">
-              Calories / serving
-            </label>
-            <input
-              id="package-cal-serving"
-              aria-label="Calories / serving"
-              className="field__input"
-              type="number"
-              value={toInputValue(form.packageCaloriesPerServing)}
-              onChange={(event) =>
-                onNumberChange(
-                  'packageCaloriesPerServing',
-                  event.target.value === '' ? null : Number(event.target.value),
-                )
-              }
-            />
-          </div>
-        </div>
-
-        <div className="field">
-          <label className="field__label" htmlFor="raw-total-weight">
-            Raw total weight
-          </label>
-          <div className="field-with-unit">
-            <input
-              id="raw-total-weight"
-              aria-label="Raw total weight"
-              className="field__input"
-              type="number"
-              value={toInputValue(form.rawTotalWeight)}
-              onChange={(event) =>
-                onNumberChange(
-                  'rawTotalWeight',
-                  event.target.value === '' ? null : Number(event.target.value),
-                )
-              }
-            />
-            <div className="unit-toggle" role="group" aria-label="Raw total weight unit">
-              <button
-                type="button"
-                className={`unit-toggle__btn${form.rawTotalWeightUnit === 'g' ? ' unit-toggle__btn--active' : ''}`}
-                onClick={() => onUnitChange('rawTotalWeightUnit', 'g')}
-              >
-                g
-              </button>
-              <button
-                type="button"
-                className={`unit-toggle__btn${form.rawTotalWeightUnit === 'oz' ? ' unit-toggle__btn--active' : ''}`}
-                onClick={() => onUnitChange('rawTotalWeightUnit', 'oz')}
-              >
-                oz
-              </button>
-            </div>
-          </div>
-        </div>
+        ) : null}
 
         <div className="derived">
           <div className="derived__item">
@@ -373,7 +447,7 @@ export function ZoneLayout({
           <div className="density-primary" data-testid="density-primary">
             <span className="density-primary__label">{primaryDensityLabel}</span>
             <span
-              className={`density-primary__value${primaryDensityValue === '—' ? ' density-primary__value--empty' : ''}`}
+              className={`density-primary__value${isPrimaryDensityMuted ? ' density-primary__value--empty' : ''}`}
             >
               {primaryDensityValue}
             </span>

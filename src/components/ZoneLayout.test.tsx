@@ -1,4 +1,5 @@
 import { render, screen, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import type { MealInputs, WeightUnit } from '../hooks/useSavedMeals'
 import { calculateMealMetrics, ouncesToGrams } from '../utils/calculator'
@@ -139,6 +140,40 @@ describe('ZoneLayout', () => {
     expect(within(zone).getByLabelText(/^raw total weight$/i)).toBeInTheDocument()
   })
 
+  it('renders Total calories input in manual total source mode', () => {
+    render(
+      <ZoneLayout
+        {...buildProps({
+          mode: 'total',
+          totalCaloriesSource: 'manualTotal',
+        })}
+      />,
+    )
+
+    const zone = screen.getByTestId('zone-package')
+    expect(
+      within(zone).getByLabelText(/^total calories$/i, { selector: 'input[type="number"]' }),
+    ).toBeInTheDocument()
+    expect(
+      within(zone).queryByLabelText(/^raw total weight$/i),
+    ).not.toBeInTheDocument()
+  })
+
+  it('renders per-serving inputs in per serving mode', () => {
+    render(<ZoneLayout {...buildProps({ mode: 'perServing' })} />)
+
+    const zone = screen.getByTestId('zone-package')
+    expect(
+      within(zone).getByLabelText(/^calories per serving$/i),
+    ).toBeInTheDocument()
+    expect(
+      within(zone).getByLabelText(/^servings \(optional\)$/i),
+    ).toBeInTheDocument()
+    expect(
+      within(zone).queryByLabelText(/^raw total weight$/i),
+    ).not.toBeInTheDocument()
+  })
+
   it('renders Zone 1 derived values with dashes when inputs are empty', () => {
     render(<ZoneLayout {...buildProps()} />)
 
@@ -185,7 +220,26 @@ describe('ZoneLayout', () => {
     expect(within(zone).getByTestId('density-primary')).toHaveTextContent(
       /need cooked weight/i,
     )
+    expect(zone.querySelector('.density-primary__value')).toHaveClass(
+      'density-primary__value--empty',
+    )
     expect(within(zone).getByTestId('density-secondary')).toBeInTheDocument()
+  })
+
+  it('shows insufficient source copy when calculation data is incomplete', () => {
+    render(<ZoneLayout {...buildProps()} />)
+
+    expect(screen.getByText(/^source: insufficient data$/i)).toBeInTheDocument()
+  })
+
+  it('uses the DevPanel contract for debug diagnostics payload', async () => {
+    const user = userEvent.setup()
+    render(<ZoneLayout {...buildProps({ rawTotalWeight: 560 })} />)
+
+    await user.click(screen.getByRole('button', { name: /show debug details/i }))
+    expect(screen.getByText(/"hasConflictingCalories": false/i)).toBeInTheDocument()
+    expect(screen.getByText(/"form":/i)).toBeInTheDocument()
+    expect(screen.getByText(/"result":/i)).toBeInTheDocument()
   })
 
   it('renders Zone 2 weight change callout with dash when weights are absent', () => {
