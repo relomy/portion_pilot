@@ -98,6 +98,12 @@ describe('index.css', () => {
     expect(css).toContain('.zone--portion')
     expect(css).toContain('.zone__eyebrow')
     expect(css).toContain('.zone__title')
+    expect(css).toContain('.field-pair')
+    expect(css).toContain('.field__input')
+    expect(css).toContain('.field__label')
+    expect(css).toContain('.derived')
+    expect(css).toContain('.derived__item')
+    expect(css).toContain('.unit-toggle')
   })
 
   it('keeps the header compact so the calculator starts near the top of the page', () => {

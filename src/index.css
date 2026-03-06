@@ -158,6 +158,116 @@ input:disabled {
   font-weight: 400;
 }
 
+.field-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.field__label {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--ink-mid);
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.field__input {
+  width: 100%;
+  border-radius: 6px;
+  border: 1px solid var(--field-border);
+  background: var(--field-bg);
+  color: var(--ink);
+  padding: 9px 11px;
+  font-family: var(--font-mono);
+  font-size: 14px;
+}
+
+.field__input:focus {
+  outline: none;
+  border-color: var(--teal-mid);
+}
+
+.field__input::placeholder {
+  color: var(--ink-faint);
+}
+
+.field-with-unit {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.unit-toggle {
+  display: flex;
+  border: 1px solid var(--field-border);
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--field-bg);
+}
+
+.unit-toggle__btn {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--ink-soft);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  padding: 7px 10px;
+  box-shadow: none;
+  transform: none;
+}
+
+.unit-toggle__btn:hover {
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  box-shadow: none;
+  transform: none;
+}
+
+.unit-toggle__btn--active,
+.unit-toggle__btn--active:hover {
+  background: var(--teal);
+  color: #fff;
+}
+
+.derived {
+  display: flex;
+  gap: 20px;
+  padding: 12px 0 2px;
+  border-top: 1px solid var(--zone-divider);
+  flex-wrap: wrap;
+}
+
+.derived__item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.derived__label {
+  color: var(--ink-faint);
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.derived__value {
+  color: var(--ink-mid);
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+}
+
+.derived__value--empty {
+  color: var(--ink-faint);
+}
+
 .app-shell {
   max-width: 1120px;
   margin: 0 auto;
