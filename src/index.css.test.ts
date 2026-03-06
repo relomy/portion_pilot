@@ -5,6 +5,20 @@ import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 describe('index.css', () => {
+  it('defines zone layout design tokens', () => {
+    const cssPath = resolve(process.cwd(), 'src/index.css')
+    const css = readFileSync(cssPath, 'utf8')
+
+    expect(css).toContain('--paper-bg')
+    expect(css).toContain('--zone-bg')
+    expect(css).toContain('--zone-3-bg')
+    expect(css).toContain('--teal')
+    expect(css).toContain('--field-bg')
+    expect(css).toContain('DM Mono')
+    expect(css).toContain('DM Serif Display')
+    expect(css).toContain('DM Sans')
+  })
+
   it('styles the live results panel selector', () => {
     const cssPath = resolve(process.cwd(), 'src/index.css')
     const css = readFileSync(cssPath, 'utf8')
