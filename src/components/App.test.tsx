@@ -255,6 +255,25 @@ describe('App zone layout migration', () => {
     )
   })
 
+  it('lets users enter cooked weight in ounces and still computes cooked outputs', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    const packageZone = getPackageZone()
+    const cookedZone = getCookedZone()
+
+    await user.type(within(packageZone).getByLabelText(/^raw total weight$/i), '560')
+    await user.type(within(packageZone).getByLabelText(/^serving weight$/i), '134')
+    await user.type(within(packageZone).getByLabelText(/^calories \/ serving$/i), '370')
+    await user.click(
+      within(cookedZone).getByRole('radio', { name: /^oz$/i }),
+    )
+    await user.type(within(cookedZone).getByLabelText(/^cooked weight$/i), '26.244')
+
+    expect(within(cookedZone).getByTestId('density-primary')).toBeInTheDocument()
+    expect(within(cookedZone).getByText(/calories per ounce/i)).toBeInTheDocument()
+  })
+
   it('resets form and ephemeral target calories on clear', async () => {
     const user = userEvent.setup()
     render(<App />)

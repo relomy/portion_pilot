@@ -1,6 +1,6 @@
-import { render, screen, within } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import type { MealInputs } from '../hooks/useSavedMeals'
 import { calculateMealMetrics } from '../utils/calculator'
 import { toCalculationInput } from '../utils/toCalculationInput'
@@ -34,6 +34,7 @@ function buildProps(overrides: Partial<MealInputs> = {}): ZoneLayoutProps {
     result,
     hasConflictingCalories: false,
     targetCalories: null,
+    cookedInputUnit: 'g',
     cookedOutputUnit: 'g',
     onTextChange: () => {},
     onNumberChange: () => {},
@@ -41,6 +42,7 @@ function buildProps(overrides: Partial<MealInputs> = {}): ZoneLayoutProps {
     onModeChange: () => {},
     onTotalSourceChange: () => {},
     onTargetCaloriesChange: () => {},
+    onCookedInputUnitChange: () => {},
     onCookedOutputUnitChange: () => {},
     onSave: () => {},
     onClear: () => {},
@@ -206,7 +208,57 @@ describe('ZoneLayout', () => {
     render(<ZoneLayout {...buildProps()} />)
 
     const zone = screen.getByTestId('zone-cooked')
-    expect(within(zone).getByLabelText(/cooked.*weight/i)).toBeInTheDocument()
+    expect(within(zone).getByLabelText(/^cooked weight$/i)).toBeInTheDocument()
+  })
+
+  it('renders cooked weight with a g/oz unit toggle in Zone 2', () => {
+    render(<ZoneLayout {...buildProps()} />)
+
+    const zone = screen.getByTestId('zone-cooked')
+    expect(within(zone).getByLabelText(/^cooked weight$/i)).toBeInTheDocument()
+    expect(
+      within(zone).getByRole('group', { name: /cooked weight unit/i }),
+    ).toBeInTheDocument()
+  })
+
+  it('calls onCookedInputUnitChange when cooked weight unit is toggled', async () => {
+    const user = userEvent.setup()
+    const onCookedInputUnitChange = vi.fn()
+    render(
+      <ZoneLayout
+        {...buildProps()}
+        onCookedInputUnitChange={onCookedInputUnitChange}
+      />,
+    )
+
+    const zone = screen.getByTestId('zone-cooked')
+    await user.click(within(zone).getByRole('radio', { name: /^oz$/i }))
+
+    expect(onCookedInputUnitChange).toHaveBeenCalledWith('oz')
+  })
+
+  it('converts typed cooked weight ounces to grams before calling onNumberChange', async () => {
+    const onNumberChange = vi.fn()
+    const onCookedOutputUnitChange = vi.fn()
+    render(
+      <ZoneLayout
+        {...buildProps()}
+        cookedInputUnit="oz"
+        onNumberChange={onNumberChange}
+        onCookedOutputUnitChange={onCookedOutputUnitChange}
+      />,
+    )
+
+    const zone = screen.getByTestId('zone-cooked')
+    fireEvent.change(within(zone).getByLabelText(/^cooked weight$/i), {
+      target: { value: '10' },
+    })
+
+    expect(onNumberChange).toHaveBeenLastCalledWith(
+      'cookedWeightGrams',
+      expect.closeTo(283.495, 3),
+    )
+    expect(onCookedOutputUnitChange).not.toHaveBeenCalled()
   })
 
   it('renders Zone 2 density block with formatter copy when cooked weight is absent', () => {

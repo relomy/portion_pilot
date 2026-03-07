@@ -4,7 +4,11 @@ import type {
   TotalCaloriesSource,
   WeightUnit,
 } from '../hooks/useSavedMeals'
-import type { CalculationResult } from '../utils/calculator'
+import {
+  gramsToOunces,
+  ouncesToGrams,
+  type CalculationResult,
+} from '../utils/calculator'
 import { DevPanel } from './DevPanel'
 import {
   formatCaloriesPer100Grams,
@@ -31,6 +35,7 @@ export type ZoneLayoutProps = {
   result: CalculationResult
   hasConflictingCalories: boolean
   targetCalories: number | null
+  cookedInputUnit: WeightUnit
   cookedOutputUnit: WeightUnit
   onTextChange: (field: 'mealName', value: string) => void
   onNumberChange: (
@@ -55,6 +60,7 @@ export type ZoneLayoutProps = {
   onModeChange: (mode: MealMode) => void
   onTotalSourceChange: (value: TotalCaloriesSource) => void
   onTargetCaloriesChange: (value: number | null) => void
+  onCookedInputUnitChange: (value: WeightUnit) => void
   onCookedOutputUnitChange: (value: WeightUnit) => void
   onSave: () => void
   onClear: () => void
@@ -88,12 +94,14 @@ export function ZoneLayout({
   result,
   hasConflictingCalories,
   targetCalories,
+  cookedInputUnit,
   cookedOutputUnit,
   onTextChange,
   onNumberChange,
   onModeChange,
   onTotalSourceChange,
   onTargetCaloriesChange,
+  onCookedInputUnitChange,
   onCookedOutputUnitChange,
   onUnitChange,
   onSave,
@@ -111,6 +119,12 @@ export function ZoneLayout({
   )
   const sourceLabel = sourceLabels[result.calorie_source_used]
   const activeOutputUnit = cookedOutputUnit
+  const cookedInputValue =
+    form.cookedWeightGrams === null
+      ? null
+      : cookedInputUnit === 'oz'
+        ? gramsToOunces(form.cookedWeightGrams)
+        : form.cookedWeightGrams
   const primaryDensityLabel =
     activeOutputUnit === 'oz' ? 'Calories per ounce' : 'Calories per gram'
   const primaryDensityValue =
@@ -433,19 +447,47 @@ export function ZoneLayout({
           <label className="field__label" htmlFor="cooked-weight">
             Cooked weight
           </label>
-          <input
-            id="cooked-weight"
-            aria-label="Cooked weight"
-            className="field__input"
-            type="number"
-            value={toInputValue(form.cookedWeightGrams)}
-            onChange={(event) =>
-              onNumberChange(
-                'cookedWeightGrams',
-                event.target.value === '' ? null : Number(event.target.value),
-              )
-            }
-          />
+          <div className="field-with-unit">
+            <input
+              id="cooked-weight"
+              aria-label="Cooked weight"
+              className="field__input"
+              type="number"
+              value={toInputValue(cookedInputValue)}
+              onChange={(event) => {
+                const nextValue =
+                  event.target.value === '' ? null : Number(event.target.value)
+                onNumberChange(
+                  'cookedWeightGrams',
+                  nextValue === null
+                    ? null
+                    : cookedInputUnit === 'oz'
+                      ? ouncesToGrams(nextValue)
+                      : nextValue,
+                )
+              }}
+            />
+            <fieldset className="unit-toggle" aria-label="Cooked weight unit">
+              <label className="unit-toggle__option">
+                <input
+                  type="radio"
+                  name="cooked-weight-input-unit"
+                  checked={cookedInputUnit === 'g'}
+                  onChange={() => onCookedInputUnitChange('g')}
+                />
+                <span>g</span>
+              </label>
+              <label className="unit-toggle__option">
+                <input
+                  type="radio"
+                  name="cooked-weight-input-unit"
+                  checked={cookedInputUnit === 'oz'}
+                  onChange={() => onCookedInputUnitChange('oz')}
+                />
+                <span>oz</span>
+              </label>
+            </fieldset>
+          </div>
         </div>
 
         <div className="density-block">
