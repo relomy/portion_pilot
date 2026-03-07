@@ -487,26 +487,33 @@ export function ZoneLayout({
         <h2 className="zone__title">Portion guide</h2>
 
         {form.mode === 'perServing' ? (
-          <div className="portion-inputs portion-inputs--single">
-            <div className="field">
-              <label className="field__label" htmlFor="zone3-servings-optional">
-                Servings (optional)
-              </label>
-              <input
-                id="zone3-servings-optional"
-                aria-label="Servings (optional)"
-                className="field__input"
-                type="number"
-                value={toInputValue(form.yourServings)}
-                onChange={(event) =>
-                  onNumberChange(
-                    'yourServings',
-                    event.target.value === '' ? null : Number(event.target.value),
-                  )
-                }
-              />
+          <>
+            <div className="portion-inputs portion-inputs--single">
+              <div className="field">
+                <label className="field__label" htmlFor="zone3-servings-optional">
+                  Servings (optional)
+                </label>
+                <input
+                  id="zone3-servings-optional"
+                  aria-label="Servings (optional)"
+                  className="field__input"
+                  type="number"
+                  value={toInputValue(form.yourServings)}
+                  onChange={(event) =>
+                    onNumberChange(
+                      'yourServings',
+                      event.target.value === '' ? null : Number(event.target.value),
+                    )
+                  }
+                />
+              </div>
             </div>
-          </div>
+            {result.assumptions.servings_assumed ? (
+              <p className="assumption-note">
+                Assumed 1 serving because none was provided.
+              </p>
+            ) : null}
+          </>
         ) : (
           <>
             <div className="portion-inputs">

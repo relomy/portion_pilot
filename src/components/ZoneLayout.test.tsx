@@ -280,6 +280,38 @@ describe('ZoneLayout', () => {
     expect(within(zone).getByLabelText(/^servings \(optional\)$/i)).toBeInTheDocument()
   })
 
+  it('shows per-serving assumption note when servings are not provided', () => {
+    render(
+      <ZoneLayout
+        {...buildProps({
+          mode: 'perServing',
+          caloriesPerServing: 450,
+          yourServings: null,
+        })}
+      />,
+    )
+
+    expect(
+      screen.getByText(/assumed 1 serving because none was provided\./i),
+    ).toBeInTheDocument()
+  })
+
+  it('hides per-serving assumption note when servings are provided', () => {
+    render(
+      <ZoneLayout
+        {...buildProps({
+          mode: 'perServing',
+          caloriesPerServing: 450,
+          yourServings: 3,
+        })}
+      />,
+    )
+
+    expect(
+      screen.queryByText(/assumed 1 serving because none was provided\./i),
+    ).not.toBeInTheDocument()
+  })
+
   it('does not render Portion eaten in Zone 3 when mode is perServing', () => {
     render(<ZoneLayout {...buildProps({ mode: 'perServing' })} />)
 

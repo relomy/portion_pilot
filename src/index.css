@@ -467,6 +467,12 @@ input:disabled {
   grid-template-columns: 1fr;
 }
 
+.assumption-note {
+  margin: -4px 0 14px;
+  color: var(--ink-soft);
+  font-size: 11px;
+}
+
 .field__label-row {
   display: flex;
   justify-content: space-between;
