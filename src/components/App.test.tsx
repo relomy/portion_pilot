@@ -208,7 +208,7 @@ describe('App zone layout migration', () => {
     expect(screen.getByText(/"hasConflictingCalories": false/i)).toBeInTheDocument()
   })
 
-  it('gates Zone 3 on mode: perServing shows servings and hides portion eaten', async () => {
+  it('gates Zone 3 on mode: perServing hides servings and portion eaten controls', async () => {
     const user = userEvent.setup()
     render(<App />)
 
@@ -220,8 +220,8 @@ describe('App zone layout migration', () => {
     )
 
     expect(
-      within(portionZone).getByLabelText(/^servings \(optional\)$/i),
-    ).toBeInTheDocument()
+      within(portionZone).queryByLabelText(/^servings \(optional\)$/i),
+    ).not.toBeInTheDocument()
     expect(
       within(portionZone).queryByLabelText(/^portion eaten$/i),
     ).not.toBeInTheDocument()
@@ -350,18 +350,20 @@ describe('App zone layout migration', () => {
 
     const packageZone = getPackageZone()
     const cookedZone = getCookedZone()
+    const rawWeightUnitGroup = within(packageZone).getByRole('group', {
+      name: /raw total weight unit/i,
+    })
+    const servingWeightUnitGroup = within(packageZone).getByRole('group', {
+      name: /serving weight unit/i,
+    })
 
     await user.type(within(packageZone).getByLabelText(/^meal name$/i), 'Ravioli')
     await user.click(
-      within(
-        within(packageZone).getByRole('group', { name: /raw total weight unit/i }),
-      ).getByRole('button', { name: /^oz$/i }),
+      within(rawWeightUnitGroup).getByRole('radio', { name: /^oz$/i }),
     )
     await user.type(within(packageZone).getByLabelText(/^raw total weight$/i), '19.8')
     await user.click(
-      within(
-        within(packageZone).getByRole('group', { name: /serving weight unit/i }),
-      ).getByRole('button', { name: /^oz$/i }),
+      within(servingWeightUnitGroup).getByRole('radio', { name: /^oz$/i }),
     )
     await user.type(within(packageZone).getByLabelText(/^serving weight$/i), '4.7')
     await user.type(within(packageZone).getByLabelText(/^calories \/ serving$/i), '370')
@@ -372,15 +374,11 @@ describe('App zone layout migration', () => {
     await user.click(screen.getByRole('button', { name: /^load$/i }))
 
     expect(
-      within(
-        within(packageZone).getByRole('group', { name: /raw total weight unit/i }),
-      ).getByRole('button', { name: /^oz$/i }),
-    ).toHaveClass('unit-toggle__btn--active')
+      within(rawWeightUnitGroup).getByRole('radio', { name: /^oz$/i }),
+    ).toBeChecked()
     expect(
-      within(
-        within(packageZone).getByRole('group', { name: /serving weight unit/i }),
-      ).getByRole('button', { name: /^oz$/i }),
-    ).toHaveClass('unit-toggle__btn--active')
+      within(servingWeightUnitGroup).getByRole('radio', { name: /^oz$/i }),
+    ).toBeChecked()
     expect(within(packageZone).getByLabelText(/^raw total weight$/i)).toHaveValue(19.8)
     expect(within(packageZone).getByLabelText(/^serving weight$/i)).toHaveValue(4.7)
   })

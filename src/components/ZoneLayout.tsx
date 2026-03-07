@@ -252,26 +252,26 @@ export function ZoneLayout({
                       )
                     }
                   />
-                  <div
-                    className="unit-toggle"
-                    role="group"
-                    aria-label="Serving weight unit"
-                  >
-                    <button
-                      type="button"
-                      className={`unit-toggle__btn${form.packageServingWeightUnit === 'g' ? ' unit-toggle__btn--active' : ''}`}
-                      onClick={() => onUnitChange('packageServingWeightUnit', 'g')}
-                    >
-                      g
-                    </button>
-                    <button
-                      type="button"
-                      className={`unit-toggle__btn${form.packageServingWeightUnit === 'oz' ? ' unit-toggle__btn--active' : ''}`}
-                      onClick={() => onUnitChange('packageServingWeightUnit', 'oz')}
-                    >
-                      oz
-                    </button>
-                  </div>
+                  <fieldset className="unit-toggle" aria-label="Serving weight unit">
+                    <label className="unit-toggle__option">
+                      <input
+                        type="radio"
+                        name="serving-weight-unit"
+                        checked={form.packageServingWeightUnit === 'g'}
+                        onChange={() => onUnitChange('packageServingWeightUnit', 'g')}
+                      />
+                      <span>g</span>
+                    </label>
+                    <label className="unit-toggle__option">
+                      <input
+                        type="radio"
+                        name="serving-weight-unit"
+                        checked={form.packageServingWeightUnit === 'oz'}
+                        onChange={() => onUnitChange('packageServingWeightUnit', 'oz')}
+                      />
+                      <span>oz</span>
+                    </label>
+                  </fieldset>
                 </div>
               </div>
 
@@ -313,26 +313,26 @@ export function ZoneLayout({
                     )
                   }
                 />
-                <div
-                  className="unit-toggle"
-                  role="group"
-                  aria-label="Raw total weight unit"
-                >
-                  <button
-                    type="button"
-                    className={`unit-toggle__btn${form.rawTotalWeightUnit === 'g' ? ' unit-toggle__btn--active' : ''}`}
-                    onClick={() => onUnitChange('rawTotalWeightUnit', 'g')}
-                  >
-                    g
-                  </button>
-                  <button
-                    type="button"
-                    className={`unit-toggle__btn${form.rawTotalWeightUnit === 'oz' ? ' unit-toggle__btn--active' : ''}`}
-                    onClick={() => onUnitChange('rawTotalWeightUnit', 'oz')}
-                  >
-                    oz
-                  </button>
-                </div>
+                <fieldset className="unit-toggle" aria-label="Raw total weight unit">
+                  <label className="unit-toggle__option">
+                    <input
+                      type="radio"
+                      name="raw-total-weight-unit"
+                      checked={form.rawTotalWeightUnit === 'g'}
+                      onChange={() => onUnitChange('rawTotalWeightUnit', 'g')}
+                    />
+                    <span>g</span>
+                  </label>
+                  <label className="unit-toggle__option">
+                    <input
+                      type="radio"
+                      name="raw-total-weight-unit"
+                      checked={form.rawTotalWeightUnit === 'oz'}
+                      onChange={() => onUnitChange('rawTotalWeightUnit', 'oz')}
+                    />
+                    <span>oz</span>
+                  </label>
+                </fieldset>
               </div>
             </div>
           </>
@@ -499,22 +499,26 @@ export function ZoneLayout({
                   <label className="field__label" htmlFor="portion-eaten">
                     Portion eaten
                   </label>
-                  <div className="unit-toggle" role="group" aria-label="Portion unit">
-                    <button
-                      type="button"
-                      className={`unit-toggle__btn${form.portionEatenUnit === 'g' ? ' unit-toggle__btn--active' : ''}`}
-                      onClick={() => onUnitChange('portionEatenUnit', 'g')}
-                    >
-                      g
-                    </button>
-                    <button
-                      type="button"
-                      className={`unit-toggle__btn${form.portionEatenUnit === 'oz' ? ' unit-toggle__btn--active' : ''}`}
-                      onClick={() => onUnitChange('portionEatenUnit', 'oz')}
-                    >
-                      oz
-                    </button>
-                  </div>
+                  <fieldset className="unit-toggle" aria-label="Portion unit">
+                    <label className="unit-toggle__option">
+                      <input
+                        type="radio"
+                        name="portion-unit"
+                        checked={form.portionEatenUnit === 'g'}
+                        onChange={() => onUnitChange('portionEatenUnit', 'g')}
+                      />
+                      <span>g</span>
+                    </label>
+                    <label className="unit-toggle__option">
+                      <input
+                        type="radio"
+                        name="portion-unit"
+                        checked={form.portionEatenUnit === 'oz'}
+                        onChange={() => onUnitChange('portionEatenUnit', 'oz')}
+                      />
+                      <span>oz</span>
+                    </label>
+                  </fieldset>
                 </div>
                 <input
                   id="portion-eaten"
@@ -536,22 +540,26 @@ export function ZoneLayout({
                   <label className="field__label" htmlFor="target-calories">
                     Target cal
                   </label>
-                  <div className="unit-toggle" role="group" aria-label="Display unit">
-                    <button
-                      type="button"
-                      className={`unit-toggle__btn${activeOutputUnit === 'g' ? ' unit-toggle__btn--active' : ''}`}
-                      onClick={() => onCookedOutputUnitChange('g')}
-                    >
-                      g
-                    </button>
-                    <button
-                      type="button"
-                      className={`unit-toggle__btn${activeOutputUnit === 'oz' ? ' unit-toggle__btn--active' : ''}`}
-                      onClick={() => onCookedOutputUnitChange('oz')}
-                    >
-                      oz
-                    </button>
-                  </div>
+                  <fieldset className="unit-toggle" aria-label="Display unit">
+                    <label className="unit-toggle__option">
+                      <input
+                        type="radio"
+                        name="display-unit"
+                        checked={activeOutputUnit === 'g'}
+                        onChange={() => onCookedOutputUnitChange('g')}
+                      />
+                      <span>g</span>
+                    </label>
+                    <label className="unit-toggle__option">
+                      <input
+                        type="radio"
+                        name="display-unit"
+                        checked={activeOutputUnit === 'oz'}
+                        onChange={() => onCookedOutputUnitChange('oz')}
+                      />
+                      <span>oz</span>
+                    </label>
+                  </fieldset>
                 </div>
                 <input
                   id="target-calories"

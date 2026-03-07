@@ -102,6 +102,32 @@ describe('ZoneLayout', () => {
     expect(within(zone).getByLabelText(/^raw total weight$/i)).toBeInTheDocument()
   })
 
+  it('marks the selected package unit radios as checked', () => {
+    render(
+      <ZoneLayout
+        {...buildProps({
+          packageServingWeightUnit: 'oz',
+          rawTotalWeightUnit: 'oz',
+        })}
+      />,
+    )
+
+    const zone = screen.getByTestId('zone-package')
+    const servingWeightUnitGroup = within(zone).getByRole('group', {
+      name: /serving weight unit/i,
+    })
+    const rawWeightUnitGroup = within(zone).getByRole('group', {
+      name: /raw total weight unit/i,
+    })
+
+    expect(
+      within(servingWeightUnitGroup).getByRole('radio', { name: /^oz$/i }),
+    ).toBeChecked()
+    expect(
+      within(rawWeightUnitGroup).getByRole('radio', { name: /^oz$/i }),
+    ).toBeChecked()
+  })
+
   it('renders Total calories input in manual total source mode', () => {
     render(
       <ZoneLayout
@@ -249,6 +275,32 @@ describe('ZoneLayout', () => {
     const zone = screen.getByTestId('zone-portion')
     expect(within(zone).getByLabelText(/portion eaten/i)).toBeInTheDocument()
     expect(within(zone).getByLabelText(/target cal/i)).toBeInTheDocument()
+  })
+
+  it('marks the selected Zone 3 unit radios as checked', () => {
+    render(
+      <ZoneLayout
+        {...buildProps({
+          portionEatenUnit: 'oz',
+        })}
+        cookedOutputUnit="oz"
+      />,
+    )
+
+    const zone = screen.getByTestId('zone-portion')
+    const portionUnitGroup = within(zone).getByRole('group', {
+      name: /portion unit/i,
+    })
+    const displayUnitGroup = within(zone).getByRole('group', {
+      name: /display unit/i,
+    })
+
+    expect(
+      within(portionUnitGroup).getByRole('radio', { name: /^oz$/i }),
+    ).toBeChecked()
+    expect(
+      within(displayUnitGroup).getByRole('radio', { name: /^oz$/i }),
+    ).toBeChecked()
   })
 
   it('does not render Servings (optional) in Zone 3 when mode is perServing', () => {
