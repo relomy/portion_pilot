@@ -303,6 +303,10 @@ input:disabled {
   gap: 8px;
 }
 
+.zone--cooked .field-with-unit {
+  align-items: stretch;
+}
+
 .unit-toggle {
   display: flex;
   margin: 0;
@@ -347,6 +351,11 @@ input:disabled {
 .unit-toggle__option:has(input:focus-visible) span {
   outline: 2px solid var(--teal-mid);
   outline-offset: -2px;
+}
+
+.unit-toggle__option:has(input:checked) span {
+  background: var(--teal);
+  color: #fff;
 }
 
 .unit-toggle__option input:checked + span,
