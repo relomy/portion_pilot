@@ -1,8 +1,9 @@
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
-import type { MealInputs, WeightUnit } from '../hooks/useSavedMeals'
-import { calculateMealMetrics, ouncesToGrams } from '../utils/calculator'
+import type { MealInputs } from '../hooks/useSavedMeals'
+import { calculateMealMetrics } from '../utils/calculator'
+import { toCalculationInput } from '../utils/toCalculationInput'
 import { ZoneLayout, type ZoneLayoutProps } from './ZoneLayout'
 
 const baseForm: MealInputs = {
@@ -24,48 +25,9 @@ const baseForm: MealInputs = {
   packageCaloriesPerServing: null,
 }
 
-function toGrams(value: number | null, unit: WeightUnit): number | null {
-  if (value === null) {
-    return null
-  }
-
-  return unit === 'oz' ? ouncesToGrams(value) : value
-}
-
 function buildProps(overrides: Partial<MealInputs> = {}): ZoneLayoutProps {
   const form: MealInputs = { ...baseForm, ...overrides }
-  const result = calculateMealMetrics({
-    mode: form.mode,
-    totalCaloriesSource: form.totalCaloriesSource,
-    manualTotalCalories:
-      form.mode === 'total' && form.totalCaloriesSource === 'manualTotal'
-        ? form.manualTotalCalories
-        : null,
-    totalCalories:
-      form.mode === 'total' && form.totalCaloriesSource === 'manualTotal'
-        ? form.manualTotalCalories
-        : null,
-    cookedWeightGrams: form.cookedWeightGrams,
-    portionEatenGrams:
-      form.mode === 'total'
-        ? toGrams(form.portionEaten, form.portionEatenUnit)
-        : null,
-    yourServings: form.yourServings,
-    caloriesPerServing:
-      form.mode === 'perServing' ? form.caloriesPerServing : null,
-    rawTotalWeightGrams:
-      form.mode === 'total' && form.totalCaloriesSource === 'packageLabel'
-        ? toGrams(form.rawTotalWeight, form.rawTotalWeightUnit)
-        : null,
-    packageServingWeightGrams:
-      form.mode === 'total' && form.totalCaloriesSource === 'packageLabel'
-        ? toGrams(form.packageServingWeight, form.packageServingWeightUnit)
-        : null,
-    packageCaloriesPerServing:
-      form.mode === 'total' && form.totalCaloriesSource === 'packageLabel'
-        ? form.packageCaloriesPerServing
-        : null,
-  })
+  const result = calculateMealMetrics(toCalculationInput(form))
 
   return {
     form,
@@ -172,6 +134,22 @@ describe('ZoneLayout', () => {
     expect(
       within(zone).queryByLabelText(/^raw total weight$/i),
     ).not.toBeInTheDocument()
+  })
+
+  it('keeps calories per serving hidden in total/manual mode', () => {
+    render(
+      <ZoneLayout
+        {...buildProps({
+          mode: 'total',
+          totalCaloriesSource: 'manualTotal',
+          manualTotalCalories: 1200,
+          yourServings: 4,
+        })}
+      />,
+    )
+
+    const zone = screen.getByTestId('zone-package')
+    expect(within(zone).getByTestId('derived-cal-serving')).toHaveTextContent('—')
   })
 
   it('renders Zone 1 derived values with dashes when inputs are empty', () => {
@@ -362,5 +340,24 @@ describe('ZoneLayout', () => {
     )
 
     expect(screen.getByTestId('hero-portion-cal')).not.toHaveTextContent('—')
+  })
+
+  it('converts ounce-based portion inputs before calculating hero calories', () => {
+    render(
+      <ZoneLayout
+        {...buildProps({
+          rawTotalWeight: 16,
+          rawTotalWeightUnit: 'oz',
+          packageServingWeight: 4,
+          packageServingWeightUnit: 'oz',
+          packageCaloriesPerServing: 200,
+          cookedWeightGrams: 453.59237,
+          portionEaten: 2,
+          portionEatenUnit: 'oz',
+        })}
+      />,
+    )
+
+    expect(screen.getByTestId('hero-portion-cal')).toHaveTextContent('100')
   })
 })
