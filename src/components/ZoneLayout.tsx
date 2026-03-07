@@ -4,12 +4,12 @@ import type {
   TotalCaloriesSource,
   WeightUnit,
 } from '../hooks/useSavedMeals'
-import {
-  gramsToOunces,
-  ouncesToGrams,
-  type CalculationResult,
-} from '../utils/calculator'
+import { type CalculationResult } from '../utils/calculator'
 import { DevPanel } from './DevPanel'
+import {
+  toCanonicalCookedWeightGrams,
+  toCookedInputDisplayValue,
+} from './zones/cookedWeightInputMapping'
 import { Zone1PackageSection } from './zones/Zone1PackageSection'
 import { Zone2CookedSection } from './zones/Zone2CookedSection'
 import { Zone3PortionSection } from './zones/Zone3PortionSection'
@@ -69,10 +69,6 @@ export type ZoneLayoutProps = {
   onClear: () => void
 }
 
-function roundForInput(value: number, maxDecimals = 3): number {
-  return Number(value.toFixed(maxDecimals))
-}
-
 export function ZoneLayout({
   form,
   result,
@@ -103,12 +99,10 @@ export function ZoneLayout({
   )
   const sourceLabel = sourceLabels[result.calorie_source_used]
   const activeOutputUnit = cookedOutputUnit
-  const cookedInputValue =
-    form.cookedWeightGrams === null
-      ? null
-      : cookedInputUnit === 'oz'
-        ? roundForInput(gramsToOunces(form.cookedWeightGrams), 3)
-        : form.cookedWeightGrams
+  const cookedInputValue = toCookedInputDisplayValue(
+    form.cookedWeightGrams,
+    cookedInputUnit,
+  )
   const primaryDensityLabel =
     activeOutputUnit === 'oz' ? 'Calories per ounce' : 'Calories per gram'
   const primaryDensityValue =
@@ -150,14 +144,7 @@ export function ZoneLayout({
   const isPrimaryDensityMuted =
     primaryDensityValue === '—' || primaryDensityValue === 'Need cooked weight'
   const handleCookedWeightChange = (value: number | null) => {
-    onNumberChange(
-      'cookedWeightGrams',
-      value === null
-        ? null
-        : cookedInputUnit === 'oz'
-          ? ouncesToGrams(value)
-          : value,
-    )
+    onNumberChange('cookedWeightGrams', toCanonicalCookedWeightGrams(value, cookedInputUnit))
   }
 
   return (
