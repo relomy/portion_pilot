@@ -273,6 +273,30 @@ describe('ZoneLayout', () => {
     expect(within(zone).getByLabelText(/target cal/i)).toBeInTheDocument()
   })
 
+  it('renders Servings (optional) in Zone 3 when mode is perServing', () => {
+    render(<ZoneLayout {...buildProps({ mode: 'perServing' })} />)
+
+    const zone = screen.getByTestId('zone-portion')
+    expect(within(zone).getByLabelText(/^servings \(optional\)$/i)).toBeInTheDocument()
+  })
+
+  it('does not render Portion eaten in Zone 3 when mode is perServing', () => {
+    render(<ZoneLayout {...buildProps({ mode: 'perServing' })} />)
+
+    const zone = screen.getByTestId('zone-portion')
+    expect(within(zone).queryByLabelText(/portion eaten/i)).not.toBeInTheDocument()
+  })
+
+  it('renders Portion eaten in Zone 3 when mode is total', () => {
+    render(<ZoneLayout {...buildProps({ mode: 'total' })} />)
+
+    const zone = screen.getByTestId('zone-portion')
+    expect(within(zone).getByLabelText(/portion eaten/i)).toBeInTheDocument()
+    expect(
+      within(zone).queryByLabelText(/^servings \(optional\)$/i),
+    ).not.toBeInTheDocument()
+  })
+
   it('renders the pkg serving reference row as muted and always visible', () => {
     render(<ZoneLayout {...buildProps()} />)
 

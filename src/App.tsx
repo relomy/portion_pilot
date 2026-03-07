@@ -1,7 +1,6 @@
 import { useState } from 'react'
-import { ResultsPanel } from './components/ResultsPanel'
-import { InputPanel } from './components/InputPanel'
 import { SavedMealsList } from './components/SavedMealsList'
+import { ZoneLayout } from './components/ZoneLayout'
 import {
   type MealInputs,
   type MealMode,
@@ -189,46 +188,22 @@ function App() {
 
   return (
     <main className="app-shell">
-      <header className="app-header">
-        <p className="eyebrow">Meal calorie calculator</p>
-        <h1>Cook once, keep the numbers straight.</h1>
-        <p className="app-subtitle">
-          A kitchen worksheet for home cooks who still want disciplined calorie
-          math.
-        </p>
-      </header>
-
-      <div
-        className="calculator-layout calculator-layout--asymmetric"
-        data-testid="calculator-layout"
-      >
-        <InputPanel
-          form={form}
-          onTextChange={handleTextChange}
-          onNumberChange={handleNumberChange}
-          onUnitChange={handleUnitChange}
-          onModeChange={updateMode}
-          onTotalSourceChange={handleTotalSourceChange}
-          onSave={handleSave}
-          onClear={handleClear}
-        />
-
-        <ResultsPanel
-          result={result}
-          hasConflictingCalories={hasConflictingCalories}
-          form={form}
-          portionEaten={form.portionEaten}
-          portionEatenUnit={form.portionEatenUnit}
-          onPortionEatenChange={(value) => handleNumberChange('portionEaten', value)}
-          onPortionEatenUnitChange={(value) =>
-            handleUnitChange('portionEatenUnit', value)
-          }
-          targetCalories={targetCalories}
-          onTargetCaloriesChange={setTargetCalories}
-          cookedOutputUnit={cookedOutputUnit}
-          onCookedOutputUnitChange={setCookedOutputUnit}
-        />
-      </div>
+      <ZoneLayout
+        form={form}
+        result={result}
+        hasConflictingCalories={hasConflictingCalories}
+        targetCalories={targetCalories}
+        cookedOutputUnit={cookedOutputUnit}
+        onTextChange={handleTextChange}
+        onNumberChange={handleNumberChange}
+        onUnitChange={handleUnitChange}
+        onModeChange={updateMode}
+        onTotalSourceChange={handleTotalSourceChange}
+        onTargetCaloriesChange={setTargetCalories}
+        onCookedOutputUnitChange={setCookedOutputUnit}
+        onSave={handleSave}
+        onClear={handleClear}
+      />
 
       <SavedMealsList
         meals={savedMeals}

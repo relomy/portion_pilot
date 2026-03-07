@@ -486,124 +486,152 @@ export function ZoneLayout({
         <p className="zone__eyebrow">Zone 3 · At the plate</p>
         <h2 className="zone__title">Portion guide</h2>
 
-        <div className="portion-inputs">
-          <div className="field">
-            <div className="field__label-row">
-              <label className="field__label" htmlFor="portion-eaten">
-                Portion eaten
+        {form.mode === 'perServing' ? (
+          <div className="portion-inputs portion-inputs--single">
+            <div className="field">
+              <label className="field__label" htmlFor="zone3-servings-optional">
+                Servings (optional)
               </label>
-              <div className="unit-toggle" role="group" aria-label="Portion unit">
-                <button
-                  type="button"
-                  className={`unit-toggle__btn${form.portionEatenUnit === 'g' ? ' unit-toggle__btn--active' : ''}`}
-                  onClick={() => onUnitChange('portionEatenUnit', 'g')}
-                >
-                  g
-                </button>
-                <button
-                  type="button"
-                  className={`unit-toggle__btn${form.portionEatenUnit === 'oz' ? ' unit-toggle__btn--active' : ''}`}
-                  onClick={() => onUnitChange('portionEatenUnit', 'oz')}
-                >
-                  oz
-                </button>
+              <input
+                id="zone3-servings-optional"
+                aria-label="Servings (optional)"
+                className="field__input"
+                type="number"
+                value={toInputValue(form.yourServings)}
+                onChange={(event) =>
+                  onNumberChange(
+                    'yourServings',
+                    event.target.value === '' ? null : Number(event.target.value),
+                  )
+                }
+              />
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="portion-inputs">
+              <div className="field">
+                <div className="field__label-row">
+                  <label className="field__label" htmlFor="portion-eaten">
+                    Portion eaten
+                  </label>
+                  <div className="unit-toggle" role="group" aria-label="Portion unit">
+                    <button
+                      type="button"
+                      className={`unit-toggle__btn${form.portionEatenUnit === 'g' ? ' unit-toggle__btn--active' : ''}`}
+                      onClick={() => onUnitChange('portionEatenUnit', 'g')}
+                    >
+                      g
+                    </button>
+                    <button
+                      type="button"
+                      className={`unit-toggle__btn${form.portionEatenUnit === 'oz' ? ' unit-toggle__btn--active' : ''}`}
+                      onClick={() => onUnitChange('portionEatenUnit', 'oz')}
+                    >
+                      oz
+                    </button>
+                  </div>
+                </div>
+                <input
+                  id="portion-eaten"
+                  aria-label="Portion eaten"
+                  className="field__input"
+                  type="number"
+                  value={toInputValue(form.portionEaten)}
+                  onChange={(event) =>
+                    onNumberChange(
+                      'portionEaten',
+                      event.target.value === '' ? null : Number(event.target.value),
+                    )
+                  }
+                />
+              </div>
+
+              <div className="field">
+                <div className="field__label-row">
+                  <label className="field__label" htmlFor="target-calories">
+                    Target cal
+                  </label>
+                  <div className="unit-toggle" role="group" aria-label="Display unit">
+                    <button
+                      type="button"
+                      className={`unit-toggle__btn${activeOutputUnit === 'g' ? ' unit-toggle__btn--active' : ''}`}
+                      onClick={() => onCookedOutputUnitChange('g')}
+                    >
+                      g
+                    </button>
+                    <button
+                      type="button"
+                      className={`unit-toggle__btn${activeOutputUnit === 'oz' ? ' unit-toggle__btn--active' : ''}`}
+                      onClick={() => onCookedOutputUnitChange('oz')}
+                    >
+                      oz
+                    </button>
+                  </div>
+                </div>
+                <input
+                  id="target-calories"
+                  aria-label="Target cal"
+                  className="field__input"
+                  type="number"
+                  value={toInputValue(targetCalories)}
+                  onChange={(event) =>
+                    onTargetCaloriesChange(
+                      event.target.value === '' ? null : Number(event.target.value),
+                    )
+                  }
+                />
               </div>
             </div>
-            <input
-              id="portion-eaten"
-              aria-label="Portion eaten"
-              className="field__input"
-              type="number"
-              value={toInputValue(form.portionEaten)}
-              onChange={(event) =>
-                onNumberChange(
-                  'portionEaten',
-                  event.target.value === '' ? null : Number(event.target.value),
-                )
-              }
-            />
-          </div>
 
-          <div className="field">
-            <div className="field__label-row">
-              <label className="field__label" htmlFor="target-calories">
-                Target cal
-              </label>
-              <div className="unit-toggle" role="group" aria-label="Display unit">
-                <button
-                  type="button"
-                  className={`unit-toggle__btn${activeOutputUnit === 'g' ? ' unit-toggle__btn--active' : ''}`}
-                  onClick={() => onCookedOutputUnitChange('g')}
+            <div className="answers">
+              <div
+                className="answer-row answer-row--reference"
+                data-testid="ref-pkg-serving"
+              >
+                <span className="answer-row__label answer-row__label--italic">
+                  1 pkg serving cooked
+                </span>
+                <span
+                  className={`answer-row__value${referenceServingText === '—' ? ' answer-row__value--empty' : ''}`}
                 >
-                  g
-                </button>
-                <button
-                  type="button"
-                  className={`unit-toggle__btn${activeOutputUnit === 'oz' ? ' unit-toggle__btn--active' : ''}`}
-                  onClick={() => onCookedOutputUnitChange('oz')}
+                  {referenceServingText}
+                </span>
+              </div>
+
+              <div className="answer-row" data-testid="answer-target-portion">
+                <span className="answer-row__label">Target portion</span>
+                <span
+                  className={`answer-row__value${targetPortionText === '—' ? ' answer-row__value--empty' : ''}`}
                 >
-                  oz
-                </button>
+                  {targetPortionText}
+                </span>
+              </div>
+
+              <div className="answer-row" data-testid="answer-pkg-servings-eaten">
+                <span className="answer-row__label">Pkg servings eaten</span>
+                <span
+                  className={`answer-row__value${servingsEatenText === '—' ? ' answer-row__value--empty' : ''}`}
+                >
+                  {servingsEatenText}
+                </span>
               </div>
             </div>
-            <input
-              id="target-calories"
-              aria-label="Target cal"
-              className="field__input"
-              type="number"
-              value={toInputValue(targetCalories)}
-              onChange={(event) =>
-                onTargetCaloriesChange(
-                  event.target.value === '' ? null : Number(event.target.value),
-                )
-              }
-            />
-          </div>
-        </div>
 
-        <div className="answers">
-          <div className="answer-row answer-row--reference" data-testid="ref-pkg-serving">
-            <span className="answer-row__label answer-row__label--italic">
-              1 pkg serving cooked
-            </span>
-            <span
-              className={`answer-row__value${referenceServingText === '—' ? ' answer-row__value--empty' : ''}`}
-            >
-              {referenceServingText}
-            </span>
-          </div>
-
-          <div className="answer-row" data-testid="answer-target-portion">
-            <span className="answer-row__label">Target portion</span>
-            <span
-              className={`answer-row__value${targetPortionText === '—' ? ' answer-row__value--empty' : ''}`}
-            >
-              {targetPortionText}
-            </span>
-          </div>
-
-          <div className="answer-row" data-testid="answer-pkg-servings-eaten">
-            <span className="answer-row__label">Pkg servings eaten</span>
-            <span
-              className={`answer-row__value${servingsEatenText === '—' ? ' answer-row__value--empty' : ''}`}
-            >
-              {servingsEatenText}
-            </span>
-          </div>
-        </div>
-
-        <div className="hero-answer">
-          <span className="hero-answer__label">Portion calories</span>
-          <div>
-            <span
-              className={`hero-answer__value${portionCaloriesText === '—' ? ' hero-answer__value--empty' : ''}`}
-              data-testid="hero-portion-cal"
-            >
-              {portionCaloriesText}
-            </span>
-            <span className="hero-answer__unit">cal</span>
-          </div>
-        </div>
+            <div className="hero-answer">
+              <span className="hero-answer__label">Portion calories</span>
+              <div>
+                <span
+                  className={`hero-answer__value${portionCaloriesText === '—' ? ' hero-answer__value--empty' : ''}`}
+                  data-testid="hero-portion-cal"
+                >
+                  {portionCaloriesText}
+                </span>
+                <span className="hero-answer__unit">cal</span>
+              </div>
+            </div>
+          </>
+        )}
       </section>
 
       <footer className="action-row zone-layout__actions">
