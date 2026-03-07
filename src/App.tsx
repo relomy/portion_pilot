@@ -8,7 +8,8 @@ import {
   type WeightUnit,
   useSavedMeals,
 } from './hooks/useSavedMeals'
-import { calculateMealMetrics, ouncesToGrams } from './utils/calculator'
+import { calculateMealMetrics } from './utils/calculator'
+import { toCalculationInput } from './utils/toCalculationInput'
 
 function createEmptyForm(): MealInputs {
   return {
@@ -29,14 +30,6 @@ function createEmptyForm(): MealInputs {
     packageServingWeightUnit: 'g',
     packageCaloriesPerServing: null,
   }
-}
-
-function toGrams(value: number | null, unit: WeightUnit): number | null {
-  if (value === null) {
-    return null
-  }
-
-  return unit === 'oz' ? ouncesToGrams(value) : value
 }
 
 function hasEnteredPackageLabelSource(form: MealInputs): boolean {
@@ -71,41 +64,7 @@ function App() {
   const { deleteMeal, loadMeal, saveMeal, savedMeals } = useSavedMeals()
   const hasConflictingCalories = computeHasConflictingCalories(form)
 
-  const result = calculateMealMetrics({
-    mode: form.mode,
-    totalCaloriesSource: form.totalCaloriesSource,
-    manualTotalCalories:
-      form.mode === 'total' && form.totalCaloriesSource === 'manualTotal'
-        ? form.manualTotalCalories
-        : null,
-    totalCalories:
-      form.mode === 'total' && form.totalCaloriesSource === 'manualTotal'
-        ? form.manualTotalCalories
-        : null,
-    cookedWeightGrams: form.cookedWeightGrams,
-    portionEatenGrams:
-      form.mode === 'total'
-        ? toGrams(form.portionEaten, form.portionEatenUnit)
-        : null,
-    yourServings: form.yourServings,
-    caloriesPerServing:
-      form.mode === 'perServing' ? form.caloriesPerServing : null,
-    rawTotalWeightGrams:
-      form.mode === 'total' && form.totalCaloriesSource === 'packageLabel'
-        ? toGrams(form.rawTotalWeight, form.rawTotalWeightUnit)
-        : null,
-    packageServingWeightGrams:
-      form.mode === 'total' && form.totalCaloriesSource === 'packageLabel'
-        ? toGrams(
-            form.packageServingWeight,
-            form.packageServingWeightUnit,
-          )
-        : null,
-    packageCaloriesPerServing:
-      form.mode === 'total' && form.totalCaloriesSource === 'packageLabel'
-        ? form.packageCaloriesPerServing
-        : null,
-  })
+  const result = calculateMealMetrics(toCalculationInput(form))
 
   function handleTextChange(field: 'mealName', value: string) {
     setForm((current) => ({ ...current, [field]: value }))

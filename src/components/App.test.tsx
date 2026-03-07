@@ -119,6 +119,45 @@ describe('App zone layout migration', () => {
     ).toHaveValue(900)
   })
 
+  it('does not leak per-serving servings into total manual calculations', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    const packageZone = getPackageZone()
+
+    await user.click(
+      within(packageZone).getByRole('radio', { name: /^per serving$/i }),
+    )
+    await user.type(
+      within(packageZone).getByLabelText(/^calories per serving$/i),
+      '250',
+    )
+    await user.type(
+      within(packageZone).getByLabelText(/^servings \(optional\)$/i),
+      '2',
+    )
+
+    await user.click(
+      within(packageZone).getByRole('radio', { name: /^total calories$/i }),
+    )
+    await user.click(
+      within(packageZone).getByRole('radio', { name: /^manual total$/i }),
+    )
+    await user.type(
+      within(packageZone).getByLabelText(/^total calories$/i, {
+        selector: 'input[type="number"]',
+      }),
+      '600',
+    )
+
+    expect(within(packageZone).getByTestId('derived-total-cal')).toHaveTextContent(
+      /^600$/,
+    )
+    expect(within(packageZone).getByTestId('derived-cal-serving')).toHaveTextContent(
+      '—',
+    )
+  })
+
   it('shows conflict diagnostics for real competing calorie entries only', async () => {
     const user = userEvent.setup()
     render(<App />)
