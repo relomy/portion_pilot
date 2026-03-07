@@ -9,6 +9,8 @@ import {
   ouncesToGrams,
   type CalculationResult,
 } from '../utils/calculator'
+import { DerivedMetricRow } from './zones/DerivedMetricRow'
+import { UnitToggle } from './zones/UnitToggle'
 import { DevPanel } from './DevPanel'
 import {
   formatCaloriesPer100Grams,
@@ -68,25 +70,6 @@ export type ZoneLayoutProps = {
 
 function toInputValue(value: number | null) {
   return value ?? ''
-}
-
-function DerivedValue({
-  value,
-  testId,
-}: {
-  value: string
-  testId: string
-}) {
-  const isEmpty = value === '—'
-
-  return (
-    <span
-      className={`derived__value${isEmpty ? ' derived__value--empty' : ''}`}
-      data-testid={testId}
-    >
-      {value}
-    </span>
-  )
 }
 
 export function ZoneLayout({
@@ -266,26 +249,12 @@ export function ZoneLayout({
                       )
                     }
                   />
-                  <fieldset className="unit-toggle" aria-label="Serving weight unit">
-                    <label className="unit-toggle__option">
-                      <input
-                        type="radio"
-                        name="serving-weight-unit"
-                        checked={form.packageServingWeightUnit === 'g'}
-                        onChange={() => onUnitChange('packageServingWeightUnit', 'g')}
-                      />
-                      <span>g</span>
-                    </label>
-                    <label className="unit-toggle__option">
-                      <input
-                        type="radio"
-                        name="serving-weight-unit"
-                        checked={form.packageServingWeightUnit === 'oz'}
-                        onChange={() => onUnitChange('packageServingWeightUnit', 'oz')}
-                      />
-                      <span>oz</span>
-                    </label>
-                  </fieldset>
+                  <UnitToggle
+                    name="serving-weight-unit"
+                    ariaLabel="Serving weight unit"
+                    value={form.packageServingWeightUnit}
+                    onChange={(value) => onUnitChange('packageServingWeightUnit', value)}
+                  />
                 </div>
               </div>
 
@@ -327,26 +296,12 @@ export function ZoneLayout({
                     )
                   }
                 />
-                <fieldset className="unit-toggle" aria-label="Raw total weight unit">
-                  <label className="unit-toggle__option">
-                    <input
-                      type="radio"
-                      name="raw-total-weight-unit"
-                      checked={form.rawTotalWeightUnit === 'g'}
-                      onChange={() => onUnitChange('rawTotalWeightUnit', 'g')}
-                    />
-                    <span>g</span>
-                  </label>
-                  <label className="unit-toggle__option">
-                    <input
-                      type="radio"
-                      name="raw-total-weight-unit"
-                      checked={form.rawTotalWeightUnit === 'oz'}
-                      onChange={() => onUnitChange('rawTotalWeightUnit', 'oz')}
-                    />
-                    <span>oz</span>
-                  </label>
-                </fieldset>
+                <UnitToggle
+                  name="raw-total-weight-unit"
+                  ariaLabel="Raw total weight unit"
+                  value={form.rawTotalWeightUnit}
+                  onChange={(value) => onUnitChange('rawTotalWeightUnit', value)}
+                />
               </div>
             </div>
           </>
@@ -421,21 +376,21 @@ export function ZoneLayout({
         ) : null}
 
         <div className="derived">
-          <div className="derived__item">
-            <span className="derived__label">Total cal</span>
-            <DerivedValue value={totalCaloriesText} testId="derived-total-cal" />
-          </div>
-          <div className="derived__item">
-            <span className="derived__label">Raw servings</span>
-            <DerivedValue value={rawServingsText} testId="derived-raw-servings" />
-          </div>
-          <div className="derived__item">
-            <span className="derived__label">Cal / serving</span>
-            <DerivedValue
-              value={caloriesPerServingText}
-              testId="derived-cal-serving"
-            />
-          </div>
+          <DerivedMetricRow
+            label="Total cal"
+            value={totalCaloriesText}
+            testId="derived-total-cal"
+          />
+          <DerivedMetricRow
+            label="Raw servings"
+            value={rawServingsText}
+            testId="derived-raw-servings"
+          />
+          <DerivedMetricRow
+            label="Cal / serving"
+            value={caloriesPerServingText}
+            testId="derived-cal-serving"
+          />
         </div>
       </section>
 
@@ -467,26 +422,12 @@ export function ZoneLayout({
                 )
               }}
             />
-            <fieldset className="unit-toggle" aria-label="Cooked weight unit">
-              <label className="unit-toggle__option">
-                <input
-                  type="radio"
-                  name="cooked-weight-input-unit"
-                  checked={cookedInputUnit === 'g'}
-                  onChange={() => onCookedInputUnitChange('g')}
-                />
-                <span>g</span>
-              </label>
-              <label className="unit-toggle__option">
-                <input
-                  type="radio"
-                  name="cooked-weight-input-unit"
-                  checked={cookedInputUnit === 'oz'}
-                  onChange={() => onCookedInputUnitChange('oz')}
-                />
-                <span>oz</span>
-              </label>
-            </fieldset>
+            <UnitToggle
+              name="cooked-weight-input-unit"
+              ariaLabel="Cooked weight unit"
+              value={cookedInputUnit}
+              onChange={onCookedInputUnitChange}
+            />
           </div>
         </div>
 
@@ -541,26 +482,12 @@ export function ZoneLayout({
                   <label className="field__label" htmlFor="portion-eaten">
                     Portion eaten
                   </label>
-                  <fieldset className="unit-toggle" aria-label="Portion unit">
-                    <label className="unit-toggle__option">
-                      <input
-                        type="radio"
-                        name="portion-unit"
-                        checked={form.portionEatenUnit === 'g'}
-                        onChange={() => onUnitChange('portionEatenUnit', 'g')}
-                      />
-                      <span>g</span>
-                    </label>
-                    <label className="unit-toggle__option">
-                      <input
-                        type="radio"
-                        name="portion-unit"
-                        checked={form.portionEatenUnit === 'oz'}
-                        onChange={() => onUnitChange('portionEatenUnit', 'oz')}
-                      />
-                      <span>oz</span>
-                    </label>
-                  </fieldset>
+                  <UnitToggle
+                    name="portion-unit"
+                    ariaLabel="Portion unit"
+                    value={form.portionEatenUnit}
+                    onChange={(value) => onUnitChange('portionEatenUnit', value)}
+                  />
                 </div>
                 <input
                   id="portion-eaten"
@@ -582,26 +509,12 @@ export function ZoneLayout({
                   <label className="field__label" htmlFor="target-calories">
                     Target cal
                   </label>
-                  <fieldset className="unit-toggle" aria-label="Display unit">
-                    <label className="unit-toggle__option">
-                      <input
-                        type="radio"
-                        name="display-unit"
-                        checked={activeOutputUnit === 'g'}
-                        onChange={() => onCookedOutputUnitChange('g')}
-                      />
-                      <span>g</span>
-                    </label>
-                    <label className="unit-toggle__option">
-                      <input
-                        type="radio"
-                        name="display-unit"
-                        checked={activeOutputUnit === 'oz'}
-                        onChange={() => onCookedOutputUnitChange('oz')}
-                      />
-                      <span>oz</span>
-                    </label>
-                  </fieldset>
+                  <UnitToggle
+                    name="display-unit"
+                    ariaLabel="Display unit"
+                    value={activeOutputUnit}
+                    onChange={onCookedOutputUnitChange}
+                  />
                 </div>
                 <input
                   id="target-calories"
