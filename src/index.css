@@ -287,8 +287,9 @@ input:disabled {
   font-size: 14px;
 }
 
-.field__input:focus {
-  outline: none;
+.field__input:focus-visible {
+  outline: 2px solid var(--teal-mid);
+  outline-offset: 1px;
   border-color: var(--teal-mid);
 }
 

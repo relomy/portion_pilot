@@ -64,4 +64,14 @@ describe('index.css', () => {
     expect(css).toContain('@keyframes rise-in')
     expect(css).toContain('@media (prefers-reduced-motion: reduce)')
   })
+
+  it('restores visible keyboard focus styles for field inputs', () => {
+    const css = readCss()
+
+    expect(css).toContain('.field__input:focus-visible')
+    expect(css).toMatch(
+      /\.field__input:focus-visible\s*\{[^}]*((outline:\s*[^;]+;)|(box-shadow:\s*[^;]+;))/s
+    )
+    expect(css).not.toMatch(/\.field__input:focus\s*\{[^}]*outline:\s*none\s*;/s)
+  })
 })
