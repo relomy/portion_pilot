@@ -251,14 +251,16 @@ describe('ZoneLayout', () => {
     expect(within(zone).getByLabelText(/target cal/i)).toBeInTheDocument()
   })
 
-  it('renders Servings (optional) in Zone 3 when mode is perServing', () => {
+  it('does not render Servings (optional) in Zone 3 when mode is perServing', () => {
     render(<ZoneLayout {...buildProps({ mode: 'perServing' })} />)
 
     const zone = screen.getByTestId('zone-portion')
-    expect(within(zone).getByLabelText(/^servings \(optional\)$/i)).toBeInTheDocument()
+    expect(
+      within(zone).queryByLabelText(/^servings \(optional\)$/i),
+    ).not.toBeInTheDocument()
   })
 
-  it('shows per-serving assumption note when servings are not provided', () => {
+  it('shows per-serving assumption note in Zone 1 when servings are not provided', () => {
     render(
       <ZoneLayout
         {...buildProps({
@@ -269,12 +271,17 @@ describe('ZoneLayout', () => {
       />,
     )
 
+    const packageZone = screen.getByTestId('zone-package')
+    const portionZone = screen.getByTestId('zone-portion')
     expect(
-      screen.getByText(/assumed 1 serving because none was provided\./i),
+      within(packageZone).getByText(/assumed 1 serving because none was provided\./i),
     ).toBeInTheDocument()
+    expect(
+      within(portionZone).queryByText(/assumed 1 serving because none was provided\./i),
+    ).not.toBeInTheDocument()
   })
 
-  it('hides per-serving assumption note when servings are provided', () => {
+  it('hides per-serving assumption note in Zone 1 when servings are provided', () => {
     render(
       <ZoneLayout
         {...buildProps({
@@ -285,16 +292,30 @@ describe('ZoneLayout', () => {
       />,
     )
 
+    const packageZone = screen.getByTestId('zone-package')
     expect(
-      screen.queryByText(/assumed 1 serving because none was provided\./i),
+      within(packageZone).queryByText(/assumed 1 serving because none was provided\./i),
     ).not.toBeInTheDocument()
   })
 
-  it('does not render Portion eaten in Zone 3 when mode is perServing', () => {
+  it('does not render editable controls in Zone 3 when mode is perServing', () => {
     render(<ZoneLayout {...buildProps({ mode: 'perServing' })} />)
 
     const zone = screen.getByTestId('zone-portion')
     expect(within(zone).queryByLabelText(/portion eaten/i)).not.toBeInTheDocument()
+    expect(within(zone).queryByLabelText(/target cal/i)).not.toBeInTheDocument()
+  })
+
+  it('does not render answer rows in Zone 3 when mode is perServing', () => {
+    render(<ZoneLayout {...buildProps({ mode: 'perServing' })} />)
+
+    const zone = screen.getByTestId('zone-portion')
+    expect(within(zone).queryByTestId('ref-pkg-serving')).not.toBeInTheDocument()
+    expect(within(zone).queryByTestId('answer-target-portion')).not.toBeInTheDocument()
+    expect(
+      within(zone).queryByTestId('answer-pkg-servings-eaten'),
+    ).not.toBeInTheDocument()
+    expect(within(zone).queryByTestId('hero-portion-cal')).not.toBeInTheDocument()
   })
 
   it('renders Portion eaten in Zone 3 when mode is total', () => {

@@ -360,45 +360,50 @@ export function ZoneLayout({
         ) : null}
 
         {form.mode === 'perServing' ? (
-          <div className="field-pair">
-            <div className="field">
-              <label className="field__label" htmlFor="calories-per-serving">
-                Calories per serving
-              </label>
-              <input
-                id="calories-per-serving"
-                aria-label="Calories per serving"
-                className="field__input"
-                type="number"
-                value={toInputValue(form.caloriesPerServing)}
-                onChange={(event) =>
-                  onNumberChange(
-                    'caloriesPerServing',
-                    event.target.value === '' ? null : Number(event.target.value),
-                  )
-                }
-              />
-            </div>
+          <>
+            <div className="field-pair">
+              <div className="field">
+                <label className="field__label" htmlFor="calories-per-serving">
+                  Calories per serving
+                </label>
+                <input
+                  id="calories-per-serving"
+                  aria-label="Calories per serving"
+                  className="field__input"
+                  type="number"
+                  value={toInputValue(form.caloriesPerServing)}
+                  onChange={(event) =>
+                    onNumberChange(
+                      'caloriesPerServing',
+                      event.target.value === '' ? null : Number(event.target.value),
+                    )
+                  }
+                />
+              </div>
 
-            <div className="field">
-              <label className="field__label" htmlFor="servings-optional">
-                Servings (optional)
-              </label>
-              <input
-                id="servings-optional"
-                aria-label="Servings (optional)"
-                className="field__input"
-                type="number"
-                value={toInputValue(form.yourServings)}
-                onChange={(event) =>
-                  onNumberChange(
-                    'yourServings',
-                    event.target.value === '' ? null : Number(event.target.value),
-                  )
-                }
-              />
+              <div className="field">
+                <label className="field__label" htmlFor="servings-optional">
+                  Servings (optional)
+                </label>
+                <input
+                  id="servings-optional"
+                  aria-label="Servings (optional)"
+                  className="field__input"
+                  type="number"
+                  value={toInputValue(form.yourServings)}
+                  onChange={(event) =>
+                    onNumberChange(
+                      'yourServings',
+                      event.target.value === '' ? null : Number(event.target.value),
+                    )
+                  }
+                />
+              </div>
             </div>
-          </div>
+            {result.assumptions.servings_assumed ? (
+              <p className="assumption-note">Assumed 1 serving because none was provided.</p>
+            ) : null}
+          </>
         ) : null}
 
         <div className="derived">
@@ -486,35 +491,7 @@ export function ZoneLayout({
         <p className="zone__eyebrow">Zone 3 · At the plate</p>
         <h2 className="zone__title">Portion guide</h2>
 
-        {form.mode === 'perServing' ? (
-          <>
-            <div className="portion-inputs portion-inputs--single">
-              <div className="field">
-                <label className="field__label" htmlFor="zone3-servings-optional">
-                  Servings (optional)
-                </label>
-                <input
-                  id="zone3-servings-optional"
-                  aria-label="Servings (optional)"
-                  className="field__input"
-                  type="number"
-                  value={toInputValue(form.yourServings)}
-                  onChange={(event) =>
-                    onNumberChange(
-                      'yourServings',
-                      event.target.value === '' ? null : Number(event.target.value),
-                    )
-                  }
-                />
-              </div>
-            </div>
-            {result.assumptions.servings_assumed ? (
-              <p className="assumption-note">
-                Assumed 1 serving because none was provided.
-              </p>
-            ) : null}
-          </>
-        ) : (
+        {form.mode === 'total' ? (
           <>
             <div className="portion-inputs">
               <div className="field">
@@ -638,7 +615,7 @@ export function ZoneLayout({
               </div>
             </div>
           </>
-        )}
+        ) : null}
       </section>
 
       <footer className="action-row zone-layout__actions">
