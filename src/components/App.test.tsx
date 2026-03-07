@@ -270,8 +270,24 @@ describe('App zone layout migration', () => {
     )
     await user.type(within(cookedZone).getByLabelText(/^cooked weight$/i), '26.244')
 
-    expect(within(cookedZone).getByTestId('density-primary')).toBeInTheDocument()
-    expect(within(cookedZone).getByText(/calories per ounce/i)).toBeInTheDocument()
+    expect(within(cookedZone).getByTestId('density-primary')).toHaveTextContent(
+      /2\.078/,
+    )
+  })
+
+  it('keeps ounce-mode cooked input display stable for decimal entry', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    const cookedZone = getCookedZone()
+    const cookedInput = within(cookedZone).getByLabelText(/^cooked weight$/i)
+
+    await user.click(
+      within(cookedZone).getByRole('radio', { name: /^oz$/i }),
+    )
+    await user.type(cookedInput, '0.1')
+
+    expect((cookedInput as HTMLInputElement).value).toBe('0.1')
   })
 
   it('resets form and ephemeral target calories on clear', async () => {

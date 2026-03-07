@@ -72,6 +72,10 @@ function toInputValue(value: number | null) {
   return value ?? ''
 }
 
+function roundForInput(value: number, maxDecimals = 3): number {
+  return Number(value.toFixed(maxDecimals))
+}
+
 export function ZoneLayout({
   form,
   result,
@@ -106,7 +110,7 @@ export function ZoneLayout({
     form.cookedWeightGrams === null
       ? null
       : cookedInputUnit === 'oz'
-        ? gramsToOunces(form.cookedWeightGrams)
+        ? roundForInput(gramsToOunces(form.cookedWeightGrams), 3)
         : form.cookedWeightGrams
   const primaryDensityLabel =
     activeOutputUnit === 'oz' ? 'Calories per ounce' : 'Calories per gram'
