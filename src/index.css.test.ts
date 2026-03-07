@@ -64,4 +64,24 @@ describe('index.css', () => {
     expect(css).toContain('@keyframes rise-in')
     expect(css).toContain('@media (prefers-reduced-motion: reduce)')
   })
+
+  it('styles cooked weight as a field-with-unit control in zone 2', () => {
+    const css = readCss()
+
+    expect(css).toContain('.field-with-unit')
+    expect(css).toContain('.unit-toggle')
+    expect(css).toContain('.unit-toggle__option')
+    expect(css).toContain('.unit-toggle__option:has(input:checked)')
+    expect(css).toContain('.zone--cooked .field-with-unit')
+  })
+
+  it('restores visible keyboard focus styles for field inputs', () => {
+    const css = readCss()
+
+    expect(css).toContain('.field__input:focus-visible')
+    expect(css).toMatch(
+      /\.field__input:focus-visible\s*\{[^}]*((outline:\s*[^;]+;)|(box-shadow:\s*[^;]+;))/s
+    )
+    expect(css).not.toMatch(/\.field__input:focus\s*\{[^}]*outline:\s*none\s*;/s)
+  })
 })

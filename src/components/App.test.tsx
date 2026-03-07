@@ -119,6 +119,45 @@ describe('App zone layout migration', () => {
     ).toHaveValue(900)
   })
 
+  it('does not leak per-serving servings into total manual calculations', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    const packageZone = getPackageZone()
+
+    await user.click(
+      within(packageZone).getByRole('radio', { name: /^per serving$/i }),
+    )
+    await user.type(
+      within(packageZone).getByLabelText(/^calories per serving$/i),
+      '250',
+    )
+    await user.type(
+      within(packageZone).getByLabelText(/^servings \(optional\)$/i),
+      '2',
+    )
+
+    await user.click(
+      within(packageZone).getByRole('radio', { name: /^total calories$/i }),
+    )
+    await user.click(
+      within(packageZone).getByRole('radio', { name: /^manual total$/i }),
+    )
+    await user.type(
+      within(packageZone).getByLabelText(/^total calories$/i, {
+        selector: 'input[type="number"]',
+      }),
+      '600',
+    )
+
+    expect(within(packageZone).getByTestId('derived-total-cal')).toHaveTextContent(
+      /^600$/,
+    )
+    expect(within(packageZone).getByTestId('derived-cal-serving')).toHaveTextContent(
+      '—',
+    )
+  })
+
   it('shows conflict diagnostics for real competing calorie entries only', async () => {
     const user = userEvent.setup()
     render(<App />)
@@ -169,7 +208,7 @@ describe('App zone layout migration', () => {
     expect(screen.getByText(/"hasConflictingCalories": false/i)).toBeInTheDocument()
   })
 
-  it('gates Zone 3 on mode: perServing shows servings and hides portion eaten', async () => {
+  it('gates Zone 3 on mode: perServing hides servings and portion eaten controls', async () => {
     const user = userEvent.setup()
     render(<App />)
 
@@ -181,8 +220,8 @@ describe('App zone layout migration', () => {
     )
 
     expect(
-      within(portionZone).getByLabelText(/^servings \(optional\)$/i),
-    ).toBeInTheDocument()
+      within(portionZone).queryByLabelText(/^servings \(optional\)$/i),
+    ).not.toBeInTheDocument()
     expect(
       within(portionZone).queryByLabelText(/^portion eaten$/i),
     ).not.toBeInTheDocument()
@@ -214,6 +253,41 @@ describe('App zone layout migration', () => {
     expect(within(packageZone).getByTestId('derived-raw-servings')).toHaveTextContent(
       /^3\.523$/,
     )
+  })
+
+  it('lets users enter cooked weight in ounces and still computes cooked outputs', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    const packageZone = getPackageZone()
+    const cookedZone = getCookedZone()
+
+    await user.type(within(packageZone).getByLabelText(/^raw total weight$/i), '560')
+    await user.type(within(packageZone).getByLabelText(/^serving weight$/i), '134')
+    await user.type(within(packageZone).getByLabelText(/^calories \/ serving$/i), '370')
+    await user.click(
+      within(cookedZone).getByRole('radio', { name: /^oz$/i }),
+    )
+    await user.type(within(cookedZone).getByLabelText(/^cooked weight$/i), '26.244')
+
+    expect(within(cookedZone).getByTestId('density-primary')).toHaveTextContent(
+      /2\.078/,
+    )
+  })
+
+  it('keeps ounce-mode cooked input display stable for decimal entry', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    const cookedZone = getCookedZone()
+    const cookedInput = within(cookedZone).getByLabelText(/^cooked weight$/i)
+
+    await user.click(
+      within(cookedZone).getByRole('radio', { name: /^oz$/i }),
+    )
+    await user.type(cookedInput, '0.1')
+
+    expect((cookedInput as HTMLInputElement).value).toBe('0.1')
   })
 
   it('resets form and ephemeral target calories on clear', async () => {
@@ -311,18 +385,20 @@ describe('App zone layout migration', () => {
 
     const packageZone = getPackageZone()
     const cookedZone = getCookedZone()
+    const rawWeightUnitGroup = within(packageZone).getByRole('group', {
+      name: /raw total weight unit/i,
+    })
+    const servingWeightUnitGroup = within(packageZone).getByRole('group', {
+      name: /serving weight unit/i,
+    })
 
     await user.type(within(packageZone).getByLabelText(/^meal name$/i), 'Ravioli')
     await user.click(
-      within(
-        within(packageZone).getByRole('group', { name: /raw total weight unit/i }),
-      ).getByRole('button', { name: /^oz$/i }),
+      within(rawWeightUnitGroup).getByRole('radio', { name: /^oz$/i }),
     )
     await user.type(within(packageZone).getByLabelText(/^raw total weight$/i), '19.8')
     await user.click(
-      within(
-        within(packageZone).getByRole('group', { name: /serving weight unit/i }),
-      ).getByRole('button', { name: /^oz$/i }),
+      within(servingWeightUnitGroup).getByRole('radio', { name: /^oz$/i }),
     )
     await user.type(within(packageZone).getByLabelText(/^serving weight$/i), '4.7')
     await user.type(within(packageZone).getByLabelText(/^calories \/ serving$/i), '370')
@@ -333,15 +409,11 @@ describe('App zone layout migration', () => {
     await user.click(screen.getByRole('button', { name: /^load$/i }))
 
     expect(
-      within(
-        within(packageZone).getByRole('group', { name: /raw total weight unit/i }),
-      ).getByRole('button', { name: /^oz$/i }),
-    ).toHaveClass('unit-toggle__btn--active')
+      within(rawWeightUnitGroup).getByRole('radio', { name: /^oz$/i }),
+    ).toBeChecked()
     expect(
-      within(
-        within(packageZone).getByRole('group', { name: /serving weight unit/i }),
-      ).getByRole('button', { name: /^oz$/i }),
-    ).toHaveClass('unit-toggle__btn--active')
+      within(servingWeightUnitGroup).getByRole('radio', { name: /^oz$/i }),
+    ).toBeChecked()
     expect(within(packageZone).getByLabelText(/^raw total weight$/i)).toHaveValue(19.8)
     expect(within(packageZone).getByLabelText(/^serving weight$/i)).toHaveValue(4.7)
   })

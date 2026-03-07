@@ -1,8 +1,9 @@
-import { render, screen, within } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
-import type { MealInputs, WeightUnit } from '../hooks/useSavedMeals'
-import { calculateMealMetrics, ouncesToGrams } from '../utils/calculator'
+import { describe, expect, it, vi } from 'vitest'
+import type { MealInputs } from '../hooks/useSavedMeals'
+import { calculateMealMetrics } from '../utils/calculator'
+import { toCalculationInput } from '../utils/toCalculationInput'
 import { ZoneLayout, type ZoneLayoutProps } from './ZoneLayout'
 
 const baseForm: MealInputs = {
@@ -24,54 +25,16 @@ const baseForm: MealInputs = {
   packageCaloriesPerServing: null,
 }
 
-function toGrams(value: number | null, unit: WeightUnit): number | null {
-  if (value === null) {
-    return null
-  }
-
-  return unit === 'oz' ? ouncesToGrams(value) : value
-}
-
 function buildProps(overrides: Partial<MealInputs> = {}): ZoneLayoutProps {
   const form: MealInputs = { ...baseForm, ...overrides }
-  const result = calculateMealMetrics({
-    mode: form.mode,
-    totalCaloriesSource: form.totalCaloriesSource,
-    manualTotalCalories:
-      form.mode === 'total' && form.totalCaloriesSource === 'manualTotal'
-        ? form.manualTotalCalories
-        : null,
-    totalCalories:
-      form.mode === 'total' && form.totalCaloriesSource === 'manualTotal'
-        ? form.manualTotalCalories
-        : null,
-    cookedWeightGrams: form.cookedWeightGrams,
-    portionEatenGrams:
-      form.mode === 'total'
-        ? toGrams(form.portionEaten, form.portionEatenUnit)
-        : null,
-    yourServings: form.yourServings,
-    caloriesPerServing:
-      form.mode === 'perServing' ? form.caloriesPerServing : null,
-    rawTotalWeightGrams:
-      form.mode === 'total' && form.totalCaloriesSource === 'packageLabel'
-        ? toGrams(form.rawTotalWeight, form.rawTotalWeightUnit)
-        : null,
-    packageServingWeightGrams:
-      form.mode === 'total' && form.totalCaloriesSource === 'packageLabel'
-        ? toGrams(form.packageServingWeight, form.packageServingWeightUnit)
-        : null,
-    packageCaloriesPerServing:
-      form.mode === 'total' && form.totalCaloriesSource === 'packageLabel'
-        ? form.packageCaloriesPerServing
-        : null,
-  })
+  const result = calculateMealMetrics(toCalculationInput(form))
 
   return {
     form,
     result,
     hasConflictingCalories: false,
     targetCalories: null,
+    cookedInputUnit: 'g',
     cookedOutputUnit: 'g',
     onTextChange: () => {},
     onNumberChange: () => {},
@@ -79,6 +42,7 @@ function buildProps(overrides: Partial<MealInputs> = {}): ZoneLayoutProps {
     onModeChange: () => {},
     onTotalSourceChange: () => {},
     onTargetCaloriesChange: () => {},
+    onCookedInputUnitChange: () => {},
     onCookedOutputUnitChange: () => {},
     onSave: () => {},
     onClear: () => {},
@@ -140,6 +104,32 @@ describe('ZoneLayout', () => {
     expect(within(zone).getByLabelText(/^raw total weight$/i)).toBeInTheDocument()
   })
 
+  it('marks the selected package unit radios as checked', () => {
+    render(
+      <ZoneLayout
+        {...buildProps({
+          packageServingWeightUnit: 'oz',
+          rawTotalWeightUnit: 'oz',
+        })}
+      />,
+    )
+
+    const zone = screen.getByTestId('zone-package')
+    const servingWeightUnitGroup = within(zone).getByRole('group', {
+      name: /serving weight unit/i,
+    })
+    const rawWeightUnitGroup = within(zone).getByRole('group', {
+      name: /raw total weight unit/i,
+    })
+
+    expect(
+      within(servingWeightUnitGroup).getByRole('radio', { name: /^oz$/i }),
+    ).toBeChecked()
+    expect(
+      within(rawWeightUnitGroup).getByRole('radio', { name: /^oz$/i }),
+    ).toBeChecked()
+  })
+
   it('renders Total calories input in manual total source mode', () => {
     render(
       <ZoneLayout
@@ -174,6 +164,22 @@ describe('ZoneLayout', () => {
     ).not.toBeInTheDocument()
   })
 
+  it('keeps calories per serving hidden in total/manual mode', () => {
+    render(
+      <ZoneLayout
+        {...buildProps({
+          mode: 'total',
+          totalCaloriesSource: 'manualTotal',
+          manualTotalCalories: 1200,
+          yourServings: 4,
+        })}
+      />,
+    )
+
+    const zone = screen.getByTestId('zone-package')
+    expect(within(zone).getByTestId('derived-cal-serving')).toHaveTextContent('—')
+  })
+
   it('renders Zone 1 derived values with dashes when inputs are empty', () => {
     render(<ZoneLayout {...buildProps()} />)
 
@@ -202,7 +208,57 @@ describe('ZoneLayout', () => {
     render(<ZoneLayout {...buildProps()} />)
 
     const zone = screen.getByTestId('zone-cooked')
-    expect(within(zone).getByLabelText(/cooked.*weight/i)).toBeInTheDocument()
+    expect(within(zone).getByLabelText(/^cooked weight$/i)).toBeInTheDocument()
+  })
+
+  it('renders cooked weight with a g/oz unit toggle in Zone 2', () => {
+    render(<ZoneLayout {...buildProps()} />)
+
+    const zone = screen.getByTestId('zone-cooked')
+    expect(within(zone).getByLabelText(/^cooked weight$/i)).toBeInTheDocument()
+    expect(
+      within(zone).getByRole('group', { name: /cooked weight unit/i }),
+    ).toBeInTheDocument()
+  })
+
+  it('calls onCookedInputUnitChange when cooked weight unit is toggled', async () => {
+    const user = userEvent.setup()
+    const onCookedInputUnitChange = vi.fn()
+    render(
+      <ZoneLayout
+        {...buildProps()}
+        onCookedInputUnitChange={onCookedInputUnitChange}
+      />,
+    )
+
+    const zone = screen.getByTestId('zone-cooked')
+    await user.click(within(zone).getByRole('radio', { name: /^oz$/i }))
+
+    expect(onCookedInputUnitChange).toHaveBeenCalledWith('oz')
+  })
+
+  it('converts typed cooked weight ounces to grams before calling onNumberChange', async () => {
+    const onNumberChange = vi.fn()
+    const onCookedOutputUnitChange = vi.fn()
+    render(
+      <ZoneLayout
+        {...buildProps()}
+        cookedInputUnit="oz"
+        onNumberChange={onNumberChange}
+        onCookedOutputUnitChange={onCookedOutputUnitChange}
+      />,
+    )
+
+    const zone = screen.getByTestId('zone-cooked')
+    fireEvent.change(within(zone).getByLabelText(/^cooked weight$/i), {
+      target: { value: '10' },
+    })
+
+    expect(onNumberChange).toHaveBeenLastCalledWith(
+      'cookedWeightGrams',
+      expect.closeTo(283.495, 3),
+    )
+    expect(onCookedOutputUnitChange).not.toHaveBeenCalled()
   })
 
   it('renders Zone 2 density block with formatter copy when cooked weight is absent', () => {
@@ -273,14 +329,42 @@ describe('ZoneLayout', () => {
     expect(within(zone).getByLabelText(/target cal/i)).toBeInTheDocument()
   })
 
-  it('renders Servings (optional) in Zone 3 when mode is perServing', () => {
+  it('marks the selected Zone 3 unit radios as checked', () => {
+    render(
+      <ZoneLayout
+        {...buildProps({
+          portionEatenUnit: 'oz',
+        })}
+        cookedOutputUnit="oz"
+      />,
+    )
+
+    const zone = screen.getByTestId('zone-portion')
+    const portionUnitGroup = within(zone).getByRole('group', {
+      name: /portion unit/i,
+    })
+    const displayUnitGroup = within(zone).getByRole('group', {
+      name: /display unit/i,
+    })
+
+    expect(
+      within(portionUnitGroup).getByRole('radio', { name: /^oz$/i }),
+    ).toBeChecked()
+    expect(
+      within(displayUnitGroup).getByRole('radio', { name: /^oz$/i }),
+    ).toBeChecked()
+  })
+
+  it('does not render Servings (optional) in Zone 3 when mode is perServing', () => {
     render(<ZoneLayout {...buildProps({ mode: 'perServing' })} />)
 
     const zone = screen.getByTestId('zone-portion')
-    expect(within(zone).getByLabelText(/^servings \(optional\)$/i)).toBeInTheDocument()
+    expect(
+      within(zone).queryByLabelText(/^servings \(optional\)$/i),
+    ).not.toBeInTheDocument()
   })
 
-  it('shows per-serving assumption note when servings are not provided', () => {
+  it('shows per-serving assumption note in Zone 1 when servings are not provided', () => {
     render(
       <ZoneLayout
         {...buildProps({
@@ -291,12 +375,17 @@ describe('ZoneLayout', () => {
       />,
     )
 
+    const packageZone = screen.getByTestId('zone-package')
+    const portionZone = screen.getByTestId('zone-portion')
     expect(
-      screen.getByText(/assumed 1 serving because none was provided\./i),
+      within(packageZone).getByText(/assumed 1 serving because none was provided\./i),
     ).toBeInTheDocument()
+    expect(
+      within(portionZone).queryByText(/assumed 1 serving because none was provided\./i),
+    ).not.toBeInTheDocument()
   })
 
-  it('hides per-serving assumption note when servings are provided', () => {
+  it('hides per-serving assumption note in Zone 1 when servings are provided', () => {
     render(
       <ZoneLayout
         {...buildProps({
@@ -307,16 +396,30 @@ describe('ZoneLayout', () => {
       />,
     )
 
+    const packageZone = screen.getByTestId('zone-package')
     expect(
-      screen.queryByText(/assumed 1 serving because none was provided\./i),
+      within(packageZone).queryByText(/assumed 1 serving because none was provided\./i),
     ).not.toBeInTheDocument()
   })
 
-  it('does not render Portion eaten in Zone 3 when mode is perServing', () => {
+  it('does not render editable controls in Zone 3 when mode is perServing', () => {
     render(<ZoneLayout {...buildProps({ mode: 'perServing' })} />)
 
     const zone = screen.getByTestId('zone-portion')
     expect(within(zone).queryByLabelText(/portion eaten/i)).not.toBeInTheDocument()
+    expect(within(zone).queryByLabelText(/target cal/i)).not.toBeInTheDocument()
+  })
+
+  it('does not render answer rows in Zone 3 when mode is perServing', () => {
+    render(<ZoneLayout {...buildProps({ mode: 'perServing' })} />)
+
+    const zone = screen.getByTestId('zone-portion')
+    expect(within(zone).queryByTestId('ref-pkg-serving')).not.toBeInTheDocument()
+    expect(within(zone).queryByTestId('answer-target-portion')).not.toBeInTheDocument()
+    expect(
+      within(zone).queryByTestId('answer-pkg-servings-eaten'),
+    ).not.toBeInTheDocument()
+    expect(within(zone).queryByTestId('hero-portion-cal')).not.toBeInTheDocument()
   })
 
   it('renders Portion eaten in Zone 3 when mode is total', () => {
@@ -362,5 +465,24 @@ describe('ZoneLayout', () => {
     )
 
     expect(screen.getByTestId('hero-portion-cal')).not.toHaveTextContent('—')
+  })
+
+  it('converts ounce-based portion inputs before calculating hero calories', () => {
+    render(
+      <ZoneLayout
+        {...buildProps({
+          rawTotalWeight: 16,
+          rawTotalWeightUnit: 'oz',
+          packageServingWeight: 4,
+          packageServingWeightUnit: 'oz',
+          packageCaloriesPerServing: 200,
+          cookedWeightGrams: 453.59237,
+          portionEaten: 2,
+          portionEatenUnit: 'oz',
+        })}
+      />,
+    )
+
+    expect(screen.getByTestId('hero-portion-cal')).toHaveTextContent('100')
   })
 })
