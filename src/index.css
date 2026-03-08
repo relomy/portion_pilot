@@ -189,6 +189,10 @@ input:disabled {
   background: var(--zone-3-bg);
 }
 
+.zone--shelf {
+  background: var(--zone-bg);
+}
+
 .zone__eyebrow {
   margin: 0 0 3px;
   color: #b0aea4;
@@ -636,22 +640,15 @@ input:disabled {
 }
 
 .saved-meals-placeholder {
-  margin-top: 1.25rem;
-  border: 1px solid var(--rule);
-  border-radius: 28px;
-  box-shadow: var(--shadow);
-  padding: 1.5rem;
-  background: var(--worksheet);
-  animation: rise-in 300ms ease both;
-  animation-delay: 140ms;
-}
-
-.saved-meals-placeholder h2 {
-  margin: 0;
+  margin-top: 0;
 }
 
 .saved-meals-placeholder p {
   color: var(--steel);
+}
+
+.zone.saved-meals-placeholder .zone__eyebrow {
+  color: var(--teal);
 }
 
 .dev-panel {

@@ -13,9 +13,12 @@ export function SavedMealsList({
   onDelete,
 }: SavedMealsListProps) {
   return (
-    <section className="saved-meals-placeholder" data-testid="saved-meals-region">
-      <p className="eyebrow">Saved meals</p>
-      <h2>Meal prep shelf</h2>
+    <section
+      className="zone zone--shelf saved-meals-placeholder"
+      data-testid="saved-meals-region"
+    >
+      <p className="zone__eyebrow">Zone 4 · Your shelf</p>
+      <h2 className="zone__title">Meal prep shelf</h2>
 
       {meals.length === 0 ? (
         <p className="saved-meals-empty">

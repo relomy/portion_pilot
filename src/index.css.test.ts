@@ -48,6 +48,8 @@ describe('index.css', () => {
     const css = readCss()
 
     expect(css).toContain('.dev-panel')
+    expect(css).toContain('.zone--shelf')
+    expect(css).toContain('.zone.saved-meals-placeholder')
     expect(css).toContain('.saved-meals-placeholder')
     expect(css).toContain('.saved-meals-grid')
     expect(css).toContain('.saved-meals-empty')

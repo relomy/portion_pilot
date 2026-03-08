@@ -57,6 +57,11 @@ describe('SavedMealsList', () => {
       />,
     )
 
+    expect(screen.getByTestId('saved-meals-region')).toBeInTheDocument()
+    expect(screen.getByText(/^zone 4 · your shelf$/i)).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: /^meal prep shelf$/i }),
+    ).toBeInTheDocument()
     expect(screen.getByTestId('saved-meal-card-1')).toHaveClass('meal-card--prep')
     expect(screen.getByText(/^1303.5 cal$/i)).toBeInTheDocument()
 
