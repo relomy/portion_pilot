@@ -34,6 +34,23 @@ describe('App zone layout migration', () => {
     expect(screen.queryByTestId('nutrition-label')).not.toBeInTheDocument()
   })
 
+  it('renders saved meals region inside the zone layout root', () => {
+    render(<App />)
+
+    const layoutRoot = screen.getByTestId('zone-layout-root')
+    expect(within(layoutRoot).getByTestId('saved-meals-region')).toBeInTheDocument()
+  })
+
+  it('renders saved meals region after zone 3 in layout flow', () => {
+    render(<App />)
+
+    const zone3 = screen.getByTestId('zone-portion')
+    const shelf = screen.getByTestId('saved-meals-region')
+    expect(
+      zone3.compareDocumentPosition(shelf) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).not.toBe(0)
+  })
+
   it('defaults to total mode with package label source and portion eaten input', () => {
     render(<App />)
 

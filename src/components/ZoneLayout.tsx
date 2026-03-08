@@ -1,11 +1,13 @@
 import type {
   MealInputs,
   MealMode,
+  SavedMeal,
   TotalCaloriesSource,
   WeightUnit,
 } from '../hooks/useSavedMeals'
 import { type CalculationResult } from '../utils/calculator'
 import { DevPanel } from './DevPanel'
+import { SavedMealsList } from './SavedMealsList'
 import {
   toCanonicalCookedWeightGrams,
   toCookedInputDisplayValue,
@@ -40,6 +42,7 @@ export type ZoneLayoutProps = {
   targetCalories: number | null
   cookedInputUnit: WeightUnit
   cookedOutputUnit: WeightUnit
+  savedMeals: SavedMeal[]
   onTextChange: (field: 'mealName', value: string) => void
   onNumberChange: (
     field:
@@ -65,6 +68,8 @@ export type ZoneLayoutProps = {
   onTargetCaloriesChange: (value: number | null) => void
   onCookedInputUnitChange: (value: WeightUnit) => void
   onCookedOutputUnitChange: (value: WeightUnit) => void
+  onLoadMeal: (id: string) => void
+  onDeleteMeal: (id: string) => void
   onSave: () => void
   onClear: () => void
 }
@@ -76,6 +81,7 @@ export function ZoneLayout({
   targetCalories,
   cookedInputUnit,
   cookedOutputUnit,
+  savedMeals,
   onTextChange,
   onNumberChange,
   onModeChange,
@@ -83,6 +89,8 @@ export function ZoneLayout({
   onTargetCaloriesChange,
   onCookedInputUnitChange,
   onCookedOutputUnitChange,
+  onLoadMeal,
+  onDeleteMeal,
   onUnitChange,
   onSave,
   onClear,
@@ -148,7 +156,7 @@ export function ZoneLayout({
   }
 
   return (
-    <div className="zone-layout">
+    <div className="zone-layout" data-testid="zone-layout-root">
       <header className="masthead">
         <p className="masthead__kicker">Meal calorie calculator</p>
         <h1 className="masthead__title">Cook once, keep the numbers straight.</h1>
@@ -208,6 +216,12 @@ export function ZoneLayout({
         onCookedOutputUnitChange={onCookedOutputUnitChange}
         onNumberChange={onNumberChange}
         onTargetCaloriesChange={onTargetCaloriesChange}
+      />
+
+      <SavedMealsList
+        meals={savedMeals}
+        onLoad={onLoadMeal}
+        onDelete={onDeleteMeal}
       />
 
       <footer className="action-row zone-layout__actions">

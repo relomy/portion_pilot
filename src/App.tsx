@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { SavedMealsList } from './components/SavedMealsList'
 import { ZoneLayout } from './components/ZoneLayout'
 import {
   type MealInputs,
@@ -157,6 +156,7 @@ function App() {
         targetCalories={targetCalories}
         cookedInputUnit={cookedInputUnit}
         cookedOutputUnit={cookedOutputUnit}
+        savedMeals={savedMeals}
         onTextChange={handleTextChange}
         onNumberChange={handleNumberChange}
         onUnitChange={handleUnitChange}
@@ -165,14 +165,10 @@ function App() {
         onTargetCaloriesChange={setTargetCalories}
         onCookedInputUnitChange={setCookedInputUnit}
         onCookedOutputUnitChange={setCookedOutputUnit}
+        onLoadMeal={handleLoadMeal}
+        onDeleteMeal={deleteMeal}
         onSave={handleSave}
         onClear={handleClear}
-      />
-
-      <SavedMealsList
-        meals={savedMeals}
-        onLoad={handleLoadMeal}
-        onDelete={deleteMeal}
       />
     </main>
   )

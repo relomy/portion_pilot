@@ -36,6 +36,7 @@ function buildProps(overrides: Partial<MealInputs> = {}): ZoneLayoutProps {
     targetCalories: null,
     cookedInputUnit: 'g',
     cookedOutputUnit: 'g',
+    savedMeals: [],
     onTextChange: () => {},
     onNumberChange: () => {},
     onUnitChange: () => {},
@@ -44,6 +45,8 @@ function buildProps(overrides: Partial<MealInputs> = {}): ZoneLayoutProps {
     onTargetCaloriesChange: () => {},
     onCookedInputUnitChange: () => {},
     onCookedOutputUnitChange: () => {},
+    onLoadMeal: () => {},
+    onDeleteMeal: () => {},
     onSave: () => {},
     onClear: () => {},
   }
@@ -73,13 +76,47 @@ describe('ZoneLayout', () => {
     expect(screen.getByRole('button', { name: /^clear$/i })).toBeInTheDocument()
   })
 
+  it('renders saved meals region from the ZoneLayout path', () => {
+    render(<ZoneLayout {...buildProps()} />)
+
+    expect(screen.getByTestId('saved-meals-region')).toBeInTheDocument()
+  })
+
+  it('renders shelf meal cards when meals are provided', () => {
+    const form: MealInputs = { ...baseForm, mealName: 'Prep bowl' }
+    const result = calculateMealMetrics(toCalculationInput(form))
+    render(
+      <ZoneLayout
+        {...buildProps()}
+        savedMeals={[
+          {
+            id: 'meal-1',
+            createdAt: '2026-03-07T00:00:00.000Z',
+            inputs: form,
+            cachedResult: result,
+          },
+        ]}
+      />,
+    )
+
+    expect(screen.getByTestId('saved-meal-card-meal-1')).toBeInTheDocument()
+  })
+
   it('renders three zones in order', () => {
     render(<ZoneLayout {...buildProps()} />)
 
-    const zones = screen.getAllByTestId(/^zone-/)
-    expect(zones[0]).toHaveAttribute('data-testid', 'zone-package')
-    expect(zones[1]).toHaveAttribute('data-testid', 'zone-cooked')
-    expect(zones[2]).toHaveAttribute('data-testid', 'zone-portion')
+    const packageZone = screen.getByTestId('zone-package')
+    const cookedZone = screen.getByTestId('zone-cooked')
+    const portionZone = screen.getByTestId('zone-portion')
+
+    expect(
+      packageZone.compareDocumentPosition(cookedZone) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).not.toBe(0)
+    expect(
+      cookedZone.compareDocumentPosition(portionZone) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).not.toBe(0)
   })
 
   it('renders zone eyebrows and titles', () => {
