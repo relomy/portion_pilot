@@ -648,7 +648,7 @@ input:disabled {
 }
 
 .zone.saved-meals-placeholder .zone__eyebrow {
-  color: var(--teal);
+  color: #b0aea4;
 }
 
 .dev-panel {

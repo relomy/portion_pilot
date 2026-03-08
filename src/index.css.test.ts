@@ -60,6 +60,17 @@ describe('index.css', () => {
     expect(css).toContain('.meal-card__actions')
   })
 
+  it('keeps Zone 4 eyebrow styling aligned with Zones 1 and 2', () => {
+    const css = readCss()
+
+    expect(css).toMatch(
+      /\.zone\.saved-meals-placeholder\s+\.zone__eyebrow\s*\{[^}]*color:\s*#b0aea4;/s
+    )
+    expect(css).not.toMatch(
+      /\.zone\.saved-meals-placeholder\s+\.zone__eyebrow\s*\{[^}]*color:\s*var\(--teal\);/s
+    )
+  })
+
   it('keeps motion and reduced-motion support', () => {
     const css = readCss()
 
