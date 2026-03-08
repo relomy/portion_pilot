@@ -42,22 +42,10 @@ export function Zone2CookedSection({
       <h2 className="zone__title">Cooked batch</h2>
 
       <div className="field">
-        <label className="field__label" htmlFor="cooked-weight">
-          Cooked weight
-        </label>
-        <div className="field-with-unit">
-          <input
-            id="cooked-weight"
-            aria-label="Cooked weight"
-            className="field__input"
-            type="number"
-            value={toInputValue(cookedInputValue)}
-            onChange={(event) =>
-              onCookedWeightChange(
-                event.target.value === '' ? null : Number(event.target.value),
-              )
-            }
-          />
+        <div className="field__label-row">
+          <label className="field__label" htmlFor="cooked-weight">
+            Cooked weight
+          </label>
           <UnitToggle
             name="cooked-weight-input-unit"
             ariaLabel="Cooked weight unit"
@@ -65,6 +53,18 @@ export function Zone2CookedSection({
             onChange={onCookedInputUnitChange}
           />
         </div>
+        <input
+          id="cooked-weight"
+          aria-label="Cooked weight"
+          className="field__input"
+          type="number"
+          value={toInputValue(cookedInputValue)}
+          onChange={(event) =>
+            onCookedWeightChange(
+              event.target.value === '' ? null : Number(event.target.value),
+            )
+          }
+        />
       </div>
 
       <div className="density-block">

@@ -49,4 +49,75 @@ describe('Zone1PackageSection', () => {
     expect(within(zone).getByLabelText(/^serving weight$/i)).toBeInTheDocument()
     expect(within(zone).getByLabelText(/^calories \/ serving$/i)).toBeInTheDocument()
   })
+
+  it('stacks package-label fields full-width and places calories before serving weight', () => {
+    const form = { ...baseForm }
+    const result = calculateMealMetrics(toCalculationInput(form))
+    render(
+      <Zone1PackageSection
+        form={form}
+        result={result}
+        totalCaloriesText="—"
+        rawServingsText="—"
+        caloriesPerServingText="—"
+        onTextChange={() => {}}
+        onNumberChange={() => {}}
+        onUnitChange={() => {}}
+        onModeChange={() => {}}
+        onTotalSourceChange={() => {}}
+      />,
+    )
+
+    const zone = screen.getByTestId('zone-package')
+    expect(zone.querySelector('.field-pair')).not.toBeInTheDocument()
+
+    const caloriesInput = within(zone).getByLabelText(/^calories \/ serving$/i)
+    const servingInput = within(zone).getByLabelText(/^serving weight$/i)
+    expect(
+      caloriesInput.compareDocumentPosition(servingInput) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).not.toBe(0)
+  })
+
+  it('renders serving and raw weight unit toggles in label rows', () => {
+    const form = { ...baseForm }
+    const result = calculateMealMetrics(toCalculationInput(form))
+    render(
+      <Zone1PackageSection
+        form={form}
+        result={result}
+        totalCaloriesText="—"
+        rawServingsText="—"
+        caloriesPerServingText="—"
+        onTextChange={() => {}}
+        onNumberChange={() => {}}
+        onUnitChange={() => {}}
+        onModeChange={() => {}}
+        onTotalSourceChange={() => {}}
+      />,
+    )
+
+    const zone = screen.getByTestId('zone-package')
+    const servingInput = within(zone).getByLabelText(/^serving weight$/i)
+    const rawWeightInput = within(zone).getByLabelText(/^raw total weight$/i)
+    const servingRow = servingInput
+      .closest('.field')
+      ?.querySelector('.field__label-row')
+    const rawWeightRow = rawWeightInput
+      .closest('.field')
+      ?.querySelector('.field__label-row')
+
+    expect(servingRow).not.toBeNull()
+    expect(rawWeightRow).not.toBeNull()
+    expect(
+      within(servingRow as HTMLElement).getByRole('group', {
+        name: /serving weight unit/i,
+      }),
+    ).toBeInTheDocument()
+    expect(
+      within(rawWeightRow as HTMLElement).getByRole('group', {
+        name: /raw total weight unit/i,
+      }),
+    ).toBeInTheDocument()
+  })
 })

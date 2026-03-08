@@ -121,72 +121,57 @@ export function Zone1PackageSection({
 
       {form.mode === 'total' && form.totalCaloriesSource === 'packageLabel' ? (
         <>
-          <div className="field-pair">
-            <div className="field">
-              <label className="field__label" htmlFor="package-serving-weight">
-                Serving weight
-              </label>
-              <div className="field-with-unit">
-                <input
-                  id="package-serving-weight"
-                  aria-label="Serving weight"
-                  className="field__input"
-                  type="number"
-                  value={toInputValue(form.packageServingWeight)}
-                  onChange={(event) =>
-                    onNumberChange(
-                      'packageServingWeight',
-                      event.target.value === '' ? null : Number(event.target.value),
-                    )
-                  }
-                />
-                <UnitToggle
-                  name="serving-weight-unit"
-                  ariaLabel="Serving weight unit"
-                  value={form.packageServingWeightUnit}
-                  onChange={(value) => onUnitChange('packageServingWeightUnit', value)}
-                />
-              </div>
-            </div>
-
-            <div className="field">
-              <label className="field__label" htmlFor="package-cal-serving">
-                Calories / serving
-              </label>
-              <input
-                id="package-cal-serving"
-                aria-label="Calories / serving"
-                className="field__input"
-                type="number"
-                value={toInputValue(form.packageCaloriesPerServing)}
-                onChange={(event) =>
-                  onNumberChange(
-                    'packageCaloriesPerServing',
-                    event.target.value === '' ? null : Number(event.target.value),
-                  )
-                }
-              />
-            </div>
+          <div className="field">
+            <label className="field__label" htmlFor="package-cal-serving">
+              Calories / serving
+            </label>
+            <input
+              id="package-cal-serving"
+              aria-label="Calories / serving"
+              className="field__input"
+              type="number"
+              value={toInputValue(form.packageCaloriesPerServing)}
+              onChange={(event) =>
+                onNumberChange(
+                  'packageCaloriesPerServing',
+                  event.target.value === '' ? null : Number(event.target.value),
+                )
+              }
+            />
           </div>
 
           <div className="field">
-            <label className="field__label" htmlFor="raw-total-weight">
-              Raw total weight
-            </label>
-            <div className="field-with-unit">
-              <input
-                id="raw-total-weight"
-                aria-label="Raw total weight"
-                className="field__input"
-                type="number"
-                value={toInputValue(form.rawTotalWeight)}
-                onChange={(event) =>
-                  onNumberChange(
-                    'rawTotalWeight',
-                    event.target.value === '' ? null : Number(event.target.value),
-                  )
-                }
+            <div className="field__label-row">
+              <label className="field__label" htmlFor="package-serving-weight">
+                Serving weight
+              </label>
+              <UnitToggle
+                name="serving-weight-unit"
+                ariaLabel="Serving weight unit"
+                value={form.packageServingWeightUnit}
+                onChange={(value) => onUnitChange('packageServingWeightUnit', value)}
               />
+            </div>
+            <input
+              id="package-serving-weight"
+              aria-label="Serving weight"
+              className="field__input"
+              type="number"
+              value={toInputValue(form.packageServingWeight)}
+              onChange={(event) =>
+                onNumberChange(
+                  'packageServingWeight',
+                  event.target.value === '' ? null : Number(event.target.value),
+                )
+              }
+            />
+          </div>
+
+          <div className="field">
+            <div className="field__label-row">
+              <label className="field__label" htmlFor="raw-total-weight">
+                Raw total weight
+              </label>
               <UnitToggle
                 name="raw-total-weight-unit"
                 ariaLabel="Raw total weight unit"
@@ -194,6 +179,19 @@ export function Zone1PackageSection({
                 onChange={(value) => onUnitChange('rawTotalWeightUnit', value)}
               />
             </div>
+            <input
+              id="raw-total-weight"
+              aria-label="Raw total weight"
+              className="field__input"
+              type="number"
+              value={toInputValue(form.rawTotalWeight)}
+              onChange={(event) =>
+                onNumberChange(
+                  'rawTotalWeight',
+                  event.target.value === '' ? null : Number(event.target.value),
+                )
+              }
+            />
           </div>
         </>
       ) : null}
