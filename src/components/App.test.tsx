@@ -2,11 +2,17 @@ import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it } from 'vitest'
 import App from '../App'
+import {
+  ACTIVE_DRAFT_STORAGE_KEY,
+  resetActiveDraftStorageForTests,
+} from '../utils/activeDraftStorage'
 import { STORAGE_KEY } from '../hooks/useSavedMeals'
 
 beforeEach(() => {
+  resetActiveDraftStorageForTests()
   if (typeof window.localStorage?.removeItem === 'function') {
     window.localStorage.removeItem(STORAGE_KEY)
+    window.localStorage.removeItem(ACTIVE_DRAFT_STORAGE_KEY)
   }
 })
 
@@ -254,6 +260,23 @@ describe('App zone layout migration', () => {
     expect(within(portionZone).queryByLabelText(/^servings \(optional\)$/i)).not.toBeInTheDocument()
   })
 
+  it('uses decimal inputMode for representative numeric inputs', () => {
+    render(<App />)
+
+    expect(within(getPackageZone()).getByLabelText(/^raw total weight$/i)).toHaveAttribute(
+      'inputmode',
+      'decimal',
+    )
+    expect(within(getCookedZone()).getByLabelText(/^cooked weight$/i)).toHaveAttribute(
+      'inputmode',
+      'decimal',
+    )
+    expect(within(getPortionZone()).getByLabelText(/^portion eaten$/i)).toHaveAttribute(
+      'inputmode',
+      'decimal',
+    )
+  })
+
   it('derives package-label totals for ravioli workflow', async () => {
     const user = userEvent.setup()
     render(<App />)
@@ -329,6 +352,336 @@ describe('App zone layout migration', () => {
     expect(
       within(packageZone).getByRole('radio', { name: /^package label$/i }),
     ).toBeChecked()
+  })
+
+  it('restores active worksheet draft after reload', async () => {
+    const user = userEvent.setup()
+    const firstRender = render(<App />)
+
+    const packageZone = getPackageZone()
+    const cookedZone = getCookedZone()
+    const portionZone = getPortionZone()
+    const cookedInputUnitGroup = within(cookedZone).getByRole('group', {
+      name: /cooked weight unit/i,
+    })
+    const cookedOutputUnitGroup = within(portionZone).getByRole('group', {
+      name: /display unit/i,
+    })
+
+    await user.type(within(packageZone).getByLabelText(/^meal name$/i), 'Draft Bowl')
+    await user.click(
+      within(packageZone).getByRole('radio', { name: /^manual total$/i }),
+    )
+    await user.type(
+      within(packageZone).getByLabelText(/^total calories$/i, {
+        selector: 'input[type="number"]',
+      }),
+      '640',
+    )
+    await user.click(
+      within(cookedInputUnitGroup).getByRole('radio', { name: /^oz$/i }),
+    )
+    await user.type(within(cookedZone).getByLabelText(/^cooked weight$/i), '12')
+    await user.click(
+      within(cookedOutputUnitGroup).getByRole('radio', { name: /^oz$/i }),
+    )
+    await user.type(within(portionZone).getByLabelText(/^portion eaten$/i), '4')
+    await user.type(within(portionZone).getByLabelText(/^target cal$/i), '350')
+
+    firstRender.unmount()
+    render(<App />)
+
+    const packageZoneAfter = getPackageZone()
+    const cookedZoneAfter = getCookedZone()
+    const portionZoneAfter = getPortionZone()
+    const cookedInputUnitGroupAfter = within(cookedZoneAfter).getByRole('group', {
+      name: /cooked weight unit/i,
+    })
+    const cookedOutputUnitGroupAfter = within(portionZoneAfter).getByRole('group', {
+      name: /display unit/i,
+    })
+
+    expect(within(packageZoneAfter).getByLabelText(/^meal name$/i)).toHaveValue('Draft Bowl')
+    expect(
+      within(packageZoneAfter).getByRole('radio', { name: /^manual total$/i }),
+    ).toBeChecked()
+    expect(
+      within(packageZoneAfter).getByLabelText(/^total calories$/i, {
+        selector: 'input[type="number"]',
+      }),
+    ).toHaveValue(640)
+    expect(
+      (cookedInputUnitGroupAfter.querySelectorAll('input[type="radio"]')[1] as HTMLInputElement),
+    ).toBeChecked()
+    expect(
+      (cookedOutputUnitGroupAfter.querySelectorAll('input[type="radio"]')[1] as HTMLInputElement),
+    ).toBeChecked()
+    expect(within(cookedZoneAfter).getByLabelText(/^cooked weight$/i)).toHaveValue(12)
+    expect(within(portionZoneAfter).getByLabelText(/^portion eaten$/i)).toHaveValue(4)
+    expect(within(portionZoneAfter).getByLabelText(/^target cal$/i)).toHaveValue(350)
+  })
+
+  it('clear all clears persisted draft so reload stays reset', async () => {
+    const user = userEvent.setup()
+    const firstRender = render(<App />)
+
+    const packageZone = getPackageZone()
+    const cookedZone = getCookedZone()
+    const portionZone = getPortionZone()
+
+    await user.type(within(packageZone).getByLabelText(/^meal name$/i), 'Reset Bowl')
+    await user.click(
+      within(packageZone).getByRole('radio', { name: /^manual total$/i }),
+    )
+    await user.type(
+      within(packageZone).getByLabelText(/^total calories$/i, {
+        selector: 'input[type="number"]',
+      }),
+      '700',
+    )
+    await user.type(within(cookedZone).getByLabelText(/^cooked weight$/i), '300')
+    await user.type(within(portionZone).getByLabelText(/^target cal$/i), '450')
+
+    await user.click(screen.getByRole('button', { name: /^clear$/i }))
+
+    firstRender.unmount()
+    render(<App />)
+
+    const packageZoneAfter = getPackageZone()
+    const cookedZoneAfter = getCookedZone()
+    const portionZoneAfter = getPortionZone()
+
+    expect(within(packageZoneAfter).getByLabelText(/^meal name$/i)).toHaveValue('')
+    expect(
+      within(packageZoneAfter).getByRole('radio', { name: /^package label$/i }),
+    ).toBeChecked()
+    expect(
+      within(packageZoneAfter).queryByLabelText(/^total calories$/i, {
+        selector: 'input[type="number"]',
+      }),
+    ).not.toBeInTheDocument()
+    expect(within(cookedZoneAfter).getByLabelText(/^cooked weight$/i)).toHaveValue(null)
+    expect(within(portionZoneAfter).getByLabelText(/^target cal$/i)).toHaveValue(null)
+  })
+
+  it('preserves stable mode/source/units while clearing variable fields', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    const packageZone = getPackageZone()
+    const cookedZone = getCookedZone()
+    const portionZone = getPortionZone()
+    const rawWeightUnitGroup = within(packageZone).getByRole('group', {
+      name: /raw total weight unit/i,
+    })
+    const servingWeightUnitGroup = within(packageZone).getByRole('group', {
+      name: /serving weight unit/i,
+    })
+    const portionUnitGroup = within(portionZone).getByRole('group', {
+      name: /portion unit/i,
+    })
+    const cookedInputUnitGroup = within(cookedZone).getByRole('group', {
+      name: /cooked weight unit/i,
+    })
+    const cookedOutputUnitGroup = within(portionZone).getByRole('group', {
+      name: /display unit/i,
+    })
+
+    await user.type(within(packageZone).getByLabelText(/^meal name$/i), 'Prep Bowl')
+    await user.click(
+      within(rawWeightUnitGroup).getByRole('radio', { name: /^oz$/i }),
+    )
+    await user.type(within(packageZone).getByLabelText(/^raw total weight$/i), '16')
+    await user.click(
+      within(servingWeightUnitGroup).getByRole('radio', { name: /^oz$/i }),
+    )
+    await user.type(within(packageZone).getByLabelText(/^serving weight$/i), '4')
+    await user.type(within(packageZone).getByLabelText(/^calories \/ serving$/i), '200')
+    await user.click(
+      within(cookedInputUnitGroup).getByRole('radio', { name: /^oz$/i }),
+    )
+    await user.type(within(cookedZone).getByLabelText(/^cooked weight$/i), '20')
+    await user.click(
+      within(portionUnitGroup).getByRole('radio', { name: /^oz$/i }),
+    )
+    await user.type(within(portionZone).getByLabelText(/^portion eaten$/i), '5')
+    await user.click(
+      within(cookedOutputUnitGroup).getByRole('radio', { name: /^oz$/i }),
+    )
+    await user.click(
+      within(packageZone).getByRole('radio', { name: /^manual total$/i }),
+    )
+    await user.type(
+      within(packageZone).getByLabelText(/^total calories$/i, {
+        selector: 'input[type="number"]',
+      }),
+      '900',
+    )
+    await user.type(within(portionZone).getByLabelText(/^target cal$/i), '400')
+
+    await user.click(
+      screen.getByRole('button', { name: /^clear variable fields$/i }),
+    )
+
+    expect(within(packageZone).getByLabelText(/^meal name$/i)).toHaveValue('')
+    expect(within(packageZone).getByLabelText(/^total calories$/i, {
+      selector: 'input[type="number"]',
+    })).toHaveValue(null)
+    expect(within(cookedZone).getByLabelText(/^cooked weight$/i)).toHaveValue(null)
+    expect(within(portionZone).getByLabelText(/^portion eaten$/i)).toHaveValue(null)
+    expect(within(portionZone).getByLabelText(/^target cal$/i)).toHaveValue(null)
+
+    expect(
+      within(packageZone).getByRole('radio', { name: /^total calories$/i }),
+    ).toBeChecked()
+    expect(
+      within(packageZone).getByRole('radio', { name: /^manual total$/i }),
+    ).toBeChecked()
+    expect(
+      (rawWeightUnitGroup.querySelectorAll('input[type="radio"]')[1] as HTMLInputElement),
+    ).toBeChecked()
+    expect(
+      (servingWeightUnitGroup.querySelectorAll('input[type="radio"]')[1] as HTMLInputElement),
+    ).toBeChecked()
+    expect(
+      (portionUnitGroup.querySelectorAll('input[type="radio"]')[1] as HTMLInputElement),
+    ).toBeChecked()
+    expect(
+      (cookedInputUnitGroup.querySelectorAll('input[type="radio"]')[1] as HTMLInputElement),
+    ).toBeChecked()
+    expect(
+      (cookedOutputUnitGroup.querySelectorAll('input[type="radio"]')[1] as HTMLInputElement),
+    ).toBeChecked()
+
+    await user.click(
+      within(packageZone).getByRole('radio', { name: /^package label$/i }),
+    )
+    expect(within(packageZone).getByLabelText(/^raw total weight$/i)).toHaveValue(null)
+    expect(within(packageZone).getByLabelText(/^serving weight$/i)).toHaveValue(null)
+    expect(within(packageZone).getByLabelText(/^calories \/ serving$/i)).toHaveValue(null)
+  })
+
+  it('keeps full-reset clear behavior unchanged', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    const packageZone = getPackageZone()
+    const cookedZone = getCookedZone()
+    const portionZone = getPortionZone()
+    const rawWeightUnitGroup = within(packageZone).getByRole('group', {
+      name: /raw total weight unit/i,
+    })
+    const cookedInputUnitGroup = within(cookedZone).getByRole('group', {
+      name: /cooked weight unit/i,
+    })
+    const cookedOutputUnitGroup = within(portionZone).getByRole('group', {
+      name: /display unit/i,
+    })
+
+    await user.click(
+      within(rawWeightUnitGroup).getByRole('radio', { name: /^oz$/i }),
+    )
+    await user.click(
+      within(cookedInputUnitGroup).getByRole('radio', { name: /^oz$/i }),
+    )
+    await user.click(
+      within(cookedOutputUnitGroup).getByRole('radio', { name: /^oz$/i }),
+    )
+    await user.click(
+      within(packageZone).getByRole('radio', { name: /^manual total$/i }),
+    )
+
+    await user.click(screen.getByRole('button', { name: /^clear$/i }))
+
+    const rawWeightUnitGroupAfter = within(packageZone).getByRole('group', {
+      name: /raw total weight unit/i,
+    })
+    const cookedInputUnitGroupAfter = within(cookedZone).getByRole('group', {
+      name: /cooked weight unit/i,
+    })
+    const cookedOutputUnitGroupAfter = within(portionZone).getByRole('group', {
+      name: /display unit/i,
+    })
+
+    expect(
+      within(packageZone).getByRole('radio', { name: /^package label$/i }),
+    ).toBeChecked()
+    expect(
+      (rawWeightUnitGroupAfter.querySelectorAll('input[type="radio"]')[0] as HTMLInputElement),
+    ).toBeChecked()
+    expect(
+      (cookedInputUnitGroupAfter.querySelectorAll('input[type="radio"]')[0] as HTMLInputElement),
+    ).toBeChecked()
+    expect(
+      (cookedOutputUnitGroupAfter.querySelectorAll('input[type="radio"]')[0] as HTMLInputElement),
+    ).toBeChecked()
+  })
+
+  it('reloads exact saved inputs after clear variable fields', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    const packageZone = getPackageZone()
+    const cookedZone = getCookedZone()
+    const portionZone = getPortionZone()
+    const rawWeightUnitGroup = within(packageZone).getByRole('group', {
+      name: /raw total weight unit/i,
+    })
+    const servingWeightUnitGroup = within(packageZone).getByRole('group', {
+      name: /serving weight unit/i,
+    })
+    const portionUnitGroup = within(portionZone).getByRole('group', {
+      name: /portion unit/i,
+    })
+
+    await user.type(within(packageZone).getByLabelText(/^meal name$/i), 'Exact Load')
+    await user.click(
+      within(packageZone).getByRole('radio', { name: /^manual total$/i }),
+    )
+    await user.type(
+      within(packageZone).getByLabelText(/^total calories$/i, {
+        selector: 'input[type="number"]',
+      }),
+      '725',
+    )
+    await user.click(
+      rawWeightUnitGroup.querySelectorAll('input[type="radio"]')[1] as HTMLInputElement,
+    )
+    await user.click(
+      servingWeightUnitGroup.querySelectorAll('input[type="radio"]')[1] as HTMLInputElement,
+    )
+    await user.type(within(cookedZone).getByLabelText(/^cooked weight$/i), '18')
+    await user.click(
+      portionUnitGroup.querySelectorAll('input[type="radio"]')[1] as HTMLInputElement,
+    )
+    await user.type(within(portionZone).getByLabelText(/^portion eaten$/i), '4')
+    await user.click(screen.getByRole('button', { name: /^save meal$/i }))
+
+    await user.click(
+      screen.getByRole('button', { name: /^clear variable fields$/i }),
+    )
+    await user.click(screen.getByRole('button', { name: /^load$/i }))
+
+    expect(within(packageZone).getByLabelText(/^meal name$/i)).toHaveValue('Exact Load')
+    expect(
+      within(packageZone).getByRole('radio', { name: /^manual total$/i }),
+    ).toBeChecked()
+    expect(
+      within(packageZone).getByLabelText(/^total calories$/i, {
+        selector: 'input[type="number"]',
+      }),
+    ).toHaveValue(725)
+    expect(
+      (rawWeightUnitGroup.querySelectorAll('input[type="radio"]')[1] as HTMLInputElement),
+    ).toBeChecked()
+    expect(
+      (servingWeightUnitGroup.querySelectorAll('input[type="radio"]')[1] as HTMLInputElement),
+    ).toBeChecked()
+    expect(
+      (portionUnitGroup.querySelectorAll('input[type="radio"]')[1] as HTMLInputElement),
+    ).toBeChecked()
+    expect(within(cookedZone).getByLabelText(/^cooked weight$/i)).toHaveValue(18)
+    expect(within(portionZone).getByLabelText(/^portion eaten$/i)).toHaveValue(4)
   })
 
   it('saves, reloads, and deletes a meal from the shelf', async () => {

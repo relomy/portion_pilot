@@ -43,6 +43,8 @@ describe('SavedMealsList', () => {
               portionCalories: null,
               cookedWeightPerPackageServingGrams: null,
               equivalentPackageServingsEaten: null,
+              rawPerCookedMultiplier: null,
+              rawEquivalentEatenGrams: null,
               weightChangeGrams: null,
               weightChangePercent: null,
               weightChangeDirection: null,

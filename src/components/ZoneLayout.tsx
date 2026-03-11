@@ -22,6 +22,7 @@ import {
   formatCaloriesPerServing,
   formatCookedWeightValue,
   formatEquivalentPackageServings,
+  formatRawPerCookedMultiplier,
   formatPortionCalories,
   formatWeightChange,
   getWeightChangeCopy,
@@ -72,6 +73,7 @@ export type ZoneLayoutProps = {
   onDeleteMeal: (id: string) => void
   onSave: () => void
   onClear: () => void
+  onClearVariableFields: () => void
 }
 
 export function ZoneLayout({
@@ -94,6 +96,7 @@ export function ZoneLayout({
   onUnitChange,
   onSave,
   onClear,
+  onClearVariableFields,
 }: ZoneLayoutProps) {
   const totalCaloriesText = formatTotalCalories(
     result.totalCalories,
@@ -148,6 +151,13 @@ export function ZoneLayout({
   const servingsEatenText = formatEquivalentPackageServings(
     result.equivalentPackageServingsEaten,
   )
+  const rawEquivalentEatenText = formatCookedWeightValue(
+    result.rawEquivalentEatenGrams,
+    activeOutputUnit,
+  )
+  const rawPerCookedMultiplierText = formatRawPerCookedMultiplier(
+    result.rawPerCookedMultiplier,
+  )
   const portionCaloriesText = formatPortionCalories(result.portionCalories)
   const isPrimaryDensityMuted =
     primaryDensityValue === '—' || primaryDensityValue === 'Need cooked weight'
@@ -198,6 +208,7 @@ export function ZoneLayout({
         caloriesPer100GramsValue={caloriesPer100GramsValue}
         isPrimaryDensityMuted={isPrimaryDensityMuted}
         weightChangeText={weightChangeText}
+        rawPerCookedMultiplierText={rawPerCookedMultiplierText}
         weightChangeCopy={weightChangeCopy}
         hasWeightChange={hasWeightChange}
         onCookedInputUnitChange={onCookedInputUnitChange}
@@ -211,6 +222,7 @@ export function ZoneLayout({
         referenceServingText={referenceServingText}
         targetPortionText={targetPortionText}
         servingsEatenText={servingsEatenText}
+        rawEquivalentEatenText={rawEquivalentEatenText}
         portionCaloriesText={portionCaloriesText}
         onUnitChange={onUnitChange}
         onCookedOutputUnitChange={onCookedOutputUnitChange}
@@ -227,6 +239,9 @@ export function ZoneLayout({
       <footer className="action-row zone-layout__actions">
         <button type="button" onClick={onSave}>
           Save meal
+        </button>
+        <button type="button" onClick={onClearVariableFields}>
+          Clear variable fields
         </button>
         <button type="button" onClick={onClear}>
           Clear

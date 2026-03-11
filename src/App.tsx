@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useLayoutEffect, useState } from 'react'
 import { ZoneLayout } from './components/ZoneLayout'
 import {
   type MealInputs,
@@ -7,6 +7,11 @@ import {
   type WeightUnit,
   useSavedMeals,
 } from './hooks/useSavedMeals'
+import {
+  loadDraft,
+  persistDraft,
+  type AppDraft,
+} from './utils/activeDraftStorage'
 import { calculateMealMetrics } from './utils/calculator'
 import { toCalculationInput } from './utils/toCalculationInput'
 
@@ -27,6 +32,23 @@ function createEmptyForm(): MealInputs {
     rawTotalWeightUnit: 'g',
     packageServingWeight: null,
     packageServingWeightUnit: 'g',
+    packageCaloriesPerServing: null,
+  }
+}
+
+function clearVariableFields(form: MealInputs): MealInputs {
+  return {
+    ...form,
+    mealName: '',
+    manualTotalCalories: null,
+    totalCalories: null,
+    caloriesPerServing: null,
+    yourServings: null,
+    servings: null,
+    cookedWeightGrams: null,
+    portionEaten: null,
+    rawTotalWeight: null,
+    packageServingWeight: null,
     packageCaloriesPerServing: null,
   }
 }
@@ -57,14 +79,30 @@ function computeHasConflictingCalories(form: MealInputs): boolean {
 }
 
 function App() {
-  const [form, setForm] = useState<MealInputs>(createEmptyForm)
-  const [targetCalories, setTargetCalories] = useState<number | null>(null)
-  const [cookedInputUnit, setCookedInputUnit] = useState<WeightUnit>('g')
-  const [cookedOutputUnit, setCookedOutputUnit] = useState<WeightUnit>('g')
+  const [initialDraft] = useState<AppDraft>(() => loadDraft(createEmptyForm()))
+  const [form, setForm] = useState<MealInputs>(initialDraft.form)
+  const [targetCalories, setTargetCalories] = useState<number | null>(
+    initialDraft.targetCalories,
+  )
+  const [cookedInputUnit, setCookedInputUnit] = useState<WeightUnit>(
+    initialDraft.cookedInputUnit,
+  )
+  const [cookedOutputUnit, setCookedOutputUnit] = useState<WeightUnit>(
+    initialDraft.cookedOutputUnit,
+  )
   const { deleteMeal, loadMeal, saveMeal, savedMeals } = useSavedMeals()
   const hasConflictingCalories = computeHasConflictingCalories(form)
 
   const result = calculateMealMetrics(toCalculationInput(form))
+
+  useLayoutEffect(() => {
+    persistDraft({
+      form,
+      targetCalories,
+      cookedInputUnit,
+      cookedOutputUnit,
+    })
+  }, [form, targetCalories, cookedInputUnit, cookedOutputUnit])
 
   function handleTextChange(field: 'mealName', value: string) {
     setForm((current) => ({ ...current, [field]: value }))
@@ -136,6 +174,11 @@ function App() {
     setCookedOutputUnit('g')
   }
 
+  function handleClearVariableFields() {
+    setForm((current) => clearVariableFields(current))
+    setTargetCalories(null)
+  }
+
   function handleLoadMeal(id: string) {
     const loadedMeal = loadMeal(id)
 
@@ -169,6 +212,7 @@ function App() {
         onDeleteMeal={deleteMeal}
         onSave={handleSave}
         onClear={handleClear}
+        onClearVariableFields={handleClearVariableFields}
       />
     </main>
   )

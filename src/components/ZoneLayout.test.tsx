@@ -49,6 +49,7 @@ function buildProps(overrides: Partial<MealInputs> = {}): ZoneLayoutProps {
     onDeleteMeal: () => {},
     onSave: () => {},
     onClear: () => {},
+    onClearVariableFields: () => {},
   }
 }
 
@@ -69,11 +70,31 @@ describe('ZoneLayout', () => {
     expect(screen.getByRole('radio', { name: /per serving/i })).toBeInTheDocument()
   })
 
-  it('renders save meal and clear buttons', () => {
+  it('renders save meal and clear actions', () => {
     render(<ZoneLayout {...buildProps()} />)
 
     expect(screen.getByRole('button', { name: /save meal/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /^clear$/i })).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: /^clear variable fields$/i }),
+    ).toBeInTheDocument()
+  })
+
+  it('calls onClearVariableFields when clear variable fields is clicked', async () => {
+    const user = userEvent.setup()
+    const onClearVariableFields = vi.fn()
+    render(
+      <ZoneLayout
+        {...buildProps()}
+        onClearVariableFields={onClearVariableFields}
+      />,
+    )
+
+    await user.click(
+      screen.getByRole('button', { name: /^clear variable fields$/i }),
+    )
+
+    expect(onClearVariableFields).toHaveBeenCalledTimes(1)
   })
 
   it('renders saved meals region from the ZoneLayout path', () => {
@@ -339,6 +360,7 @@ describe('ZoneLayout', () => {
     render(<ZoneLayout {...buildProps()} />)
 
     expect(screen.getByTestId('weight-change-callout')).toHaveTextContent('—')
+    expect(screen.getByTestId('raw-per-cooked-multiplier')).toHaveTextContent('—')
   })
 
   it('renders Zone 2 weight change callout with value and direction copy when weights are present', () => {
@@ -355,6 +377,9 @@ describe('ZoneLayout', () => {
 
     expect(screen.getByTestId('weight-change-callout')).toHaveTextContent(
       /gained|lost/i,
+    )
+    expect(screen.getByTestId('raw-per-cooked-multiplier')).toHaveTextContent(
+      /x$/,
     )
   })
 
@@ -456,6 +481,9 @@ describe('ZoneLayout', () => {
     expect(
       within(zone).queryByTestId('answer-pkg-servings-eaten'),
     ).not.toBeInTheDocument()
+    expect(
+      within(zone).queryByTestId('answer-raw-equivalent-eaten'),
+    ).not.toBeInTheDocument()
     expect(within(zone).queryByTestId('hero-portion-cal')).not.toBeInTheDocument()
   })
 
@@ -485,6 +513,14 @@ describe('ZoneLayout', () => {
     expect(within(zone).getByTestId('answer-pkg-servings-eaten')).toHaveTextContent(
       '—',
     )
+    expect(within(zone).getByTestId('answer-raw-equivalent-eaten')).toHaveTextContent(
+      '—',
+    )
+    expect(
+      within(zone)
+        .getByTestId('answer-raw-equivalent-eaten')
+        .querySelector('.answer-row__value'),
+    ).toHaveClass('answer-row__value--empty')
     expect(within(zone).getByTestId('hero-portion-cal')).toHaveTextContent('—')
   })
 
@@ -521,5 +557,26 @@ describe('ZoneLayout', () => {
     )
 
     expect(screen.getByTestId('hero-portion-cal')).toHaveTextContent('100')
+  })
+
+  it('renders raw-equivalent eaten in ounces when output unit is oz', () => {
+    render(
+      <ZoneLayout
+        {...buildProps({
+          mode: 'total',
+          totalCaloriesSource: 'packageLabel',
+          rawTotalWeight: 120,
+          cookedWeightGrams: 100,
+          portionEaten: 20,
+          packageServingWeight: 60,
+          packageCaloriesPerServing: 300,
+        })}
+        cookedOutputUnit="oz"
+      />,
+    )
+
+    expect(screen.getByTestId('answer-raw-equivalent-eaten')).toHaveTextContent(
+      '0.8 oz',
+    )
   })
 })

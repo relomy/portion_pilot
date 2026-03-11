@@ -130,6 +130,7 @@ export function Zone1PackageSection({
               aria-label="Calories / serving"
               className="field__input"
               type="number"
+              inputMode="decimal"
               value={toInputValue(form.packageCaloriesPerServing)}
               onChange={(event) =>
                 onNumberChange(
@@ -157,6 +158,7 @@ export function Zone1PackageSection({
               aria-label="Serving weight"
               className="field__input"
               type="number"
+              inputMode="decimal"
               value={toInputValue(form.packageServingWeight)}
               onChange={(event) =>
                 onNumberChange(
@@ -184,6 +186,7 @@ export function Zone1PackageSection({
               aria-label="Raw total weight"
               className="field__input"
               type="number"
+              inputMode="decimal"
               value={toInputValue(form.rawTotalWeight)}
               onChange={(event) =>
                 onNumberChange(
@@ -206,6 +209,7 @@ export function Zone1PackageSection({
             aria-label="Total calories"
             className="field__input"
             type="number"
+            inputMode="decimal"
             value={toInputValue(form.manualTotalCalories)}
             onChange={(event) =>
               onNumberChange(
@@ -229,6 +233,7 @@ export function Zone1PackageSection({
                 aria-label="Calories per serving"
                 className="field__input"
                 type="number"
+                inputMode="decimal"
                 value={toInputValue(form.caloriesPerServing)}
                 onChange={(event) =>
                   onNumberChange(
@@ -248,6 +253,7 @@ export function Zone1PackageSection({
                 aria-label="Servings (optional)"
                 className="field__input"
                 type="number"
+                inputMode="decimal"
                 value={toInputValue(form.yourServings)}
                 onChange={(event) =>
                   onNumberChange(

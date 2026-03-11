@@ -245,6 +245,10 @@ input:disabled {
 .mode-group__option {
   position: relative;
   flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
   border: 1px solid var(--field-border);
   border-radius: 999px;
   background: var(--field-bg);
@@ -288,7 +292,7 @@ input:disabled {
   color: var(--ink);
   padding: 9px 11px;
   font-family: var(--font-mono);
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .field__input:focus-visible {
@@ -339,7 +343,10 @@ input:disabled {
 }
 
 .unit-toggle__option span {
-  display: block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
   background: transparent;
   color: var(--ink);
   font-family: var(--font-mono);
@@ -626,6 +633,7 @@ input:disabled {
 .action-row button {
   padding: 0.7rem 1.1rem;
   min-width: 8.5rem;
+  min-height: 44px;
 }
 
 .action-row button:first-child {
@@ -787,6 +795,7 @@ input:disabled {
 .meal-card__actions button {
   flex: 1;
   padding: 0.7rem 0.95rem;
+  min-height: 44px;
 }
 
 @media (max-width: 780px) {

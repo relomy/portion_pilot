@@ -11,6 +11,7 @@ type Zone2CookedSectionProps = {
   caloriesPer100GramsValue: string
   isPrimaryDensityMuted: boolean
   weightChangeText: string
+  rawPerCookedMultiplierText: string
   weightChangeCopy: string
   hasWeightChange: boolean
   onCookedInputUnitChange: (value: WeightUnit) => void
@@ -31,6 +32,7 @@ export function Zone2CookedSection({
   caloriesPer100GramsValue,
   isPrimaryDensityMuted,
   weightChangeText,
+  rawPerCookedMultiplierText,
   weightChangeCopy,
   hasWeightChange,
   onCookedInputUnitChange,
@@ -58,6 +60,7 @@ export function Zone2CookedSection({
           aria-label="Cooked weight"
           className="field__input"
           type="number"
+          inputMode="decimal"
           value={toInputValue(cookedInputValue)}
           onChange={(event) =>
             onCookedWeightChange(
@@ -95,6 +98,9 @@ export function Zone2CookedSection({
           className={`wc-callout__value${hasWeightChange ? '' : ' wc-callout__value--empty'}`}
         >
           {weightChangeText}
+        </p>
+        <p className="wc-callout__copy" data-testid="raw-per-cooked-multiplier">
+          Raw/Cooked multiplier: {rawPerCookedMultiplierText}
         </p>
         {hasWeightChange ? <p className="wc-callout__copy">{weightChangeCopy}</p> : null}
       </div>

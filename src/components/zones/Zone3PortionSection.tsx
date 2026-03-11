@@ -8,6 +8,7 @@ type Zone3PortionSectionProps = {
   referenceServingText: string
   targetPortionText: string
   servingsEatenText: string
+  rawEquivalentEatenText: string
   portionCaloriesText: string
   onUnitChange: (
     field:
@@ -43,6 +44,7 @@ export function Zone3PortionSection({
   referenceServingText,
   targetPortionText,
   servingsEatenText,
+  rawEquivalentEatenText,
   portionCaloriesText,
   onUnitChange,
   onCookedOutputUnitChange,
@@ -74,6 +76,7 @@ export function Zone3PortionSection({
                 aria-label="Portion eaten"
                 className="field__input"
                 type="number"
+                inputMode="decimal"
                 value={toInputValue(form.portionEaten)}
                 onChange={(event) =>
                   onNumberChange(
@@ -101,6 +104,7 @@ export function Zone3PortionSection({
                 aria-label="Target cal"
                 className="field__input"
                 type="number"
+                inputMode="decimal"
                 value={toInputValue(targetCalories)}
                 onChange={(event) =>
                   onTargetCaloriesChange(
@@ -138,6 +142,15 @@ export function Zone3PortionSection({
                 className={`answer-row__value${servingsEatenText === '—' ? ' answer-row__value--empty' : ''}`}
               >
                 {servingsEatenText}
+              </span>
+            </div>
+
+            <div className="answer-row" data-testid="answer-raw-equivalent-eaten">
+              <span className="answer-row__label">Raw equivalent eaten</span>
+              <span
+                className={`answer-row__value${rawEquivalentEatenText === '—' ? ' answer-row__value--empty' : ''}`}
+              >
+                {rawEquivalentEatenText}
               </span>
             </div>
           </div>
