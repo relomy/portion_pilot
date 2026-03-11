@@ -2,11 +2,17 @@ import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it } from 'vitest'
 import App from '../App'
+import {
+  ACTIVE_DRAFT_STORAGE_KEY,
+  resetActiveDraftStorageForTests,
+} from '../utils/activeDraftStorage'
 import { STORAGE_KEY } from '../hooks/useSavedMeals'
 
 beforeEach(() => {
+  resetActiveDraftStorageForTests()
   if (typeof window.localStorage?.removeItem === 'function') {
     window.localStorage.removeItem(STORAGE_KEY)
+    window.localStorage.removeItem(ACTIVE_DRAFT_STORAGE_KEY)
   }
 })
 
@@ -346,6 +352,116 @@ describe('App zone layout migration', () => {
     expect(
       within(packageZone).getByRole('radio', { name: /^package label$/i }),
     ).toBeChecked()
+  })
+
+  it('restores active worksheet draft after reload', async () => {
+    const user = userEvent.setup()
+    const firstRender = render(<App />)
+
+    const packageZone = getPackageZone()
+    const cookedZone = getCookedZone()
+    const portionZone = getPortionZone()
+    const cookedInputUnitGroup = within(cookedZone).getByRole('group', {
+      name: /cooked weight unit/i,
+    })
+    const cookedOutputUnitGroup = within(portionZone).getByRole('group', {
+      name: /display unit/i,
+    })
+
+    await user.type(within(packageZone).getByLabelText(/^meal name$/i), 'Draft Bowl')
+    await user.click(
+      within(packageZone).getByRole('radio', { name: /^manual total$/i }),
+    )
+    await user.type(
+      within(packageZone).getByLabelText(/^total calories$/i, {
+        selector: 'input[type="number"]',
+      }),
+      '640',
+    )
+    await user.click(
+      within(cookedInputUnitGroup).getByRole('radio', { name: /^oz$/i }),
+    )
+    await user.type(within(cookedZone).getByLabelText(/^cooked weight$/i), '12')
+    await user.click(
+      within(cookedOutputUnitGroup).getByRole('radio', { name: /^oz$/i }),
+    )
+    await user.type(within(portionZone).getByLabelText(/^portion eaten$/i), '4')
+    await user.type(within(portionZone).getByLabelText(/^target cal$/i), '350')
+
+    firstRender.unmount()
+    render(<App />)
+
+    const packageZoneAfter = getPackageZone()
+    const cookedZoneAfter = getCookedZone()
+    const portionZoneAfter = getPortionZone()
+    const cookedInputUnitGroupAfter = within(cookedZoneAfter).getByRole('group', {
+      name: /cooked weight unit/i,
+    })
+    const cookedOutputUnitGroupAfter = within(portionZoneAfter).getByRole('group', {
+      name: /display unit/i,
+    })
+
+    expect(within(packageZoneAfter).getByLabelText(/^meal name$/i)).toHaveValue('Draft Bowl')
+    expect(
+      within(packageZoneAfter).getByRole('radio', { name: /^manual total$/i }),
+    ).toBeChecked()
+    expect(
+      within(packageZoneAfter).getByLabelText(/^total calories$/i, {
+        selector: 'input[type="number"]',
+      }),
+    ).toHaveValue(640)
+    expect(
+      (cookedInputUnitGroupAfter.querySelectorAll('input[type="radio"]')[1] as HTMLInputElement),
+    ).toBeChecked()
+    expect(
+      (cookedOutputUnitGroupAfter.querySelectorAll('input[type="radio"]')[1] as HTMLInputElement),
+    ).toBeChecked()
+    expect(within(cookedZoneAfter).getByLabelText(/^cooked weight$/i)).toHaveValue(12)
+    expect(within(portionZoneAfter).getByLabelText(/^portion eaten$/i)).toHaveValue(4)
+    expect(within(portionZoneAfter).getByLabelText(/^target cal$/i)).toHaveValue(350)
+  })
+
+  it('clear all clears persisted draft so reload stays reset', async () => {
+    const user = userEvent.setup()
+    const firstRender = render(<App />)
+
+    const packageZone = getPackageZone()
+    const cookedZone = getCookedZone()
+    const portionZone = getPortionZone()
+
+    await user.type(within(packageZone).getByLabelText(/^meal name$/i), 'Reset Bowl')
+    await user.click(
+      within(packageZone).getByRole('radio', { name: /^manual total$/i }),
+    )
+    await user.type(
+      within(packageZone).getByLabelText(/^total calories$/i, {
+        selector: 'input[type="number"]',
+      }),
+      '700',
+    )
+    await user.type(within(cookedZone).getByLabelText(/^cooked weight$/i), '300')
+    await user.type(within(portionZone).getByLabelText(/^target cal$/i), '450')
+
+    await user.click(screen.getByRole('button', { name: /^clear$/i }))
+
+    firstRender.unmount()
+    render(<App />)
+
+    const packageZoneAfter = getPackageZone()
+    const cookedZoneAfter = getCookedZone()
+    const portionZoneAfter = getPortionZone()
+
+    expect(within(packageZoneAfter).getByLabelText(/^meal name$/i)).toHaveValue('')
+    expect(
+      within(packageZoneAfter).getByRole('radio', { name: /^package label$/i }),
+    ).toBeChecked()
+    expect(
+      within(packageZoneAfter).queryByLabelText(/^total calories$/i, {
+        selector: 'input[type="number"]',
+      }),
+    ).not.toBeInTheDocument()
+    expect(within(cookedZoneAfter).getByLabelText(/^cooked weight$/i)).toHaveValue(null)
+    expect(within(portionZoneAfter).getByLabelText(/^target cal$/i)).toHaveValue(null)
   })
 
   it('preserves stable mode/source/units while clearing variable fields', async () => {
