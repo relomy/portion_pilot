@@ -22,6 +22,11 @@ const totalModeForm: MealInputs = {
   packageCaloriesPerServing: null,
 }
 
+const perServingModeForm: MealInputs = {
+  ...totalModeForm,
+  mode: 'perServing',
+}
+
 describe('Zone3PortionSection', () => {
   it('renders Zone 3 portion controls for total mode', () => {
     render(
@@ -32,6 +37,7 @@ describe('Zone3PortionSection', () => {
         referenceServingText="—"
         targetPortionText="—"
         servingsEatenText="—"
+        rawEquivalentEatenText="—"
         portionCaloriesText="—"
         onUnitChange={() => {}}
         onCookedOutputUnitChange={() => {}}
@@ -43,5 +49,32 @@ describe('Zone3PortionSection', () => {
     const zone = screen.getByTestId('zone-portion')
     expect(within(zone).getByLabelText(/portion eaten/i)).toBeInTheDocument()
     expect(within(zone).getByLabelText(/target cal/i)).toBeInTheDocument()
+    expect(within(zone).getByTestId('answer-raw-equivalent-eaten')).toHaveTextContent(
+      '—',
+    )
+  })
+
+  it('does not render answer rows in per-serving mode', () => {
+    render(
+      <Zone3PortionSection
+        form={perServingModeForm}
+        targetCalories={null}
+        activeOutputUnit="g"
+        referenceServingText="—"
+        targetPortionText="—"
+        servingsEatenText="—"
+        rawEquivalentEatenText="—"
+        portionCaloriesText="—"
+        onUnitChange={() => {}}
+        onCookedOutputUnitChange={() => {}}
+        onNumberChange={() => {}}
+        onTargetCaloriesChange={() => {}}
+      />,
+    )
+
+    const zone = screen.getByTestId('zone-portion')
+    expect(
+      within(zone).queryByTestId('answer-raw-equivalent-eaten'),
+    ).not.toBeInTheDocument()
   })
 })

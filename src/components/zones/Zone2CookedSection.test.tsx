@@ -15,6 +15,7 @@ describe('Zone2CookedSection', () => {
         caloriesPer100GramsValue="Need cooked weight"
         isPrimaryDensityMuted={true}
         weightChangeText="—"
+        rawPerCookedMultiplierText="—"
         weightChangeCopy="—"
         hasWeightChange={false}
         onCookedInputUnitChange={() => {}}
@@ -26,6 +27,7 @@ describe('Zone2CookedSection', () => {
     expect(within(zone).getByLabelText(/^cooked weight$/i)).toBeInTheDocument()
     expect(within(zone).getByTestId('density-primary')).toBeInTheDocument()
     expect(within(zone).getByTestId('density-secondary')).toBeInTheDocument()
+    expect(within(zone).getByTestId('raw-per-cooked-multiplier')).toHaveTextContent('—')
   })
 
   it('renders cooked weight unit toggle in label row and input below', () => {
@@ -40,6 +42,7 @@ describe('Zone2CookedSection', () => {
         caloriesPer100GramsValue="Need cooked weight"
         isPrimaryDensityMuted={true}
         weightChangeText="—"
+        rawPerCookedMultiplierText="—"
         weightChangeCopy="—"
         hasWeightChange={false}
         onCookedInputUnitChange={() => {}}
@@ -58,5 +61,31 @@ describe('Zone2CookedSection', () => {
         name: /cooked weight unit/i,
       }),
     ).toBeInTheDocument()
+  })
+
+  it('renders raw-per-cooked multiplier value when available', () => {
+    render(
+      <Zone2CookedSection
+        cookedInputUnit="g"
+        cookedInputValue={100}
+        primaryDensityLabel="Calories per gram"
+        primaryDensityValue="3.21"
+        secondaryDensityLabel="Calories per ounce"
+        secondaryDensityValue="91.1"
+        caloriesPer100GramsValue="321"
+        isPrimaryDensityMuted={false}
+        weightChangeText="-20 g (-16.7%)"
+        rawPerCookedMultiplierText="1.20x"
+        weightChangeCopy="Lost during cooking"
+        hasWeightChange={true}
+        onCookedInputUnitChange={() => {}}
+        onCookedWeightChange={() => {}}
+      />,
+    )
+
+    const zone = screen.getByTestId('zone-cooked')
+    expect(within(zone).getByTestId('raw-per-cooked-multiplier')).toHaveTextContent(
+      '1.20x',
+    )
   })
 })

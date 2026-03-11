@@ -339,6 +339,7 @@ describe('ZoneLayout', () => {
     render(<ZoneLayout {...buildProps()} />)
 
     expect(screen.getByTestId('weight-change-callout')).toHaveTextContent('—')
+    expect(screen.getByTestId('raw-per-cooked-multiplier')).toHaveTextContent('—')
   })
 
   it('renders Zone 2 weight change callout with value and direction copy when weights are present', () => {
@@ -355,6 +356,9 @@ describe('ZoneLayout', () => {
 
     expect(screen.getByTestId('weight-change-callout')).toHaveTextContent(
       /gained|lost/i,
+    )
+    expect(screen.getByTestId('raw-per-cooked-multiplier')).toHaveTextContent(
+      /x$/,
     )
   })
 
@@ -456,6 +460,9 @@ describe('ZoneLayout', () => {
     expect(
       within(zone).queryByTestId('answer-pkg-servings-eaten'),
     ).not.toBeInTheDocument()
+    expect(
+      within(zone).queryByTestId('answer-raw-equivalent-eaten'),
+    ).not.toBeInTheDocument()
     expect(within(zone).queryByTestId('hero-portion-cal')).not.toBeInTheDocument()
   })
 
@@ -485,6 +492,14 @@ describe('ZoneLayout', () => {
     expect(within(zone).getByTestId('answer-pkg-servings-eaten')).toHaveTextContent(
       '—',
     )
+    expect(within(zone).getByTestId('answer-raw-equivalent-eaten')).toHaveTextContent(
+      '—',
+    )
+    expect(
+      within(zone)
+        .getByTestId('answer-raw-equivalent-eaten')
+        .querySelector('.answer-row__value'),
+    ).toHaveClass('answer-row__value--empty')
     expect(within(zone).getByTestId('hero-portion-cal')).toHaveTextContent('—')
   })
 
@@ -521,5 +536,26 @@ describe('ZoneLayout', () => {
     )
 
     expect(screen.getByTestId('hero-portion-cal')).toHaveTextContent('100')
+  })
+
+  it('renders raw-equivalent eaten in ounces when output unit is oz', () => {
+    render(
+      <ZoneLayout
+        {...buildProps({
+          mode: 'total',
+          totalCaloriesSource: 'packageLabel',
+          rawTotalWeight: 120,
+          cookedWeightGrams: 100,
+          portionEaten: 20,
+          packageServingWeight: 60,
+          packageCaloriesPerServing: 300,
+        })}
+        cookedOutputUnit="oz"
+      />,
+    )
+
+    expect(screen.getByTestId('answer-raw-equivalent-eaten')).toHaveTextContent(
+      '0.8 oz',
+    )
   })
 })

@@ -6,6 +6,7 @@ import {
   formatCaloriesPerServing,
   formatCookedWeightValue,
   formatEquivalentPackageServings,
+  formatRawPerCookedMultiplier,
   getWeightChangeCopy,
   formatPortionCalories,
   formatRawPackageServings,
@@ -80,6 +81,16 @@ describe('formatters', () => {
   it('formats equivalent package servings with up to two decimals', () => {
     expect(formatEquivalentPackageServings(1.0812)).toBe('1.08')
     expect(formatEquivalentPackageServings(null)).toBe('—')
+  })
+
+  it('formats raw-per-cooked multiplier with fixed two decimals and x suffix', () => {
+    expect(formatRawPerCookedMultiplier(1.2)).toBe('1.20x')
+    expect(formatRawPerCookedMultiplier(1)).toBe('1.00x')
+    expect(formatRawPerCookedMultiplier(0.004)).toBe('0.00x')
+  })
+
+  it('shows unavailable marker for raw-per-cooked multiplier when value is missing', () => {
+    expect(formatRawPerCookedMultiplier(null)).toBe('—')
   })
 
   it('formats weight change with combined mass and percent plus direction copy', () => {

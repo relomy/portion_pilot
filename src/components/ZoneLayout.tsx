@@ -22,6 +22,7 @@ import {
   formatCaloriesPerServing,
   formatCookedWeightValue,
   formatEquivalentPackageServings,
+  formatRawPerCookedMultiplier,
   formatPortionCalories,
   formatWeightChange,
   getWeightChangeCopy,
@@ -148,6 +149,13 @@ export function ZoneLayout({
   const servingsEatenText = formatEquivalentPackageServings(
     result.equivalentPackageServingsEaten,
   )
+  const rawEquivalentEatenText = formatCookedWeightValue(
+    result.rawEquivalentEatenGrams,
+    activeOutputUnit,
+  )
+  const rawPerCookedMultiplierText = formatRawPerCookedMultiplier(
+    result.rawPerCookedMultiplier,
+  )
   const portionCaloriesText = formatPortionCalories(result.portionCalories)
   const isPrimaryDensityMuted =
     primaryDensityValue === '—' || primaryDensityValue === 'Need cooked weight'
@@ -198,6 +206,7 @@ export function ZoneLayout({
         caloriesPer100GramsValue={caloriesPer100GramsValue}
         isPrimaryDensityMuted={isPrimaryDensityMuted}
         weightChangeText={weightChangeText}
+        rawPerCookedMultiplierText={rawPerCookedMultiplierText}
         weightChangeCopy={weightChangeCopy}
         hasWeightChange={hasWeightChange}
         onCookedInputUnitChange={onCookedInputUnitChange}
@@ -211,6 +220,7 @@ export function ZoneLayout({
         referenceServingText={referenceServingText}
         targetPortionText={targetPortionText}
         servingsEatenText={servingsEatenText}
+        rawEquivalentEatenText={rawEquivalentEatenText}
         portionCaloriesText={portionCaloriesText}
         onUnitChange={onUnitChange}
         onCookedOutputUnitChange={onCookedOutputUnitChange}

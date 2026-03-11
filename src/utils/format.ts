@@ -72,6 +72,10 @@ export function formatEquivalentPackageServings(value: number | null): string {
   return value === null ? UNAVAILABLE : formatFixedRange(value, 0, 2)
 }
 
+export function formatRawPerCookedMultiplier(value: number | null): string {
+  return value === null ? UNAVAILABLE : `${value.toFixed(2)}x`
+}
+
 export function formatWeightChange(
   weightChangeGrams: number | null,
   weightChangePercent: number | null,
