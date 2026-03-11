@@ -76,6 +76,7 @@ export function Zone3PortionSection({
                 aria-label="Portion eaten"
                 className="field__input"
                 type="number"
+                inputMode="decimal"
                 value={toInputValue(form.portionEaten)}
                 onChange={(event) =>
                   onNumberChange(
@@ -103,6 +104,7 @@ export function Zone3PortionSection({
                 aria-label="Target cal"
                 className="field__input"
                 type="number"
+                inputMode="decimal"
                 value={toInputValue(targetCalories)}
                 onChange={(event) =>
                   onTargetCaloriesChange(

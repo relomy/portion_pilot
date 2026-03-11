@@ -254,6 +254,23 @@ describe('App zone layout migration', () => {
     expect(within(portionZone).queryByLabelText(/^servings \(optional\)$/i)).not.toBeInTheDocument()
   })
 
+  it('uses decimal inputMode for representative numeric inputs', () => {
+    render(<App />)
+
+    expect(within(getPackageZone()).getByLabelText(/^raw total weight$/i)).toHaveAttribute(
+      'inputmode',
+      'decimal',
+    )
+    expect(within(getCookedZone()).getByLabelText(/^cooked weight$/i)).toHaveAttribute(
+      'inputmode',
+      'decimal',
+    )
+    expect(within(getPortionZone()).getByLabelText(/^portion eaten$/i)).toHaveAttribute(
+      'inputmode',
+      'decimal',
+    )
+  })
+
   it('derives package-label totals for ravioli workflow', async () => {
     const user = userEvent.setup()
     render(<App />)

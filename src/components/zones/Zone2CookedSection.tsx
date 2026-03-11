@@ -60,6 +60,7 @@ export function Zone2CookedSection({
           aria-label="Cooked weight"
           className="field__input"
           type="number"
+          inputMode="decimal"
           value={toInputValue(cookedInputValue)}
           onChange={(event) =>
             onCookedWeightChange(
