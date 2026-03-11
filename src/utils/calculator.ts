@@ -22,6 +22,8 @@ export type CalculationResult = {
   portionCalories: number | null
   cookedWeightPerPackageServingGrams: number | null
   equivalentPackageServingsEaten: number | null
+  rawPerCookedMultiplier: number | null
+  rawEquivalentEatenGrams: number | null
   weightChangeGrams: number | null
   weightChangePercent: number | null
   weightChangeDirection: 'gain' | 'loss' | 'none' | null
@@ -117,6 +119,17 @@ export function calculateMealMetrics(input: CalculationInput): CalculationResult
     cookedWeightPerPackageServingGrams !== null && hasUsablePortion
       ? input.portionEatenGrams! / cookedWeightPerPackageServingGrams
       : null
+  const rawPerCookedMultiplier =
+    isPackageLabelTotal &&
+    hasWeight &&
+    typeof input.rawTotalWeightGrams === 'number' &&
+    input.rawTotalWeightGrams > 0
+      ? input.rawTotalWeightGrams / input.cookedWeightGrams!
+      : null
+  const rawEquivalentEatenGrams =
+    rawPerCookedMultiplier !== null && hasUsablePortion
+      ? input.portionEatenGrams! * rawPerCookedMultiplier
+      : null
   const weightChangeGrams =
     isPackageLabelTotal &&
     hasWeight &&
@@ -155,6 +168,8 @@ export function calculateMealMetrics(input: CalculationInput): CalculationResult
     portionCalories,
     cookedWeightPerPackageServingGrams,
     equivalentPackageServingsEaten,
+    rawPerCookedMultiplier,
+    rawEquivalentEatenGrams,
     weightChangeGrams,
     weightChangePercent,
     weightChangeDirection,

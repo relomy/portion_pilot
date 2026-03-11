@@ -344,4 +344,114 @@ describe('calculateMealMetrics', () => {
     expect(result.weightChangePercent).toBeCloseTo(32.857, 3)
     expect(result.weightChangeDirection).toBe('gain')
   })
+
+  it('derives raw-per-cooked multiplier and raw-equivalent eaten in package-label total mode', () => {
+    const result = calculateMealMetrics({
+      mode: 'total',
+      totalCaloriesSource: 'packageLabel',
+      manualTotalCalories: null,
+      totalCalories: null,
+      cookedWeightGrams: 100,
+      portionEatenGrams: 20,
+      yourServings: null,
+      caloriesPerServing: null,
+      rawTotalWeightGrams: 120,
+      packageServingWeightGrams: 60,
+      packageCaloriesPerServing: 300,
+    })
+
+    expect(result.rawPerCookedMultiplier).toBeCloseTo(1.2, 10)
+    expect(result.rawEquivalentEatenGrams).toBeCloseTo(24, 10)
+  })
+
+  it('leaves multiplier unavailable when total source is manual total', () => {
+    const result = calculateMealMetrics({
+      mode: 'total',
+      totalCaloriesSource: 'manualTotal',
+      manualTotalCalories: 600,
+      totalCalories: 600,
+      cookedWeightGrams: 100,
+      portionEatenGrams: 20,
+      yourServings: null,
+      caloriesPerServing: null,
+      rawTotalWeightGrams: 120,
+      packageServingWeightGrams: 60,
+      packageCaloriesPerServing: 300,
+    })
+
+    expect(result.rawPerCookedMultiplier).toBeNull()
+    expect(result.rawEquivalentEatenGrams).toBeNull()
+  })
+
+  it('derives multiplier but leaves raw-equivalent eaten unavailable when portion is missing', () => {
+    const result = calculateMealMetrics({
+      mode: 'total',
+      totalCaloriesSource: 'packageLabel',
+      manualTotalCalories: null,
+      totalCalories: null,
+      cookedWeightGrams: 100,
+      portionEatenGrams: null,
+      yourServings: null,
+      caloriesPerServing: null,
+      rawTotalWeightGrams: 120,
+      packageServingWeightGrams: 60,
+      packageCaloriesPerServing: 300,
+    })
+
+    expect(result.rawPerCookedMultiplier).toBeCloseTo(1.2, 10)
+    expect(result.rawEquivalentEatenGrams).toBeNull()
+  })
+
+  it('leaves multiplier and raw-equivalent unavailable in per-serving mode', () => {
+    const result = calculateMealMetrics({
+      mode: 'perServing',
+      totalCaloriesSource: 'manualTotal',
+      manualTotalCalories: null,
+      totalCalories: null,
+      cookedWeightGrams: 100,
+      portionEatenGrams: 20,
+      yourServings: 2,
+      caloriesPerServing: 300,
+      rawTotalWeightGrams: 120,
+      packageServingWeightGrams: 60,
+      packageCaloriesPerServing: 300,
+    })
+
+    expect(result.rawPerCookedMultiplier).toBeNull()
+    expect(result.rawEquivalentEatenGrams).toBeNull()
+  })
+
+  it('leaves multiplier and raw-equivalent unavailable when raw or cooked weights are non-positive', () => {
+    const zeroRaw = calculateMealMetrics({
+      mode: 'total',
+      totalCaloriesSource: 'packageLabel',
+      manualTotalCalories: null,
+      totalCalories: null,
+      cookedWeightGrams: 100,
+      portionEatenGrams: 20,
+      yourServings: null,
+      caloriesPerServing: null,
+      rawTotalWeightGrams: 0,
+      packageServingWeightGrams: 60,
+      packageCaloriesPerServing: 300,
+    })
+    const zeroCooked = calculateMealMetrics({
+      mode: 'total',
+      totalCaloriesSource: 'packageLabel',
+      manualTotalCalories: null,
+      totalCalories: null,
+      cookedWeightGrams: 0,
+      portionEatenGrams: 20,
+      yourServings: null,
+      caloriesPerServing: null,
+      rawTotalWeightGrams: 120,
+      packageServingWeightGrams: 60,
+      packageCaloriesPerServing: 300,
+    })
+
+    expect(zeroRaw.rawPerCookedMultiplier).toBeNull()
+    expect(zeroRaw.rawEquivalentEatenGrams).toBeNull()
+    expect(zeroCooked.rawPerCookedMultiplier).toBeNull()
+    expect(zeroCooked.rawEquivalentEatenGrams).toBeNull()
+  })
 })
