@@ -31,6 +31,23 @@ function createEmptyForm(): MealInputs {
   }
 }
 
+function clearVariableFields(form: MealInputs): MealInputs {
+  return {
+    ...form,
+    mealName: '',
+    manualTotalCalories: null,
+    totalCalories: null,
+    caloriesPerServing: null,
+    yourServings: null,
+    servings: null,
+    cookedWeightGrams: null,
+    portionEaten: null,
+    rawTotalWeight: null,
+    packageServingWeight: null,
+    packageCaloriesPerServing: null,
+  }
+}
+
 function hasEnteredPackageLabelSource(form: MealInputs): boolean {
   return (
     form.rawTotalWeight !== null ||
@@ -136,6 +153,11 @@ function App() {
     setCookedOutputUnit('g')
   }
 
+  function handleClearVariableFields() {
+    setForm((current) => clearVariableFields(current))
+    setTargetCalories(null)
+  }
+
   function handleLoadMeal(id: string) {
     const loadedMeal = loadMeal(id)
 
@@ -169,6 +191,7 @@ function App() {
         onDeleteMeal={deleteMeal}
         onSave={handleSave}
         onClear={handleClear}
+        onClearVariableFields={handleClearVariableFields}
       />
     </main>
   )

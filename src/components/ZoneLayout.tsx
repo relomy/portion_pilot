@@ -73,6 +73,7 @@ export type ZoneLayoutProps = {
   onDeleteMeal: (id: string) => void
   onSave: () => void
   onClear: () => void
+  onClearVariableFields: () => void
 }
 
 export function ZoneLayout({
@@ -95,6 +96,7 @@ export function ZoneLayout({
   onUnitChange,
   onSave,
   onClear,
+  onClearVariableFields,
 }: ZoneLayoutProps) {
   const totalCaloriesText = formatTotalCalories(
     result.totalCalories,
@@ -237,6 +239,9 @@ export function ZoneLayout({
       <footer className="action-row zone-layout__actions">
         <button type="button" onClick={onSave}>
           Save meal
+        </button>
+        <button type="button" onClick={onClearVariableFields}>
+          Clear variable fields
         </button>
         <button type="button" onClick={onClear}>
           Clear

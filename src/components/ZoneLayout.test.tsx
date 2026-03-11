@@ -49,6 +49,7 @@ function buildProps(overrides: Partial<MealInputs> = {}): ZoneLayoutProps {
     onDeleteMeal: () => {},
     onSave: () => {},
     onClear: () => {},
+    onClearVariableFields: () => {},
   }
 }
 
@@ -69,11 +70,31 @@ describe('ZoneLayout', () => {
     expect(screen.getByRole('radio', { name: /per serving/i })).toBeInTheDocument()
   })
 
-  it('renders save meal and clear buttons', () => {
+  it('renders save meal and clear actions', () => {
     render(<ZoneLayout {...buildProps()} />)
 
     expect(screen.getByRole('button', { name: /save meal/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /^clear$/i })).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: /^clear variable fields$/i }),
+    ).toBeInTheDocument()
+  })
+
+  it('calls onClearVariableFields when clear variable fields is clicked', async () => {
+    const user = userEvent.setup()
+    const onClearVariableFields = vi.fn()
+    render(
+      <ZoneLayout
+        {...buildProps()}
+        onClearVariableFields={onClearVariableFields}
+      />,
+    )
+
+    await user.click(
+      screen.getByRole('button', { name: /^clear variable fields$/i }),
+    )
+
+    expect(onClearVariableFields).toHaveBeenCalledTimes(1)
   })
 
   it('renders saved meals region from the ZoneLayout path', () => {
