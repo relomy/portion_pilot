@@ -103,6 +103,53 @@ describe('ZoneLayout', () => {
     expect(screen.getByTestId('saved-meals-region')).toBeInTheDocument()
   })
 
+  it('allows switching directly to step 3 without blocking', async () => {
+    const user = userEvent.setup()
+    render(<ZoneLayout {...buildProps()} />)
+
+    await user.click(screen.getByRole('button', { name: /step 3/i }))
+
+    expect(
+      screen.getByRole('button', { name: /step 3/i }),
+    ).toHaveAttribute('aria-current', 'step')
+    expect(screen.getByTestId('zone-portion')).toBeInTheDocument()
+  })
+
+  it('shows missing-data guidance when the active step is incomplete', async () => {
+    const user = userEvent.setup()
+    render(<ZoneLayout {...buildProps()} />)
+
+    await user.click(screen.getByRole('button', { name: /step 3/i }))
+
+    const guidance = screen.getByTestId('active-step-guidance')
+    expect(guidance).toHaveTextContent(/step 3 .* incomplete/i)
+    expect(guidance).toHaveTextContent(
+      /missing data from step 1 .*raw total weight, serving weight, calories \/ serving\./i,
+    )
+    expect(guidance).toHaveTextContent(
+      /missing data from step 2 .*cooked weight\./i,
+    )
+  })
+
+  it('switches to saved utility and shows saved meals surface', async () => {
+    const user = userEvent.setup()
+    render(<ZoneLayout {...buildProps()} />)
+
+    const calculatorButton = screen.getByRole('button', { name: /^calculator$/i })
+    const savedButton = screen.getByRole('button', { name: /^saved$/i })
+    const savedRegion = screen.getByTestId('saved-meals-region')
+
+    expect(calculatorButton).toHaveAttribute('aria-pressed', 'true')
+    expect(savedButton).toHaveAttribute('aria-pressed', 'false')
+    expect(savedRegion).toHaveAttribute('data-surface', 'zone')
+
+    await user.click(savedButton)
+
+    expect(savedButton).toHaveAttribute('aria-pressed', 'true')
+    expect(calculatorButton).toHaveAttribute('aria-pressed', 'false')
+    expect(savedRegion).toHaveAttribute('data-surface', 'utility')
+  })
+
   it('renders shelf meal cards when meals are provided', () => {
     const form: MealInputs = { ...baseForm, mealName: 'Prep bowl' }
     const result = calculateMealMetrics(toCalculationInput(form))
@@ -143,14 +190,20 @@ describe('ZoneLayout', () => {
   it('renders zone eyebrows and titles', () => {
     render(<ZoneLayout {...buildProps()} />)
 
-    expect(screen.getByText(/before cooking/i)).toBeInTheDocument()
+    const packageZone = screen.getByTestId('zone-package')
+    const cookedZone = screen.getByTestId('zone-cooked')
+    const portionZone = screen.getByTestId('zone-portion')
+
+    expect(within(packageZone).getByText(/before cooking/i)).toBeInTheDocument()
     expect(
-      screen.getByRole('heading', { level: 2, name: /^package$/i }),
+      within(packageZone).getByRole('heading', { level: 2, name: /^package$/i }),
     ).toBeInTheDocument()
-    expect(screen.getByText(/after cooking/i)).toBeInTheDocument()
-    expect(screen.getByText(/cooked batch/i)).toBeInTheDocument()
-    expect(screen.getByText(/at the plate/i)).toBeInTheDocument()
-    expect(screen.getByText(/portion guide/i)).toBeInTheDocument()
+    expect(within(cookedZone).getByText(/after cooking/i)).toBeInTheDocument()
+    expect(
+      within(cookedZone).getByRole('heading', { level: 2, name: /^cooked batch$/i }),
+    ).toBeInTheDocument()
+    expect(within(portionZone).getByText(/at the plate/i)).toBeInTheDocument()
+    expect(within(portionZone).getByText(/portion guide/i)).toBeInTheDocument()
   })
 
   it('renders Zone 1 package label inputs', () => {
