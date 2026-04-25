@@ -111,27 +111,68 @@ describe('ZoneLayout', () => {
     expect(screen.getByTestId('zone-portion')).not.toBeVisible()
   })
 
-  it('renders mobile step pills and bottom utility bar controls', () => {
+  it('mobile controls drive step panels and utility surfaces', async () => {
+    const user = userEvent.setup()
     render(<ZoneLayout {...buildProps()} />)
 
     const mobilePills = screen.getByTestId('mobile-step-pills')
     const mobileUtilityBar = screen.getByTestId('mobile-utility-bar')
+    const packageZone = screen.getByTestId('zone-package')
+    const cookedZone = screen.getByTestId('zone-cooked')
+    const portionZone = screen.getByTestId('zone-portion')
+    const mobileStep1Button = within(mobilePills).getByRole('button', {
+      name: /step 1 .* package/i,
+    })
+    const mobileStep2Button = within(mobilePills).getByRole('button', {
+      name: /step 2 .* cooked batch/i,
+    })
+    const mobileStep3Button = within(mobilePills).getByRole('button', {
+      name: /step 3 .* portion/i,
+    })
+    const mobileCalculatorButton = within(mobileUtilityBar).getByRole('button', {
+      name: /^mobile calculator$/i,
+    })
+    const mobileSavedButton = within(mobileUtilityBar).getByRole('button', {
+      name: /^mobile saved$/i,
+    })
 
-    expect(
-      within(mobilePills).getByRole('button', { name: /step 1 .* package/i }),
-    ).toBeInTheDocument()
-    expect(
-      within(mobilePills).getByRole('button', { name: /step 2 .* cooked batch/i }),
-    ).toBeInTheDocument()
-    expect(
-      within(mobilePills).getByRole('button', { name: /step 3 .* portion/i }),
-    ).toBeInTheDocument()
-    expect(
-      within(mobileUtilityBar).getByRole('button', { name: /^mobile calculator$/i }),
-    ).toBeInTheDocument()
-    expect(
-      within(mobileUtilityBar).getByRole('button', { name: /^mobile saved$/i }),
-    ).toBeInTheDocument()
+    expect(mobileStep1Button).toHaveAttribute('aria-pressed', 'true')
+    expect(mobileStep2Button).toHaveAttribute('aria-pressed', 'false')
+    expect(mobileStep3Button).toHaveAttribute('aria-pressed', 'false')
+    expect(packageZone).toBeVisible()
+    expect(cookedZone).not.toBeVisible()
+    expect(portionZone).not.toBeVisible()
+
+    await user.click(mobileStep2Button)
+    expect(mobileStep2Button).toHaveAttribute('aria-pressed', 'true')
+    expect(mobileStep1Button).toHaveAttribute('aria-pressed', 'false')
+    expect(cookedZone).toBeVisible()
+    expect(packageZone).not.toBeVisible()
+    expect(portionZone).not.toBeVisible()
+
+    await user.click(mobileStep3Button)
+    expect(mobileStep3Button).toHaveAttribute('aria-pressed', 'true')
+    expect(mobileStep2Button).toHaveAttribute('aria-pressed', 'false')
+    expect(portionZone).toBeVisible()
+    expect(packageZone).not.toBeVisible()
+    expect(cookedZone).not.toBeVisible()
+
+    expect(mobileCalculatorButton).toHaveAttribute('aria-pressed', 'true')
+    expect(mobileSavedButton).toHaveAttribute('aria-pressed', 'false')
+    expect(screen.getByTestId('calculator-surface')).toBeInTheDocument()
+    expect(screen.queryByTestId('saved-meals-region')).not.toBeInTheDocument()
+
+    await user.click(mobileSavedButton)
+    expect(mobileSavedButton).toHaveAttribute('aria-pressed', 'true')
+    expect(mobileCalculatorButton).toHaveAttribute('aria-pressed', 'false')
+    expect(screen.queryByTestId('calculator-surface')).not.toBeInTheDocument()
+    expect(screen.getByTestId('saved-meals-region')).toBeInTheDocument()
+
+    await user.click(mobileCalculatorButton)
+    expect(mobileCalculatorButton).toHaveAttribute('aria-pressed', 'true')
+    expect(mobileSavedButton).toHaveAttribute('aria-pressed', 'false')
+    expect(screen.getByTestId('calculator-surface')).toBeInTheDocument()
+    expect(screen.queryByTestId('saved-meals-region')).not.toBeInTheDocument()
   })
 
   it('allows switching directly to step 3 without blocking', async () => {
