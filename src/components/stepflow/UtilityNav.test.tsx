@@ -56,4 +56,47 @@ describe('UtilityNav', () => {
 
     expect(onUtilityChange).toHaveBeenCalledWith('calculator')
   })
+
+  it('falls back to first visible utility when selected utility is not rendered', () => {
+    render(
+      <UtilityNav
+        selectedUtility="settings"
+        utilities={['calculator', 'saved']}
+        onUtilityChange={() => {}}
+      />,
+    )
+
+    expect(
+      screen.getByRole('button', { name: /calculator/i }),
+    ).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('button', { name: /saved/i })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    )
+  })
+
+  it('exposes layout mode contract via data-layout', () => {
+    const { rerender } = render(
+      <UtilityNav
+        selectedUtility="calculator"
+        onUtilityChange={() => {}}
+      />,
+    )
+
+    expect(
+      screen.getByRole('navigation', { name: /utility navigation/i }),
+    ).toHaveAttribute('data-layout', 'rail')
+
+    rerender(
+      <UtilityNav
+        selectedUtility="calculator"
+        onUtilityChange={() => {}}
+        layout="bottom-bar"
+      />,
+    )
+
+    expect(
+      screen.getByRole('navigation', { name: /utility navigation/i }),
+    ).toHaveAttribute('data-layout', 'bottom-bar')
+  })
 })

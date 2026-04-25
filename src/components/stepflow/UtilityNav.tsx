@@ -22,6 +22,10 @@ export function UtilityNav({
   utilities = DEFAULT_UTILITIES,
   layout = 'rail',
 }: UtilityNavProps) {
+  const activeUtility = utilities.includes(selectedUtility)
+    ? selectedUtility
+    : utilities[0]
+
   return (
     <nav
       className="utility-nav"
@@ -31,7 +35,7 @@ export function UtilityNav({
       <ul className="utility-nav__list">
         {utilities.map((utility) => {
           const label = UTILITY_LABELS[utility]
-          const isSelected = selectedUtility === utility
+          const isSelected = activeUtility === utility
 
           return (
             <li key={utility} className="utility-nav__item">
