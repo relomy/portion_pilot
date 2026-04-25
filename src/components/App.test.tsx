@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it } from 'vitest'
 import App from '../App'
@@ -29,28 +29,36 @@ function getPortionZone() {
 }
 
 describe('App zone layout migration', () => {
-  it('renders the new zone layout markers and saved meals region', () => {
+  it('renders the new zone layout markers and saved meals region', async () => {
+    const user = userEvent.setup()
     render(<App />)
 
     expect(screen.getByTestId('zone-package')).toBeInTheDocument()
     expect(screen.getByTestId('zone-cooked')).toBeInTheDocument()
     expect(screen.getByTestId('zone-portion')).toBeInTheDocument()
-    expect(screen.getByTestId('saved-meals-region')).toBeInTheDocument()
+    expect(screen.queryByTestId('saved-meals-region')).not.toBeInTheDocument()
     expect(screen.queryByTestId('input-worksheet')).not.toBeInTheDocument()
     expect(screen.queryByTestId('nutrition-label')).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: /^saved$/i }))
+    expect(screen.getByTestId('saved-meals-region')).toBeInTheDocument()
   })
 
-  it('renders saved meals region inside the zone layout root', () => {
+  it('renders saved meals region inside the zone layout root', async () => {
+    const user = userEvent.setup()
     render(<App />)
 
     const layoutRoot = screen.getByTestId('zone-layout-root')
+    await user.click(screen.getByRole('button', { name: /^saved$/i }))
     expect(within(layoutRoot).getByTestId('saved-meals-region')).toBeInTheDocument()
   })
 
-  it('renders saved meals region after zone 3 in layout flow', () => {
+  it('renders saved meals region after zone 3 in layout flow', async () => {
+    const user = userEvent.setup()
     render(<App />)
 
     const zone3 = screen.getByTestId('zone-portion')
+    await user.click(screen.getByRole('button', { name: /^saved$/i }))
     const shelf = screen.getByTestId('saved-meals-region')
     expect(
       zone3.compareDocumentPosition(shelf) & Node.DOCUMENT_POSITION_FOLLOWING,
@@ -660,28 +668,34 @@ describe('App zone layout migration', () => {
     await user.click(
       screen.getByRole('button', { name: /^clear variable fields$/i }),
     )
+    await user.click(screen.getByRole('button', { name: /^saved$/i }))
     await user.click(screen.getByRole('button', { name: /^load$/i }))
+    await user.click(screen.getByRole('button', { name: /^calculator$/i }))
+    const packageZoneAfterLoad = getPackageZone()
+    const cookedZoneAfterLoad = getCookedZone()
+    const portionZoneAfterLoad = getPortionZone()
+    const portionUnitGroupAfterLoad = within(portionZoneAfterLoad).getByRole('group', {
+      name: /portion unit/i,
+    })
 
-    expect(within(packageZone).getByLabelText(/^meal name$/i)).toHaveValue('Exact Load')
+    await waitFor(() =>
+      expect(within(packageZoneAfterLoad).getByLabelText(/^meal name$/i)).toHaveValue(
+        'Exact Load',
+      ),
+    )
     expect(
-      within(packageZone).getByRole('radio', { name: /^manual total$/i }),
+      within(packageZoneAfterLoad).getByRole('radio', { name: /^manual total$/i }),
     ).toBeChecked()
     expect(
-      within(packageZone).getByLabelText(/^total calories$/i, {
+      within(packageZoneAfterLoad).getByLabelText(/^total calories$/i, {
         selector: 'input[type="number"]',
       }),
     ).toHaveValue(725)
     expect(
-      (rawWeightUnitGroup.querySelectorAll('input[type="radio"]')[1] as HTMLInputElement),
+      (portionUnitGroupAfterLoad.querySelectorAll('input[type="radio"]')[1] as HTMLInputElement),
     ).toBeChecked()
-    expect(
-      (servingWeightUnitGroup.querySelectorAll('input[type="radio"]')[1] as HTMLInputElement),
-    ).toBeChecked()
-    expect(
-      (portionUnitGroup.querySelectorAll('input[type="radio"]')[1] as HTMLInputElement),
-    ).toBeChecked()
-    expect(within(cookedZone).getByLabelText(/^cooked weight$/i)).toHaveValue(18)
-    expect(within(portionZone).getByLabelText(/^portion eaten$/i)).toHaveValue(4)
+    expect(within(cookedZoneAfterLoad).getByLabelText(/^cooked weight$/i)).toHaveValue(18)
+    expect(within(portionZoneAfterLoad).getByLabelText(/^portion eaten$/i)).toHaveValue(4)
   })
 
   it('saves, reloads, and deletes a meal from the shelf', async () => {
@@ -706,23 +720,36 @@ describe('App zone layout migration', () => {
     await user.type(within(portionZone).getByLabelText(/^portion eaten$/i), '100')
     await user.click(screen.getByRole('button', { name: /^save meal$/i }))
 
+    await user.click(screen.getByRole('button', { name: /^saved$/i }))
     expect(screen.getByText(/chicken bowl/i)).toBeInTheDocument()
 
+    await user.click(screen.getByRole('button', { name: /^calculator$/i }))
     await user.click(screen.getByRole('button', { name: /^clear$/i }))
-    expect(within(packageZone).getByLabelText(/^meal name$/i)).toHaveValue('')
+    expect(within(getPackageZone()).getByLabelText(/^meal name$/i)).toHaveValue('')
 
+    await user.click(screen.getByRole('button', { name: /^saved$/i }))
     await user.click(screen.getByRole('button', { name: /^load$/i }))
-    expect(within(packageZone).getByLabelText(/^meal name$/i)).toHaveValue('Chicken Bowl')
+    await user.click(screen.getByRole('button', { name: /^calculator$/i }))
+    const packageZoneAfterLoad = getPackageZone()
+    const portionZoneAfterLoad = getPortionZone()
+    await waitFor(() =>
+      expect(within(packageZoneAfterLoad).getByLabelText(/^meal name$/i)).toHaveValue(
+        'Chicken Bowl',
+      ),
+    )
     expect(
-      within(packageZone).getByRole('radio', { name: /^manual total$/i }),
+      within(packageZoneAfterLoad).getByRole('radio', { name: /^manual total$/i }),
     ).toBeChecked()
     expect(
-      within(packageZone).getByLabelText(/^total calories$/i, {
+      within(packageZoneAfterLoad).getByLabelText(/^total calories$/i, {
         selector: 'input[type="number"]',
       }),
     ).toHaveValue(500)
-    expect(within(portionZone).getByLabelText(/^portion eaten$/i)).toHaveValue(100)
+    expect(within(portionZoneAfterLoad).getByLabelText(/^portion eaten$/i)).toHaveValue(
+      100,
+    )
 
+    await user.click(screen.getByRole('button', { name: /^saved$/i }))
     await user.click(screen.getByRole('button', { name: /^delete$/i }))
     expect(screen.queryByText(/chicken bowl/i)).not.toBeInTheDocument()
   })
@@ -744,9 +771,11 @@ describe('App zone layout migration', () => {
     await user.click(screen.getByRole('button', { name: /^save meal$/i }))
 
     await user.click(screen.getByRole('button', { name: /^clear$/i }))
+    await user.click(screen.getByRole('button', { name: /^saved$/i }))
     await user.click(screen.getByRole('button', { name: /^load$/i }))
+    await user.click(screen.getByRole('button', { name: /^calculator$/i }))
 
-    expect(within(portionZone).getByLabelText(/^target cal$/i)).toHaveValue(null)
+    expect(within(getPortionZone()).getByLabelText(/^target cal$/i)).toHaveValue(null)
   })
 
   it('saves and reloads ounce units for package-label fields', async () => {
@@ -776,15 +805,30 @@ describe('App zone layout migration', () => {
     await user.click(screen.getByRole('button', { name: /^save meal$/i }))
 
     await user.click(screen.getByRole('button', { name: /^clear$/i }))
+    await user.click(screen.getByRole('button', { name: /^saved$/i }))
     await user.click(screen.getByRole('button', { name: /^load$/i }))
+    await user.click(screen.getByRole('button', { name: /^calculator$/i }))
+    const packageZoneAfterLoad = getPackageZone()
+    const rawWeightUnitGroupAfterLoad = within(packageZoneAfterLoad).getByRole('group', {
+      name: /raw total weight unit/i,
+    })
+    const servingWeightUnitGroupAfterLoad = within(packageZoneAfterLoad).getByRole('group', {
+      name: /serving weight unit/i,
+    })
 
     expect(
-      within(rawWeightUnitGroup).getByRole('radio', { name: /^oz$/i }),
+      rawWeightUnitGroupAfterLoad.querySelectorAll('input[type="radio"]')[1] as HTMLInputElement,
     ).toBeChecked()
     expect(
-      within(servingWeightUnitGroup).getByRole('radio', { name: /^oz$/i }),
+      servingWeightUnitGroupAfterLoad.querySelectorAll(
+        'input[type="radio"]'
+      )[1] as HTMLInputElement,
     ).toBeChecked()
-    expect(within(packageZone).getByLabelText(/^raw total weight$/i)).toHaveValue(19.8)
-    expect(within(packageZone).getByLabelText(/^serving weight$/i)).toHaveValue(4.7)
+    expect(within(packageZoneAfterLoad).getByLabelText(/^raw total weight$/i)).toHaveValue(
+      19.8,
+    )
+    expect(within(packageZoneAfterLoad).getByLabelText(/^serving weight$/i)).toHaveValue(
+      4.7,
+    )
   })
 })
