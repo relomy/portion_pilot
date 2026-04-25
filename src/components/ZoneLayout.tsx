@@ -276,111 +276,109 @@ export function ZoneLayout({
             data-selected-utility={selectedUtility}
           />
 
-          <section
-            className="zone-layout__calculator-surface"
-            data-testid="calculator-surface"
-            hidden={selectedUtility !== 'calculator'}
-          >
-            {activeStepGuidance.length > 0 ? (
-              <section className="step-guidance" data-testid="active-step-guidance">
-                <p className="step-guidance__title">
-                  {STEP_LABELS[activeStep]} is incomplete.
-                </p>
-                {activeStepGuidance.map((guidance) => (
-                  <p key={guidance.key} className="step-guidance__detail">
-                    Missing data from {guidance.label}: {guidance.fields.join(', ')}.
+          {selectedUtility === 'calculator' ? (
+            <section className="zone-layout__calculator-surface" data-testid="calculator-surface">
+              {activeStepGuidance.length > 0 ? (
+                <section className="step-guidance" data-testid="active-step-guidance">
+                  <p className="step-guidance__title">
+                    {STEP_LABELS[activeStep]} is incomplete.
                   </p>
-                ))}
-              </section>
-            ) : null}
+                  {activeStepGuidance.map((guidance) => (
+                    <p key={guidance.key} className="step-guidance__detail">
+                      Missing data from {guidance.label}: {guidance.fields.join(', ')}.
+                    </p>
+                  ))}
+                </section>
+              ) : null}
 
-            <div className="zone-layout__step-panels">
-              <section
-                className="zone-layout__step-panel"
-                data-step-key="step1"
-                data-step-active={activeStep === 'step1'}
-                hidden={hasNavigatedSteps && activeStep !== 'step1'}
-              >
-                <Zone1PackageSection
-                  form={form}
-                  result={result}
-                  totalCaloriesText={totalCaloriesText}
-                  rawServingsText={rawServingsText}
-                  caloriesPerServingText={caloriesPerServingText}
-                  onTextChange={onTextChange}
-                  onNumberChange={onNumberChange}
-                  onUnitChange={onUnitChange}
-                  onModeChange={onModeChange}
-                  onTotalSourceChange={onTotalSourceChange}
-                />
-              </section>
+              <div className="zone-layout__step-panels">
+                <section
+                  className="zone-layout__step-panel"
+                  data-step-key="step1"
+                  data-step-active={activeStep === 'step1'}
+                  hidden={hasNavigatedSteps && activeStep !== 'step1'}
+                >
+                  <Zone1PackageSection
+                    form={form}
+                    result={result}
+                    totalCaloriesText={totalCaloriesText}
+                    rawServingsText={rawServingsText}
+                    caloriesPerServingText={caloriesPerServingText}
+                    onTextChange={onTextChange}
+                    onNumberChange={onNumberChange}
+                    onUnitChange={onUnitChange}
+                    onModeChange={onModeChange}
+                    onTotalSourceChange={onTotalSourceChange}
+                  />
+                </section>
 
-              <section
-                className="zone-layout__step-panel"
-                data-step-key="step2"
-                data-step-active={activeStep === 'step2'}
-                hidden={hasNavigatedSteps && activeStep !== 'step2'}
-              >
-                <Zone2CookedSection
-                  cookedInputUnit={cookedInputUnit}
-                  cookedInputValue={cookedInputValue}
-                  primaryDensityLabel={primaryDensityLabel}
-                  primaryDensityValue={primaryDensityValue}
-                  secondaryDensityLabel={secondaryDensityLabel}
-                  secondaryDensityValue={secondaryDensityValue}
-                  caloriesPer100GramsValue={caloriesPer100GramsValue}
-                  isPrimaryDensityMuted={isPrimaryDensityMuted}
-                  weightChangeText={weightChangeText}
-                  rawPerCookedMultiplierText={rawPerCookedMultiplierText}
-                  weightChangeCopy={weightChangeCopy}
-                  hasWeightChange={hasWeightChange}
-                  onCookedInputUnitChange={onCookedInputUnitChange}
-                  onCookedWeightChange={handleCookedWeightChange}
-                />
-              </section>
+                <section
+                  className="zone-layout__step-panel"
+                  data-step-key="step2"
+                  data-step-active={activeStep === 'step2'}
+                  hidden={hasNavigatedSteps && activeStep !== 'step2'}
+                >
+                  <Zone2CookedSection
+                    cookedInputUnit={cookedInputUnit}
+                    cookedInputValue={cookedInputValue}
+                    primaryDensityLabel={primaryDensityLabel}
+                    primaryDensityValue={primaryDensityValue}
+                    secondaryDensityLabel={secondaryDensityLabel}
+                    secondaryDensityValue={secondaryDensityValue}
+                    caloriesPer100GramsValue={caloriesPer100GramsValue}
+                    isPrimaryDensityMuted={isPrimaryDensityMuted}
+                    weightChangeText={weightChangeText}
+                    rawPerCookedMultiplierText={rawPerCookedMultiplierText}
+                    weightChangeCopy={weightChangeCopy}
+                    hasWeightChange={hasWeightChange}
+                    onCookedInputUnitChange={onCookedInputUnitChange}
+                    onCookedWeightChange={handleCookedWeightChange}
+                  />
+                </section>
 
-              <section
-                className="zone-layout__step-panel"
-                data-step-key="step3"
-                data-step-active={activeStep === 'step3'}
-                hidden={hasNavigatedSteps && activeStep !== 'step3'}
-              >
-                <Zone3PortionSection
-                  form={form}
-                  targetCalories={targetCalories}
-                  activeOutputUnit={activeOutputUnit}
-                  referenceServingText={referenceServingText}
-                  targetPortionText={targetPortionText}
-                  servingsEatenText={servingsEatenText}
-                  rawEquivalentEatenText={rawEquivalentEatenText}
-                  portionCaloriesText={portionCaloriesText}
-                  onUnitChange={onUnitChange}
-                  onCookedOutputUnitChange={onCookedOutputUnitChange}
-                  onNumberChange={onNumberChange}
-                  onTargetCaloriesChange={onTargetCaloriesChange}
-                />
-              </section>
-            </div>
+                <section
+                  className="zone-layout__step-panel"
+                  data-step-key="step3"
+                  data-step-active={activeStep === 'step3'}
+                  hidden={hasNavigatedSteps && activeStep !== 'step3'}
+                >
+                  <Zone3PortionSection
+                    form={form}
+                    targetCalories={targetCalories}
+                    activeOutputUnit={activeOutputUnit}
+                    referenceServingText={referenceServingText}
+                    targetPortionText={targetPortionText}
+                    servingsEatenText={servingsEatenText}
+                    rawEquivalentEatenText={rawEquivalentEatenText}
+                    portionCaloriesText={portionCaloriesText}
+                    onUnitChange={onUnitChange}
+                    onCookedOutputUnitChange={onCookedOutputUnitChange}
+                    onNumberChange={onNumberChange}
+                    onTargetCaloriesChange={onTargetCaloriesChange}
+                  />
+                </section>
+              </div>
 
-            <footer className="action-row zone-layout__actions">
-              <button type="button" onClick={onSave}>
-                Save meal
-              </button>
-              <button type="button" onClick={onClearVariableFields}>
-                Clear variable fields
-              </button>
-              <button type="button" onClick={onClear}>
-                Clear
-              </button>
-            </footer>
-          </section>
-
-          <SavedMealsList
-            meals={savedMeals}
-            onLoad={onLoadMeal}
-            onDelete={onDeleteMeal}
-            surface={selectedUtility === 'saved' ? 'utility' : 'zone'}
-          />
+              <footer className="action-row zone-layout__actions">
+                <button type="button" onClick={onSave}>
+                  Save meal
+                </button>
+                <button type="button" onClick={onClearVariableFields}>
+                  Clear variable fields
+                </button>
+                <button type="button" onClick={onClear}>
+                  Clear
+                </button>
+              </footer>
+            </section>
+          ) : (
+            <SavedMealsList
+              meals={savedMeals}
+              onLoad={onLoadMeal}
+              onDelete={onDeleteMeal}
+              surface="utility"
+            />
+          )}
         </main>
       </div>
     </div>

@@ -97,10 +97,10 @@ describe('ZoneLayout', () => {
     expect(onClearVariableFields).toHaveBeenCalledTimes(1)
   })
 
-  it('renders saved meals region from the ZoneLayout path', () => {
+  it('keeps saved meals surface unmounted while calculator utility is selected', () => {
     render(<ZoneLayout {...buildProps()} />)
 
-    expect(screen.getByTestId('saved-meals-region')).toBeInTheDocument()
+    expect(screen.queryByTestId('saved-meals-region')).not.toBeInTheDocument()
   })
 
   it('allows switching directly to step 3 without blocking', async () => {
@@ -143,30 +143,29 @@ describe('ZoneLayout', () => {
 
     const calculatorButton = screen.getByRole('button', { name: /^calculator$/i })
     const savedButton = screen.getByRole('button', { name: /^saved$/i })
-    const calculatorSurface = screen.getByTestId('calculator-surface')
-    const savedRegion = screen.getByTestId('saved-meals-region')
 
     expect(calculatorButton).toHaveAttribute('aria-pressed', 'true')
     expect(savedButton).toHaveAttribute('aria-pressed', 'false')
-    expect(calculatorSurface).toBeVisible()
-    expect(savedRegion).toHaveAttribute('data-surface', 'zone')
+    expect(screen.getByTestId('calculator-surface')).toBeInTheDocument()
+    expect(screen.queryByTestId('saved-meals-region')).not.toBeInTheDocument()
 
     await user.click(savedButton)
 
     expect(savedButton).toHaveAttribute('aria-pressed', 'true')
     expect(calculatorButton).toHaveAttribute('aria-pressed', 'false')
-    expect(calculatorSurface).not.toBeVisible()
-    expect(savedRegion).toHaveAttribute('data-surface', 'utility')
+    expect(screen.queryByTestId('calculator-surface')).not.toBeInTheDocument()
+    expect(screen.getByTestId('saved-meals-region')).toBeInTheDocument()
 
     await user.click(calculatorButton)
 
     expect(calculatorButton).toHaveAttribute('aria-pressed', 'true')
     expect(savedButton).toHaveAttribute('aria-pressed', 'false')
-    expect(calculatorSurface).toBeVisible()
-    expect(savedRegion).toHaveAttribute('data-surface', 'zone')
+    expect(screen.getByTestId('calculator-surface')).toBeInTheDocument()
+    expect(screen.queryByTestId('saved-meals-region')).not.toBeInTheDocument()
   })
 
-  it('renders shelf meal cards when meals are provided', () => {
+  it('renders shelf meal cards when meals are provided', async () => {
+    const user = userEvent.setup()
     const form: MealInputs = { ...baseForm, mealName: 'Prep bowl' }
     const result = calculateMealMetrics(toCalculationInput(form))
     render(
@@ -182,6 +181,8 @@ describe('ZoneLayout', () => {
         ]}
       />,
     )
+
+    await user.click(screen.getByRole('button', { name: /^saved$/i }))
 
     expect(screen.getByTestId('saved-meal-card-meal-1')).toBeInTheDocument()
   })
