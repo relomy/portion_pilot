@@ -115,7 +115,6 @@ export function ZoneLayout({
   onClearVariableFields,
 }: ZoneLayoutProps) {
   const [activeStep, setActiveStep] = useState<StepKey>('step1')
-  const [hasNavigatedSteps, setHasNavigatedSteps] = useState(false)
   const [selectedUtility, setSelectedUtility] = useState<'calculator' | 'saved'>(
     'calculator',
   )
@@ -203,6 +202,17 @@ export function ZoneLayout({
             },
           ]
       : []
+  const handleStepChange = (step: StepKey) => {
+    setActiveStep(step)
+  }
+  const handleUtilityChange = (utility: 'calculator' | 'saved' | 'settings') => {
+    setSelectedUtility(utility === 'saved' ? 'saved' : 'calculator')
+  }
+  const inactivePanelStyle = {
+    maxHeight: 0,
+    opacity: 0,
+    overflow: 'hidden' as const,
+  }
 
   return (
     <div className="zone-layout" data-testid="zone-layout-root">
@@ -229,7 +239,7 @@ export function ZoneLayout({
         data-active-step={activeStep}
         data-selected-utility={selectedUtility}
       >
-        <aside className="zone-layout__stepflow-rail">
+        <aside className="zone-layout__stepflow-rail" data-testid="desktop-stepflow-rail">
           <StepNavigation
             steps={[
               {
@@ -249,16 +259,11 @@ export function ZoneLayout({
               },
             ]}
             activeStep={activeStep}
-            onStepChange={(step) => {
-              setActiveStep(step)
-              setHasNavigatedSteps(true)
-            }}
+            onStepChange={handleStepChange}
           />
           <UtilityNav
             selectedUtility={selectedUtility}
-            onUtilityChange={(utility) =>
-              setSelectedUtility(utility === 'saved' ? 'saved' : 'calculator')
-            }
+            onUtilityChange={handleUtilityChange}
             utilities={['calculator', 'saved']}
             layout="rail"
           />
@@ -269,12 +274,60 @@ export function ZoneLayout({
             className="zone-layout__mobile-step-pills-hook"
             data-mobile-structure="step-pills"
             data-active-step={activeStep}
-          />
+            data-testid="mobile-step-pills"
+          >
+            <div className="zone-layout__mobile-step-pills" role="group" aria-label="Step pills">
+              {(['step1', 'step2', 'step3'] as const).map((stepKey) => (
+                <button
+                  key={stepKey}
+                  type="button"
+                  className="zone-layout__mobile-step-pill"
+                  data-state={stepStates[stepKey].state}
+                  aria-pressed={activeStep === stepKey}
+                  onClick={() => handleStepChange(stepKey)}
+                >
+                  {STEP_LABELS[stepKey]}
+                </button>
+              ))}
+            </div>
+          </div>
           <div
             className="zone-layout__mobile-utility-bar-hook"
             data-mobile-structure="utility-bar"
             data-selected-utility={selectedUtility}
-          />
+            data-testid="mobile-utility-bar"
+          >
+            <nav
+              className="utility-nav"
+              data-layout="bottom-bar"
+              aria-label="Mobile utility navigation"
+            >
+              <ul className="utility-nav__list">
+                <li className="utility-nav__item">
+                  <button
+                    type="button"
+                    className="utility-nav__button"
+                    aria-label="Mobile calculator"
+                    aria-pressed={selectedUtility === 'calculator'}
+                    onClick={() => handleUtilityChange('calculator')}
+                  >
+                    Calculator
+                  </button>
+                </li>
+                <li className="utility-nav__item">
+                  <button
+                    type="button"
+                    className="utility-nav__button"
+                    aria-label="Mobile saved"
+                    aria-pressed={selectedUtility === 'saved'}
+                    onClick={() => handleUtilityChange('saved')}
+                  >
+                    Saved
+                  </button>
+                </li>
+              </ul>
+            </nav>
+          </div>
 
           {selectedUtility === 'calculator' ? (
             <section className="zone-layout__calculator-surface" data-testid="calculator-surface">
@@ -296,7 +349,7 @@ export function ZoneLayout({
                   className="zone-layout__step-panel"
                   data-step-key="step1"
                   data-step-active={activeStep === 'step1'}
-                  hidden={hasNavigatedSteps && activeStep !== 'step1'}
+                  style={activeStep === 'step1' ? undefined : inactivePanelStyle}
                 >
                   <Zone1PackageSection
                     form={form}
@@ -316,7 +369,7 @@ export function ZoneLayout({
                   className="zone-layout__step-panel"
                   data-step-key="step2"
                   data-step-active={activeStep === 'step2'}
-                  hidden={hasNavigatedSteps && activeStep !== 'step2'}
+                  style={activeStep === 'step2' ? undefined : inactivePanelStyle}
                 >
                   <Zone2CookedSection
                     cookedInputUnit={cookedInputUnit}
@@ -340,7 +393,7 @@ export function ZoneLayout({
                   className="zone-layout__step-panel"
                   data-step-key="step3"
                   data-step-active={activeStep === 'step3'}
-                  hidden={hasNavigatedSteps && activeStep !== 'step3'}
+                  style={activeStep === 'step3' ? undefined : inactivePanelStyle}
                 >
                   <Zone3PortionSection
                     form={form}
