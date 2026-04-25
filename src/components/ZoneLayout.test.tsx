@@ -107,12 +107,18 @@ describe('ZoneLayout', () => {
     const user = userEvent.setup()
     render(<ZoneLayout {...buildProps()} />)
 
+    const packageZone = screen.getByTestId('zone-package')
+    const cookedZone = screen.getByTestId('zone-cooked')
+    const portionZone = screen.getByTestId('zone-portion')
+
     await user.click(screen.getByRole('button', { name: /step 3/i }))
 
     expect(
       screen.getByRole('button', { name: /step 3/i }),
     ).toHaveAttribute('aria-current', 'step')
-    expect(screen.getByTestId('zone-portion')).toBeInTheDocument()
+    expect(portionZone).toBeVisible()
+    expect(packageZone).not.toBeVisible()
+    expect(cookedZone).not.toBeVisible()
   })
 
   it('shows missing-data guidance when the active step is incomplete', async () => {
@@ -137,17 +143,27 @@ describe('ZoneLayout', () => {
 
     const calculatorButton = screen.getByRole('button', { name: /^calculator$/i })
     const savedButton = screen.getByRole('button', { name: /^saved$/i })
+    const calculatorSurface = screen.getByTestId('calculator-surface')
     const savedRegion = screen.getByTestId('saved-meals-region')
 
     expect(calculatorButton).toHaveAttribute('aria-pressed', 'true')
     expect(savedButton).toHaveAttribute('aria-pressed', 'false')
+    expect(calculatorSurface).toBeVisible()
     expect(savedRegion).toHaveAttribute('data-surface', 'zone')
 
     await user.click(savedButton)
 
     expect(savedButton).toHaveAttribute('aria-pressed', 'true')
     expect(calculatorButton).toHaveAttribute('aria-pressed', 'false')
+    expect(calculatorSurface).not.toBeVisible()
     expect(savedRegion).toHaveAttribute('data-surface', 'utility')
+
+    await user.click(calculatorButton)
+
+    expect(calculatorButton).toHaveAttribute('aria-pressed', 'true')
+    expect(savedButton).toHaveAttribute('aria-pressed', 'false')
+    expect(calculatorSurface).toBeVisible()
+    expect(savedRegion).toHaveAttribute('data-surface', 'zone')
   })
 
   it('renders shelf meal cards when meals are provided', () => {

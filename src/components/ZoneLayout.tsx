@@ -115,6 +115,7 @@ export function ZoneLayout({
   onClearVariableFields,
 }: ZoneLayoutProps) {
   const [activeStep, setActiveStep] = useState<StepKey>('step1')
+  const [hasNavigatedSteps, setHasNavigatedSteps] = useState(false)
   const [selectedUtility, setSelectedUtility] = useState<'calculator' | 'saved'>(
     'calculator',
   )
@@ -248,7 +249,10 @@ export function ZoneLayout({
               },
             ]}
             activeStep={activeStep}
-            onStepChange={setActiveStep}
+            onStepChange={(step) => {
+              setActiveStep(step)
+              setHasNavigatedSteps(true)
+            }}
           />
           <UtilityNav
             selectedUtility={selectedUtility}
@@ -272,7 +276,11 @@ export function ZoneLayout({
             data-selected-utility={selectedUtility}
           />
 
-          <section className="zone-layout__calculator-surface" data-testid="calculator-surface">
+          <section
+            className="zone-layout__calculator-surface"
+            data-testid="calculator-surface"
+            hidden={selectedUtility !== 'calculator'}
+          >
             {activeStepGuidance.length > 0 ? (
               <section className="step-guidance" data-testid="active-step-guidance">
                 <p className="step-guidance__title">
@@ -291,6 +299,7 @@ export function ZoneLayout({
                 className="zone-layout__step-panel"
                 data-step-key="step1"
                 data-step-active={activeStep === 'step1'}
+                hidden={hasNavigatedSteps && activeStep !== 'step1'}
               >
                 <Zone1PackageSection
                   form={form}
@@ -310,6 +319,7 @@ export function ZoneLayout({
                 className="zone-layout__step-panel"
                 data-step-key="step2"
                 data-step-active={activeStep === 'step2'}
+                hidden={hasNavigatedSteps && activeStep !== 'step2'}
               >
                 <Zone2CookedSection
                   cookedInputUnit={cookedInputUnit}
@@ -333,6 +343,7 @@ export function ZoneLayout({
                 className="zone-layout__step-panel"
                 data-step-key="step3"
                 data-step-active={activeStep === 'step3'}
+                hidden={hasNavigatedSteps && activeStep !== 'step3'}
               >
                 <Zone3PortionSection
                   form={form}
@@ -351,13 +362,6 @@ export function ZoneLayout({
               </section>
             </div>
 
-            <SavedMealsList
-              meals={savedMeals}
-              onLoad={onLoadMeal}
-              onDelete={onDeleteMeal}
-              surface={selectedUtility === 'saved' ? 'utility' : 'zone'}
-            />
-
             <footer className="action-row zone-layout__actions">
               <button type="button" onClick={onSave}>
                 Save meal
@@ -370,6 +374,13 @@ export function ZoneLayout({
               </button>
             </footer>
           </section>
+
+          <SavedMealsList
+            meals={savedMeals}
+            onLoad={onLoadMeal}
+            onDelete={onDeleteMeal}
+            surface={selectedUtility === 'saved' ? 'utility' : 'zone'}
+          />
         </main>
       </div>
     </div>
