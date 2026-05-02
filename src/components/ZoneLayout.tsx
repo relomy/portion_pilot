@@ -294,19 +294,6 @@ export function ZoneLayout({
               ))}
             </div>
           </div>
-          <div
-            className="zone-layout__mobile-utility-bar-hook"
-            data-mobile-structure="utility-bar"
-            data-selected-utility={selectedUtility}
-            data-testid="mobile-utility-bar"
-          >
-            <UtilityNav
-              selectedUtility={selectedUtility}
-              onUtilityChange={handleUtilityChange}
-              utilities={[...NAV_UTILITIES]}
-              layout="bottom-bar"
-            />
-          </div>
 
           {selectedUtility === 'calculator' ? (
             <section className="zone-layout__calculator-surface" data-testid="calculator-surface">
@@ -414,6 +401,19 @@ export function ZoneLayout({
               surface="utility"
             />
           )}
+          <div
+            className="zone-layout__mobile-utility-bar-hook"
+            data-mobile-structure="utility-bar"
+            data-selected-utility={selectedUtility}
+            data-testid="mobile-utility-bar"
+          >
+            <UtilityNav
+              selectedUtility={selectedUtility}
+              onUtilityChange={handleUtilityChange}
+              utilities={[...NAV_UTILITIES]}
+              layout="bottom-bar"
+            />
+          </div>
         </main>
       </div>
     </div>

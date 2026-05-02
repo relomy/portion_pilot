@@ -134,6 +134,7 @@ describe('ZoneLayout', () => {
     )
     const mobilePills = screen.getByTestId('mobile-step-pills')
     const mobileUtilityBar = screen.getByTestId('mobile-utility-bar')
+    const calculatorSurface = screen.getByTestId('calculator-surface')
     const mobileStep1Button = within(mobilePills).getByRole('button', {
       name: /step 1 .* package/i,
     })
@@ -156,6 +157,10 @@ describe('ZoneLayout', () => {
     expect(screen.getByTestId('zone-package')).toBeVisible()
     expect(screen.queryByTestId('zone-cooked')).not.toBeInTheDocument()
     expect(screen.queryByTestId('zone-portion')).not.toBeInTheDocument()
+    expect(
+      calculatorSurface.compareDocumentPosition(mobileUtilityBar) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).not.toBe(0)
 
     await user.click(mobileStep2Button)
     expect(mobileStep2Button).toHaveAttribute('aria-pressed', 'true')
