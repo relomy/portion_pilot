@@ -17,7 +17,7 @@ import { Zone1PackageSection } from './zones/Zone1PackageSection'
 import { Zone2CookedSection } from './zones/Zone2CookedSection'
 import { Zone3PortionSection } from './zones/Zone3PortionSection'
 import { StepNavigation } from './stepflow/StepNavigation'
-import { UtilityNav } from './stepflow/UtilityNav'
+import { UtilityNav, type UtilityKey } from './stepflow/UtilityNav'
 import { getStepStates, type StepKey } from './stepflow/stepState'
 import {
   formatCaloriesPer100Grams,
@@ -206,8 +206,10 @@ export function ZoneLayout({
   const handleStepChange = (step: StepKey) => {
     setActiveStep(step)
   }
-  const handleUtilityChange = (utility: NavUtilityKey) => {
-    setSelectedUtility(utility)
+  const handleUtilityChange = (utility: UtilityKey) => {
+    if (utility === 'calculator' || utility === 'saved') {
+      setSelectedUtility(utility)
+    }
   }
 
   return (
