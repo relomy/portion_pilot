@@ -45,6 +45,7 @@ export function StepNavigation({
                 type="button"
                 className="step-navigation__button"
                 data-state={step.state}
+                aria-label={`${step.indexLabel} · ${step.titleLabel} · ${statusText}`}
                 aria-current={isActive ? 'step' : undefined}
                 onClick={() => onStepChange(step.key)}
               >
