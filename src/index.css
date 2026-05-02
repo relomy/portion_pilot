@@ -21,6 +21,7 @@
   --ink-faint: #7f7f7f;
   --teal: #1ed760;
   --teal-mid: #32df6f;
+  --accent-on: #081108;
   --field-bg: #121212;
   --field-border: #2f2f2f;
   --surface-border: #2f2f2f;
@@ -299,7 +300,8 @@ input:disabled {
 .mode-group__option:has(input:checked) {
   background: var(--teal);
   border-color: var(--teal);
-  color: #fff;
+  color: var(--accent-on);
+  font-weight: 600;
 }
 
 .field__label {
@@ -394,13 +396,15 @@ input:disabled {
 
 .unit-toggle__option:has(input:checked) span {
   background: var(--teal);
-  color: #fff;
+  color: var(--accent-on);
+  font-weight: 600;
 }
 
 .unit-toggle__option input:checked + span,
 .unit-toggle__option input:checked + span:hover {
   background: var(--teal);
-  color: #fff;
+  color: var(--accent-on);
+  font-weight: 600;
 }
 
 .unit-toggle__option input:not(:checked) + span {
@@ -857,7 +861,8 @@ input:disabled {
 .action-row button:first-child {
   background: var(--herb);
   border-color: var(--herb);
-  color: #f8fffd;
+  color: var(--accent-on);
+  font-weight: 600;
 }
 
 .action-row button:first-child:hover {
