@@ -53,6 +53,19 @@ function buildProps(overrides: Partial<MealInputs> = {}): ZoneLayoutProps {
   }
 }
 
+function selectDesktopStep(step: 'step1' | 'step2' | 'step3') {
+  const stepLabels = {
+    step1: /step 1 .* package/i,
+    step2: /step 2 .* cooked batch/i,
+    step3: /step 3 .* portion/i,
+  } as const
+  const desktopRail = screen.getByTestId('desktop-stepflow-rail')
+
+  fireEvent.click(
+    within(desktopRail).getByRole('button', { name: stepLabels[step] }),
+  )
+}
+
 describe('ZoneLayout', () => {
   it('renders the masthead kicker, title, and subtitle', () => {
     render(<ZoneLayout {...buildProps()} />)
@@ -97,13 +110,160 @@ describe('ZoneLayout', () => {
     expect(onClearVariableFields).toHaveBeenCalledTimes(1)
   })
 
-  it('renders saved meals region from the ZoneLayout path', () => {
+  it('keeps saved meals surface unmounted while calculator utility is selected', () => {
     render(<ZoneLayout {...buildProps()} />)
 
-    expect(screen.getByTestId('saved-meals-region')).toBeInTheDocument()
+    expect(screen.queryByTestId('saved-meals-region')).not.toBeInTheDocument()
   })
 
-  it('renders shelf meal cards when meals are provided', () => {
+  it('shows only the active step panel on initial render', () => {
+    render(<ZoneLayout {...buildProps()} />)
+
+    expect(screen.getByTestId('zone-package')).toBeVisible()
+    expect(screen.queryByTestId('zone-cooked')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('zone-portion')).not.toBeInTheDocument()
+  })
+
+  it('mobile controls drive step panels and utility surfaces', async () => {
+    const user = userEvent.setup()
+    render(<ZoneLayout {...buildProps()} />)
+
+    expect(screen.getByTestId('zone-layout-root')).toHaveClass('zone-layout')
+    expect(screen.getByTestId('desktop-stepflow-rail')).toHaveClass(
+      'zone-layout__stepflow-rail',
+    )
+    const mobilePills = screen.getByTestId('mobile-step-pills')
+    const mobileUtilityBar = screen.getByTestId('mobile-utility-bar')
+    const calculatorSurface = screen.getByTestId('calculator-surface')
+    const mobileStep1Button = within(mobilePills).getByRole('button', {
+      name: /step 1 .* package/i,
+    })
+    const mobileStep2Button = within(mobilePills).getByRole('button', {
+      name: /step 2 .* cooked batch/i,
+    })
+    const mobileStep3Button = within(mobilePills).getByRole('button', {
+      name: /step 3 .* portion/i,
+    })
+    const mobileCalculatorButton = within(mobileUtilityBar).getByRole('button', {
+      name: /^calculator$/i,
+    })
+    const mobileSavedButton = within(mobileUtilityBar).getByRole('button', {
+      name: /^saved$/i,
+    })
+
+    expect(mobileStep1Button).toHaveAttribute('aria-pressed', 'true')
+    expect(mobileStep2Button).toHaveAttribute('aria-pressed', 'false')
+    expect(mobileStep3Button).toHaveAttribute('aria-pressed', 'false')
+    expect(screen.getByTestId('zone-package')).toBeVisible()
+    expect(screen.queryByTestId('zone-cooked')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('zone-portion')).not.toBeInTheDocument()
+    expect(
+      calculatorSurface.compareDocumentPosition(mobileUtilityBar) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).not.toBe(0)
+
+    await user.click(mobileStep2Button)
+    expect(mobileStep2Button).toHaveAttribute('aria-pressed', 'true')
+    expect(mobileStep1Button).toHaveAttribute('aria-pressed', 'false')
+    expect(screen.getByTestId('zone-cooked')).toBeVisible()
+    expect(screen.queryByTestId('zone-package')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('zone-portion')).not.toBeInTheDocument()
+
+    await user.click(mobileStep3Button)
+    expect(mobileStep3Button).toHaveAttribute('aria-pressed', 'true')
+    expect(mobileStep2Button).toHaveAttribute('aria-pressed', 'false')
+    expect(screen.getByTestId('zone-portion')).toBeVisible()
+    expect(screen.queryByTestId('zone-package')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('zone-cooked')).not.toBeInTheDocument()
+
+    expect(mobileCalculatorButton).toHaveAttribute('aria-pressed', 'true')
+    expect(mobileSavedButton).toHaveAttribute('aria-pressed', 'false')
+    expect(screen.getByTestId('calculator-surface')).toBeInTheDocument()
+    expect(screen.queryByTestId('saved-meals-region')).not.toBeInTheDocument()
+
+    await user.click(mobileSavedButton)
+    expect(mobileSavedButton).toHaveAttribute('aria-pressed', 'true')
+    expect(mobileCalculatorButton).toHaveAttribute('aria-pressed', 'false')
+    expect(screen.queryByTestId('calculator-surface')).not.toBeInTheDocument()
+    expect(screen.getByTestId('saved-meals-region')).toBeInTheDocument()
+
+    await user.click(mobileCalculatorButton)
+    expect(mobileCalculatorButton).toHaveAttribute('aria-pressed', 'true')
+    expect(mobileSavedButton).toHaveAttribute('aria-pressed', 'false')
+    expect(screen.getByTestId('calculator-surface')).toBeInTheDocument()
+    expect(screen.queryByTestId('saved-meals-region')).not.toBeInTheDocument()
+  })
+
+  it('allows switching directly to step 3 without blocking', async () => {
+    const user = userEvent.setup()
+    render(<ZoneLayout {...buildProps()} />)
+    const desktopRail = screen.getByTestId('desktop-stepflow-rail')
+
+    await user.click(
+      within(desktopRail).getByRole('button', { name: /step 3 .* portion/i }),
+    )
+
+    expect(
+      within(desktopRail).getByRole('button', { name: /step 3 .* portion/i }),
+    ).toHaveAttribute('aria-current', 'step')
+    expect(screen.getByTestId('zone-portion')).toBeVisible()
+    expect(screen.queryByTestId('zone-package')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('zone-cooked')).not.toBeInTheDocument()
+  })
+
+  it('shows missing-data guidance when the active step is incomplete', async () => {
+    const user = userEvent.setup()
+    render(<ZoneLayout {...buildProps()} />)
+    const desktopRail = screen.getByTestId('desktop-stepflow-rail')
+
+    await user.click(
+      within(desktopRail).getByRole('button', { name: /step 3 .* portion/i }),
+    )
+
+    const guidance = screen.getByTestId('active-step-guidance')
+    expect(guidance).toHaveTextContent(/step 3 .* incomplete/i)
+    expect(guidance).toHaveTextContent(
+      /missing data from step 1 .*raw total weight, serving weight, calories \/ serving\./i,
+    )
+    expect(guidance).toHaveTextContent(
+      /missing data from step 2 .*cooked weight\./i,
+    )
+  })
+
+  it('switches to saved utility and shows saved meals surface', async () => {
+    const user = userEvent.setup()
+    render(<ZoneLayout {...buildProps()} />)
+    const desktopRail = screen.getByTestId('desktop-stepflow-rail')
+
+    const calculatorButton = within(desktopRail).getByRole('button', {
+      name: /^calculator$/i,
+    })
+    const savedButton = within(desktopRail).getByRole('button', {
+      name: /^saved$/i,
+    })
+
+    expect(calculatorButton).toHaveAttribute('aria-pressed', 'true')
+    expect(savedButton).toHaveAttribute('aria-pressed', 'false')
+    expect(screen.getByTestId('calculator-surface')).toBeInTheDocument()
+    expect(screen.queryByTestId('saved-meals-region')).not.toBeInTheDocument()
+
+    await user.click(savedButton)
+
+    expect(savedButton).toHaveAttribute('aria-pressed', 'true')
+    expect(calculatorButton).toHaveAttribute('aria-pressed', 'false')
+    expect(screen.queryByTestId('calculator-surface')).not.toBeInTheDocument()
+    expect(screen.getByTestId('saved-meals-region')).toBeInTheDocument()
+
+    await user.click(calculatorButton)
+
+    expect(calculatorButton).toHaveAttribute('aria-pressed', 'true')
+    expect(savedButton).toHaveAttribute('aria-pressed', 'false')
+    expect(screen.getByTestId('calculator-surface')).toBeInTheDocument()
+    expect(screen.queryByTestId('saved-meals-region')).not.toBeInTheDocument()
+  })
+
+  it('renders shelf meal cards when meals are provided', async () => {
+    const user = userEvent.setup()
     const form: MealInputs = { ...baseForm, mealName: 'Prep bowl' }
     const result = calculateMealMetrics(toCalculationInput(form))
     render(
@@ -119,23 +279,26 @@ describe('ZoneLayout', () => {
         ]}
       />,
     )
+    const desktopRail = screen.getByTestId('desktop-stepflow-rail')
+
+    await user.click(
+      within(desktopRail).getByRole('button', { name: /^saved$/i }),
+    )
 
     expect(screen.getByTestId('saved-meal-card-meal-1')).toBeInTheDocument()
   })
 
-  it('renders three zones in order', () => {
+  it('renders step pills in order', () => {
     render(<ZoneLayout {...buildProps()} />)
-
-    const packageZone = screen.getByTestId('zone-package')
-    const cookedZone = screen.getByTestId('zone-cooked')
-    const portionZone = screen.getByTestId('zone-portion')
+    const mobilePills = screen.getByTestId('mobile-step-pills')
+    const stepButtons = within(mobilePills).getAllByRole('button')
 
     expect(
-      packageZone.compareDocumentPosition(cookedZone) &
+      stepButtons[0].compareDocumentPosition(stepButtons[1]) &
         Node.DOCUMENT_POSITION_FOLLOWING,
     ).not.toBe(0)
     expect(
-      cookedZone.compareDocumentPosition(portionZone) &
+      stepButtons[1].compareDocumentPosition(stepButtons[2]) &
         Node.DOCUMENT_POSITION_FOLLOWING,
     ).not.toBe(0)
   })
@@ -143,14 +306,27 @@ describe('ZoneLayout', () => {
   it('renders zone eyebrows and titles', () => {
     render(<ZoneLayout {...buildProps()} />)
 
-    expect(screen.getByText(/before cooking/i)).toBeInTheDocument()
+    const packageZone = screen.getByTestId('zone-package')
+    expect(within(packageZone).getByText(/before cooking/i)).toBeInTheDocument()
     expect(
-      screen.getByRole('heading', { level: 2, name: /^package$/i }),
+      within(packageZone).getByRole('heading', { level: 2, name: /^package$/i }),
     ).toBeInTheDocument()
-    expect(screen.getByText(/after cooking/i)).toBeInTheDocument()
-    expect(screen.getByText(/cooked batch/i)).toBeInTheDocument()
-    expect(screen.getByText(/at the plate/i)).toBeInTheDocument()
-    expect(screen.getByText(/portion guide/i)).toBeInTheDocument()
+
+    selectDesktopStep('step2')
+    const cookedZone = screen.getByTestId('zone-cooked')
+    expect(within(cookedZone).getByText(/after cooking/i)).toBeInTheDocument()
+    expect(
+      within(cookedZone).getByRole('heading', {
+        level: 2,
+        name: /^cooked batch$/i,
+        hidden: true,
+      }),
+    ).toBeInTheDocument()
+
+    selectDesktopStep('step3')
+    const portionZone = screen.getByTestId('zone-portion')
+    expect(within(portionZone).getByText(/at the plate/i)).toBeInTheDocument()
+    expect(within(portionZone).getByText(/portion guide/i)).toBeInTheDocument()
   })
 
   it('renders Zone 1 package label inputs', () => {
@@ -264,6 +440,7 @@ describe('ZoneLayout', () => {
 
   it('renders Zone 2 cooked weight input', () => {
     render(<ZoneLayout {...buildProps()} />)
+    selectDesktopStep('step2')
 
     const zone = screen.getByTestId('zone-cooked')
     expect(within(zone).getByLabelText(/^cooked weight$/i)).toBeInTheDocument()
@@ -271,11 +448,15 @@ describe('ZoneLayout', () => {
 
   it('renders cooked weight with a g/oz unit toggle in Zone 2', () => {
     render(<ZoneLayout {...buildProps()} />)
+    selectDesktopStep('step2')
 
     const zone = screen.getByTestId('zone-cooked')
     expect(within(zone).getByLabelText(/^cooked weight$/i)).toBeInTheDocument()
     expect(
-      within(zone).getByRole('group', { name: /cooked weight unit/i }),
+      within(zone).getByRole('group', {
+        name: /cooked weight unit/i,
+        hidden: true,
+      }),
     ).toBeInTheDocument()
   })
 
@@ -288,9 +469,12 @@ describe('ZoneLayout', () => {
         onCookedInputUnitChange={onCookedInputUnitChange}
       />,
     )
+    selectDesktopStep('step2')
 
     const zone = screen.getByTestId('zone-cooked')
-    await user.click(within(zone).getByRole('radio', { name: /^oz$/i }))
+    await user.click(
+      within(zone).getByRole('radio', { name: /^oz$/i, hidden: true }),
+    )
 
     expect(onCookedInputUnitChange).toHaveBeenCalledWith('oz')
   })
@@ -306,6 +490,7 @@ describe('ZoneLayout', () => {
         onCookedOutputUnitChange={onCookedOutputUnitChange}
       />,
     )
+    selectDesktopStep('step2')
 
     const zone = screen.getByTestId('zone-cooked')
     fireEvent.change(within(zone).getByLabelText(/^cooked weight$/i), {
@@ -329,6 +514,7 @@ describe('ZoneLayout', () => {
         })}
       />,
     )
+    selectDesktopStep('step2')
 
     const zone = screen.getByTestId('zone-cooked')
     expect(within(zone).getByTestId('density-primary')).toHaveTextContent(
@@ -358,6 +544,7 @@ describe('ZoneLayout', () => {
 
   it('renders Zone 2 weight change callout with dash when weights are absent', () => {
     render(<ZoneLayout {...buildProps()} />)
+    selectDesktopStep('step2')
 
     expect(screen.getByTestId('weight-change-callout')).toHaveTextContent('—')
     expect(screen.getByTestId('raw-per-cooked-multiplier')).toHaveTextContent('—')
@@ -374,6 +561,7 @@ describe('ZoneLayout', () => {
         })}
       />,
     )
+    selectDesktopStep('step2')
 
     expect(screen.getByTestId('weight-change-callout')).toHaveTextContent(
       /gained|lost/i,
@@ -385,6 +573,7 @@ describe('ZoneLayout', () => {
 
   it('renders Zone 3 portion eaten and target calories inputs', () => {
     render(<ZoneLayout {...buildProps()} />)
+    selectDesktopStep('step3')
 
     const zone = screen.getByTestId('zone-portion')
     expect(within(zone).getByLabelText(/portion eaten/i)).toBeInTheDocument()
@@ -400,25 +589,29 @@ describe('ZoneLayout', () => {
         cookedOutputUnit="oz"
       />,
     )
+    selectDesktopStep('step3')
 
     const zone = screen.getByTestId('zone-portion')
     const portionUnitGroup = within(zone).getByRole('group', {
       name: /portion unit/i,
+      hidden: true,
     })
     const displayUnitGroup = within(zone).getByRole('group', {
       name: /display unit/i,
+      hidden: true,
     })
 
     expect(
-      within(portionUnitGroup).getByRole('radio', { name: /^oz$/i }),
+      within(portionUnitGroup).getByRole('radio', { name: /^oz$/i, hidden: true }),
     ).toBeChecked()
     expect(
-      within(displayUnitGroup).getByRole('radio', { name: /^oz$/i }),
+      within(displayUnitGroup).getByRole('radio', { name: /^oz$/i, hidden: true }),
     ).toBeChecked()
   })
 
   it('does not render Servings (optional) in Zone 3 when mode is perServing', () => {
     render(<ZoneLayout {...buildProps({ mode: 'perServing' })} />)
+    selectDesktopStep('step3')
 
     const zone = screen.getByTestId('zone-portion')
     expect(
@@ -438,10 +631,12 @@ describe('ZoneLayout', () => {
     )
 
     const packageZone = screen.getByTestId('zone-package')
-    const portionZone = screen.getByTestId('zone-portion')
     expect(
       within(packageZone).getByText(/assumed 1 serving because none was provided\./i),
     ).toBeInTheDocument()
+
+    selectDesktopStep('step3')
+    const portionZone = screen.getByTestId('zone-portion')
     expect(
       within(portionZone).queryByText(/assumed 1 serving because none was provided\./i),
     ).not.toBeInTheDocument()
@@ -466,6 +661,7 @@ describe('ZoneLayout', () => {
 
   it('does not render editable controls in Zone 3 when mode is perServing', () => {
     render(<ZoneLayout {...buildProps({ mode: 'perServing' })} />)
+    selectDesktopStep('step3')
 
     const zone = screen.getByTestId('zone-portion')
     expect(within(zone).queryByLabelText(/portion eaten/i)).not.toBeInTheDocument()
@@ -474,6 +670,7 @@ describe('ZoneLayout', () => {
 
   it('does not render answer rows in Zone 3 when mode is perServing', () => {
     render(<ZoneLayout {...buildProps({ mode: 'perServing' })} />)
+    selectDesktopStep('step3')
 
     const zone = screen.getByTestId('zone-portion')
     expect(within(zone).queryByTestId('ref-pkg-serving')).not.toBeInTheDocument()
@@ -489,6 +686,7 @@ describe('ZoneLayout', () => {
 
   it('renders Portion eaten in Zone 3 when mode is total', () => {
     render(<ZoneLayout {...buildProps({ mode: 'total' })} />)
+    selectDesktopStep('step3')
 
     const zone = screen.getByTestId('zone-portion')
     expect(within(zone).getByLabelText(/portion eaten/i)).toBeInTheDocument()
@@ -499,6 +697,7 @@ describe('ZoneLayout', () => {
 
   it('renders the pkg serving reference row as muted and always visible', () => {
     render(<ZoneLayout {...buildProps()} />)
+    selectDesktopStep('step3')
 
     const zone = screen.getByTestId('zone-portion')
     expect(within(zone).getByTestId('ref-pkg-serving')).toBeInTheDocument()
@@ -507,6 +706,7 @@ describe('ZoneLayout', () => {
 
   it('renders answer rows with dashes when prerequisites are missing', () => {
     render(<ZoneLayout {...buildProps()} />)
+    selectDesktopStep('step3')
 
     const zone = screen.getByTestId('zone-portion')
     expect(within(zone).getByTestId('answer-target-portion')).toHaveTextContent('—')
@@ -536,6 +736,7 @@ describe('ZoneLayout', () => {
         })}
       />,
     )
+    selectDesktopStep('step3')
 
     expect(screen.getByTestId('hero-portion-cal')).not.toHaveTextContent('—')
   })
@@ -555,6 +756,7 @@ describe('ZoneLayout', () => {
         })}
       />,
     )
+    selectDesktopStep('step3')
 
     expect(screen.getByTestId('hero-portion-cal')).toHaveTextContent('100')
   })
@@ -574,6 +776,7 @@ describe('ZoneLayout', () => {
         cookedOutputUnit="oz"
       />,
     )
+    selectDesktopStep('step3')
 
     expect(screen.getByTestId('answer-raw-equivalent-eaten')).toHaveTextContent(
       '0.8 oz',

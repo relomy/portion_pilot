@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type {
   MealInputs,
   MealMode,
@@ -15,6 +16,9 @@ import {
 import { Zone1PackageSection } from './zones/Zone1PackageSection'
 import { Zone2CookedSection } from './zones/Zone2CookedSection'
 import { Zone3PortionSection } from './zones/Zone3PortionSection'
+import { StepNavigation } from './stepflow/StepNavigation'
+import { UtilityNav, type UtilityKey } from './stepflow/UtilityNav'
+import { getStepStates, type StepKey } from './stepflow/stepState'
 import {
   formatCaloriesPer100Grams,
   formatCaloriesPerGram,
@@ -35,6 +39,20 @@ const sourceLabels = {
   per_serving: 'Source: calories per serving',
   insufficient: 'Source: insufficient data',
 } as const
+
+const STEP_LABELS: Record<StepKey, string> = {
+  step1: 'Step 1 · Package',
+  step2: 'Step 2 · Cooked batch',
+  step3: 'Step 3 · Portion',
+}
+
+const STEP_FIELDS: Record<StepKey, string[]> = {
+  step1: ['Raw total weight', 'Serving weight', 'Calories / serving'],
+  step2: ['Cooked weight'],
+  step3: ['Portion eaten'],
+}
+const NAV_UTILITIES = ['calculator', 'saved'] as const
+type NavUtilityKey = (typeof NAV_UTILITIES)[number]
 
 export type ZoneLayoutProps = {
   form: MealInputs
@@ -98,6 +116,11 @@ export function ZoneLayout({
   onClear,
   onClearVariableFields,
 }: ZoneLayoutProps) {
+  const [activeStep, setActiveStep] = useState<StepKey>('step1')
+  const [selectedUtility, setSelectedUtility] =
+    useState<NavUtilityKey>('calculator')
+  const stepStates = getStepStates({ result, activeStep })
+  const activeStepState = stepStates[activeStep]
   const totalCaloriesText = formatTotalCalories(
     result.totalCalories,
     result.totalCaloriesDisplaySource,
@@ -164,6 +187,30 @@ export function ZoneLayout({
   const handleCookedWeightChange = (value: number | null) => {
     onNumberChange('cookedWeightGrams', toCanonicalCookedWeightGrams(value, cookedInputUnit))
   }
+  const activeStepGuidance =
+    selectedUtility === 'calculator' && !activeStepState.isComplete
+      ? activeStepState.missingPrerequisites.length > 0
+        ? activeStepState.missingPrerequisites.map((stepKey) => ({
+            key: stepKey,
+            label: STEP_LABELS[stepKey],
+            fields: STEP_FIELDS[stepKey],
+          }))
+        : [
+            {
+              key: activeStep,
+              label: STEP_LABELS[activeStep],
+              fields: STEP_FIELDS[activeStep],
+            },
+          ]
+      : []
+  const handleStepChange = (step: StepKey) => {
+    setActiveStep(step)
+  }
+  const handleUtilityChange = (utility: UtilityKey) => {
+    if (utility === 'calculator' || utility === 'saved') {
+      setSelectedUtility(utility)
+    }
+  }
 
   return (
     <div className="zone-layout" data-testid="zone-layout-root">
@@ -185,68 +232,192 @@ export function ZoneLayout({
         />
       </div>
 
-      <Zone1PackageSection
-        form={form}
-        result={result}
-        totalCaloriesText={totalCaloriesText}
-        rawServingsText={rawServingsText}
-        caloriesPerServingText={caloriesPerServingText}
-        onTextChange={onTextChange}
-        onNumberChange={onNumberChange}
-        onUnitChange={onUnitChange}
-        onModeChange={onModeChange}
-        onTotalSourceChange={onTotalSourceChange}
-      />
+      <div
+        className="zone-layout__stepflow-shell"
+        data-active-step={activeStep}
+        data-selected-utility={selectedUtility}
+      >
+        <aside className="zone-layout__stepflow-rail" data-testid="desktop-stepflow-rail">
+          <StepNavigation
+            steps={[
+              {
+                key: 'step1',
+                indexLabel: 'Step 1',
+                titleLabel: 'Package',
+                state: stepStates.step1.state,
+              },
+              {
+                key: 'step2',
+                indexLabel: 'Step 2',
+                titleLabel: 'Cooked batch',
+                state: stepStates.step2.state,
+              },
+              {
+                key: 'step3',
+                indexLabel: 'Step 3',
+                titleLabel: 'Portion',
+                state: stepStates.step3.state,
+              },
+            ]}
+            activeStep={activeStep}
+            onStepChange={handleStepChange}
+          />
+          <UtilityNav
+            selectedUtility={selectedUtility}
+            onUtilityChange={handleUtilityChange}
+            utilities={[...NAV_UTILITIES]}
+            layout="rail"
+          />
+        </aside>
 
-      <Zone2CookedSection
-        cookedInputUnit={cookedInputUnit}
-        cookedInputValue={cookedInputValue}
-        primaryDensityLabel={primaryDensityLabel}
-        primaryDensityValue={primaryDensityValue}
-        secondaryDensityLabel={secondaryDensityLabel}
-        secondaryDensityValue={secondaryDensityValue}
-        caloriesPer100GramsValue={caloriesPer100GramsValue}
-        isPrimaryDensityMuted={isPrimaryDensityMuted}
-        weightChangeText={weightChangeText}
-        rawPerCookedMultiplierText={rawPerCookedMultiplierText}
-        weightChangeCopy={weightChangeCopy}
-        hasWeightChange={hasWeightChange}
-        onCookedInputUnitChange={onCookedInputUnitChange}
-        onCookedWeightChange={handleCookedWeightChange}
-      />
+        <main className="zone-layout__stepflow-main">
+          <div
+            className="zone-layout__mobile-step-pills-hook"
+            data-mobile-structure="step-pills"
+            data-active-step={activeStep}
+            data-testid="mobile-step-pills"
+          >
+            <div className="zone-layout__mobile-step-pills" role="group" aria-label="Step pills">
+              {(['step1', 'step2', 'step3'] as const).map((stepKey) => (
+                <button
+                  key={stepKey}
+                  type="button"
+                  className="zone-layout__mobile-step-pill"
+                  data-state={stepStates[stepKey].state}
+                  aria-pressed={activeStep === stepKey}
+                  onClick={() => handleStepChange(stepKey)}
+                >
+                  {stepKey === 'step1'
+                    ? 'Step 1 · Package'
+                    : stepKey === 'step2'
+                      ? 'Step 2 · Cooked batch'
+                      : 'Step 3 · Portion'}
+                </button>
+              ))}
+            </div>
+          </div>
 
-      <Zone3PortionSection
-        form={form}
-        targetCalories={targetCalories}
-        activeOutputUnit={activeOutputUnit}
-        referenceServingText={referenceServingText}
-        targetPortionText={targetPortionText}
-        servingsEatenText={servingsEatenText}
-        rawEquivalentEatenText={rawEquivalentEatenText}
-        portionCaloriesText={portionCaloriesText}
-        onUnitChange={onUnitChange}
-        onCookedOutputUnitChange={onCookedOutputUnitChange}
-        onNumberChange={onNumberChange}
-        onTargetCaloriesChange={onTargetCaloriesChange}
-      />
+          {selectedUtility === 'calculator' ? (
+            <section className="zone-layout__calculator-surface" data-testid="calculator-surface">
+              {activeStepGuidance.length > 0 ? (
+                <section className="step-guidance" data-testid="active-step-guidance">
+                  <p className="step-guidance__title">
+                    {STEP_LABELS[activeStep]} is incomplete.
+                  </p>
+                  {activeStepGuidance.map((guidance) => (
+                    <p key={guidance.key} className="step-guidance__detail">
+                      Missing data from {guidance.label}: {guidance.fields.join(', ')}.
+                    </p>
+                  ))}
+                </section>
+              ) : null}
 
-      <SavedMealsList
-        meals={savedMeals}
-        onLoad={onLoadMeal}
-        onDelete={onDeleteMeal}
-      />
+              <div className="zone-layout__step-panels">
+                {activeStep === 'step1' ? (
+                  <section
+                    className="zone-layout__step-panel"
+                    data-step-key="step1"
+                    data-step-active
+                  >
+                    <Zone1PackageSection
+                      form={form}
+                      result={result}
+                      totalCaloriesText={totalCaloriesText}
+                      rawServingsText={rawServingsText}
+                      caloriesPerServingText={caloriesPerServingText}
+                      onTextChange={onTextChange}
+                      onNumberChange={onNumberChange}
+                      onUnitChange={onUnitChange}
+                      onModeChange={onModeChange}
+                      onTotalSourceChange={onTotalSourceChange}
+                    />
+                  </section>
+                ) : null}
 
-      <footer className="action-row zone-layout__actions">
-        <button type="button" onClick={onSave}>
-          Save meal
-        </button>
-        <button type="button" onClick={onClearVariableFields}>
-          Clear variable fields
-        </button>
-        <button type="button" onClick={onClear}>
-          Clear
-        </button>
-      </footer>
+                {activeStep === 'step2' ? (
+                  <section
+                    className="zone-layout__step-panel"
+                    data-step-key="step2"
+                    data-step-active
+                  >
+                    <Zone2CookedSection
+                      cookedInputUnit={cookedInputUnit}
+                      cookedInputValue={cookedInputValue}
+                      primaryDensityLabel={primaryDensityLabel}
+                      primaryDensityValue={primaryDensityValue}
+                      secondaryDensityLabel={secondaryDensityLabel}
+                      secondaryDensityValue={secondaryDensityValue}
+                      caloriesPer100GramsValue={caloriesPer100GramsValue}
+                      isPrimaryDensityMuted={isPrimaryDensityMuted}
+                      weightChangeText={weightChangeText}
+                      rawPerCookedMultiplierText={rawPerCookedMultiplierText}
+                      weightChangeCopy={weightChangeCopy}
+                      hasWeightChange={hasWeightChange}
+                      onCookedInputUnitChange={onCookedInputUnitChange}
+                      onCookedWeightChange={handleCookedWeightChange}
+                    />
+                  </section>
+                ) : null}
+
+                {activeStep === 'step3' ? (
+                  <section
+                    className="zone-layout__step-panel"
+                    data-step-key="step3"
+                    data-step-active
+                  >
+                    <Zone3PortionSection
+                      form={form}
+                      targetCalories={targetCalories}
+                      activeOutputUnit={activeOutputUnit}
+                      referenceServingText={referenceServingText}
+                      targetPortionText={targetPortionText}
+                      servingsEatenText={servingsEatenText}
+                      rawEquivalentEatenText={rawEquivalentEatenText}
+                      portionCaloriesText={portionCaloriesText}
+                      onUnitChange={onUnitChange}
+                      onCookedOutputUnitChange={onCookedOutputUnitChange}
+                      onNumberChange={onNumberChange}
+                      onTargetCaloriesChange={onTargetCaloriesChange}
+                    />
+                  </section>
+                ) : null}
+              </div>
+
+              <footer className="action-row zone-layout__actions">
+                <button type="button" onClick={onSave}>
+                  Save meal
+                </button>
+                <button type="button" onClick={onClearVariableFields}>
+                  Clear variable fields
+                </button>
+                <button type="button" onClick={onClear}>
+                  Clear
+                </button>
+              </footer>
+            </section>
+          ) : (
+            <SavedMealsList
+              meals={savedMeals}
+              onLoad={onLoadMeal}
+              onDelete={onDeleteMeal}
+              surface="utility"
+            />
+          )}
+          <div
+            className="zone-layout__mobile-utility-bar-hook"
+            data-mobile-structure="utility-bar"
+            data-selected-utility={selectedUtility}
+            data-testid="mobile-utility-bar"
+          >
+            <UtilityNav
+              selectedUtility={selectedUtility}
+              onUtilityChange={handleUtilityChange}
+              utilities={[...NAV_UTILITIES]}
+              layout="bottom-bar"
+            />
+          </div>
+        </main>
+      </div>
     </div>
   )
 }
