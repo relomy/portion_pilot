@@ -128,6 +128,10 @@ describe('ZoneLayout', () => {
     const user = userEvent.setup()
     render(<ZoneLayout {...buildProps()} />)
 
+    expect(screen.getByTestId('zone-layout-root')).toHaveClass('zone-layout')
+    expect(screen.getByTestId('desktop-stepflow-rail')).toHaveClass(
+      'zone-layout__stepflow-rail',
+    )
     const mobilePills = screen.getByTestId('mobile-step-pills')
     const mobileUtilityBar = screen.getByTestId('mobile-utility-bar')
     const mobileStep1Button = within(mobilePills).getByRole('button', {

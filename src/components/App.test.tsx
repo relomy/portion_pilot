@@ -52,6 +52,10 @@ describe('App zone layout migration', () => {
     const user = userEvent.setup()
     render(<App />)
 
+    expect(screen.getByTestId('zone-layout-root')).toHaveClass('zone-layout')
+    expect(screen.getByTestId('desktop-stepflow-rail')).toHaveClass(
+      'zone-layout__stepflow-rail',
+    )
     expect(screen.getByTestId('zone-package')).toBeInTheDocument()
     expect(screen.queryByTestId('zone-cooked')).not.toBeInTheDocument()
     expect(screen.queryByTestId('zone-portion')).not.toBeInTheDocument()
