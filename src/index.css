@@ -23,6 +23,11 @@
   --teal-mid: #32df6f;
   --field-bg: #121212;
   --field-border: #2f2f2f;
+  --surface-border: #2f2f2f;
+  --surface-bg-elevated: #2a2a2a;
+  --surface-bg-soft: #151515;
+  --surface-code-bg: #171717;
+  --surface-card-bg: #1b1b1b;
   --zone-divider: #2b2b2b;
   --wc-bg: #141414;
   --font-display: 'DM Serif Display', serif;
@@ -91,7 +96,7 @@ input {
 button {
   border: 1px solid var(--rule);
   border-radius: 999px;
-  background: #2a2a2a;
+  background: var(--surface-bg-elevated);
   color: var(--ink);
   cursor: pointer;
   transition:
@@ -117,7 +122,7 @@ input {
   width: 100%;
   border: 1px solid var(--rule);
   border-radius: 999px;
-  background: #151515;
+  background: var(--surface-bg-soft);
   color: var(--ink);
   padding: 0.8rem 0.9rem;
   transition:
@@ -200,7 +205,7 @@ input:disabled {
   border-radius: 20px;
   padding: 22px 18px 18px;
   background: linear-gradient(180deg, #1f1f1f 0%, var(--zone-bg) 100%);
-  border: 1px solid #2f2f2f;
+  border: 1px solid var(--surface-border);
 }
 
 .zone--package,
@@ -644,7 +649,7 @@ input:disabled {
   gap: 12px;
   padding: 14px;
   border-radius: 20px;
-  border: 1px solid #2f2f2f;
+  border: 1px solid var(--surface-border);
   background: var(--zone-bg);
 }
 
@@ -763,7 +768,7 @@ input:disabled {
   margin: 0.85rem 0 0;
   padding: 0.85rem 0.95rem;
   border-radius: 18px;
-  background: #f4efe7;
+  background: var(--surface-code-bg);
   color: var(--ink);
   font-size: 0.84rem;
 }
@@ -783,11 +788,9 @@ input:disabled {
 .meal-card,
 .meal-card--prep {
   position: relative;
-  border: 1px solid rgba(15, 23, 42, 0.1);
+  border: 1px solid var(--surface-border);
   border-radius: 24px;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(255, 250, 242, 0.96)),
-    var(--label);
+  background: var(--surface-card-bg);
   padding: 1rem 1rem 1.1rem;
   box-shadow: var(--shadow-soft);
   animation: rise-in 320ms ease both;
@@ -871,7 +874,7 @@ input:disabled {
 
 @media (max-width: 780px) {
   .zone-layout {
-    padding: 18px 12px 84px;
+    padding: 18px 12px calc(84px + env(safe-area-inset-bottom, 0px));
   }
 
   .zone-layout__stepflow-shell {
@@ -890,13 +893,13 @@ input:disabled {
 
   .zone-layout__mobile-utility-bar-hook {
     position: sticky;
-    bottom: 8px;
+    bottom: calc(8px + env(safe-area-inset-bottom, 0px));
     z-index: 5;
     display: block;
     margin-top: 12px;
     border-radius: 999px;
     background: var(--zone-bg);
-    border: 1px solid #2f2f2f;
+    border: 1px solid var(--surface-border);
     padding: 6px;
   }
 
