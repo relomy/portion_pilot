@@ -2,7 +2,8 @@ import type { StepKey, StepVisualState } from './stepState'
 
 export type StepNavigationItem = {
   key: StepKey
-  label: string
+  indexLabel: string
+  titleLabel: string
   state: StepVisualState
 }
 
@@ -47,7 +48,8 @@ export function StepNavigation({
                 aria-current={isActive ? 'step' : undefined}
                 onClick={() => onStepChange(step.key)}
               >
-                <span className="step-navigation__label">{step.label}</span>
+                <span className="step-navigation__index">{step.indexLabel}</span>
+                <span className="step-navigation__title">{step.titleLabel}</span>
                 <span className="step-navigation__status">{statusText}</span>
               </button>
             </li>

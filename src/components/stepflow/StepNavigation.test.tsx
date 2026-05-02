@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import type { StepKey, StepVisualState } from './stepState'
@@ -6,14 +6,15 @@ import { StepNavigation } from './StepNavigation'
 
 type NavStep = {
   key: StepKey
-  label: string
+  indexLabel: string
+  titleLabel: string
   state: StepVisualState
 }
 
 const steps: NavStep[] = [
-  { key: 'step1', label: 'Step 1', state: 'active' },
-  { key: 'step2', label: 'Step 2', state: 'incomplete' },
-  { key: 'step3', label: 'Step 3', state: 'untouched' },
+  { key: 'step1', indexLabel: 'Step 1', titleLabel: 'Package', state: 'active' },
+  { key: 'step2', indexLabel: 'Step 2', titleLabel: 'Cooked batch', state: 'incomplete' },
+  { key: 'step3', indexLabel: 'Step 3', titleLabel: 'Portion', state: 'untouched' },
 ]
 
 describe('StepNavigation', () => {
@@ -47,6 +48,22 @@ describe('StepNavigation', () => {
     const step2 = screen.getByRole('button', { name: /step 2/i })
     expect(step2).toHaveTextContent(/missing data/i)
     expect(step2).toHaveAttribute('data-state', 'incomplete')
+  })
+
+  it('renders separate index, title, and status nodes for each step', () => {
+    render(
+      <StepNavigation
+        steps={steps}
+        activeStep="step1"
+        onStepChange={() => {}}
+      />,
+    )
+
+    const step2 = screen.getByRole('button', { name: /step 2/i })
+    const step2Scope = within(step2)
+    expect(step2Scope.getByText('Step 2')).toHaveClass('step-navigation__index')
+    expect(step2Scope.getByText('Cooked batch')).toHaveClass('step-navigation__title')
+    expect(step2Scope.getByText('Missing data')).toHaveClass('step-navigation__status')
   })
 
   it('allows non-blocking click navigation across all steps', async () => {

@@ -240,17 +240,20 @@ export function ZoneLayout({
             steps={[
               {
                 key: 'step1',
-                label: STEP_LABELS.step1,
+                indexLabel: 'Step 1',
+                titleLabel: 'Package',
                 state: stepStates.step1.state,
               },
               {
                 key: 'step2',
-                label: STEP_LABELS.step2,
+                indexLabel: 'Step 2',
+                titleLabel: 'Cooked batch',
                 state: stepStates.step2.state,
               },
               {
                 key: 'step3',
-                label: STEP_LABELS.step3,
+                indexLabel: 'Step 3',
+                titleLabel: 'Portion',
                 state: stepStates.step3.state,
               },
             ]}
@@ -282,7 +285,11 @@ export function ZoneLayout({
                   aria-pressed={activeStep === stepKey}
                   onClick={() => handleStepChange(stepKey)}
                 >
-                  {STEP_LABELS[stepKey]}
+                  {stepKey === 'step1'
+                    ? 'Step 1 · Package'
+                    : stepKey === 'step2'
+                      ? 'Step 2 · Cooked batch'
+                      : 'Step 3 · Portion'}
                 </button>
               ))}
             </div>
