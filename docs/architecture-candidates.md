@@ -88,7 +88,7 @@ Move the conflict detection into `calculator.ts` (or a `src/utils/validate.ts` s
 
 ## Candidate 4 — Two storage modules share no abstraction
 
-**Status:** open  
+**Status:** resolved — `src/utils/storageAdapter.ts` introduced with `getStorageAdapter()`; both `useSavedMeals` and `activeDraftStorage` import it and own only their schema/migration logic  
 **Files involved:**
 - `src/hooks/useSavedMeals.ts` (182 lines)
 - `src/utils/activeDraftStorage.ts` (161 lines)
@@ -139,3 +139,4 @@ After resolving Candidate 2 (units extracted), the unit conversion leaves this f
 | 2026-05-09 | 5 | Created `src/utils/mealMetrics.ts` with `calculateFromForm(MealInputs)` seam; deleted `toCalculationInput.ts` and `useSavedMeals.calculateFromInputs`. `CalculationInput` is now internal. Commits: `refactor(calculator): add calculateFromForm seam, remove toCalculationInput` |
 | 2026-05-09 | 3 | Moved `computeHasConflictingCalories` and `hasEnteredPackageLabelSource` from `App.tsx` into `mealMetrics.ts`; exported as `hasConflictingCalories`. Commit: `refactor(calculator): move calorie conflict detection into mealMetrics` |
 | 2026-05-09 | 1 | Created `src/utils/displayMetrics.ts` with `computeDisplayMetrics`; removed 12 format imports and 60-line computation block from `ZoneLayout`. Commit: `refactor(ui): extract display value computation into displayMetrics` |
+| 2026-05-09 | 4 | Created `src/utils/storageAdapter.ts` with `getStorageAdapter()` (probe + Map fallback, never null); `useSavedMeals` dropped its null-returning `getStorage()` and null-checks; `activeDraftStorage` dropped its local `StorageAdapter` type, Map, and factory. Commit: `refactor(storage): extract shared StorageAdapter into storageAdapter.ts` |
