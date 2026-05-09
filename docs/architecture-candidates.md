@@ -36,7 +36,7 @@ Introduce a `useDisplayMetrics(result, units)` hook that returns a single `Displ
 
 ## Candidate 2 — Unit conversion is scattered across four files
 
-**Status:** open  
+**Status:** resolved — `src/utils/units.ts` created; all conversion consolidated there  
 **Files involved:**
 - `src/utils/calculator.ts` (lines 41–50 — constants + `ouncesToGrams`, `gramsToOunces`)
 - `src/utils/toCalculationInput.ts` (lines 4–10 — local `toGrams`)
@@ -110,7 +110,7 @@ Extract a `src/utils/storage.ts` base exporting a single `getStorageAdapter(): S
 
 ## Candidate 5 — `toCalculationInput` is a thin adapter with two unrelated responsibilities
 
-**Status:** open  
+**Status:** resolved — `toCalculationInput.ts` deleted; `mealMetrics.ts` introduced with `calculateFromForm` seam; duplicate `calculateFromInputs` in `useSavedMeals.ts` also removed  
 **Files involved:**
 - `src/utils/toCalculationInput.ts` (42 lines)
 - `src/App.tsx` (line 96 — sole call site)
@@ -135,4 +135,5 @@ After resolving Candidate 2 (units extracted), the unit conversion leaves this f
 
 | Date | Candidate | Decision |
 |---|---|---|
-| — | — | — |
+| 2026-05-09 | 2 | Extracted `src/utils/units.ts`; removed two duplicate `toGrams` implementations and consolidated all conversion constants there. Commits: `refactor(units): extract unit conversion into units.ts` |
+| 2026-05-09 | 5 | Created `src/utils/mealMetrics.ts` with `calculateFromForm(MealInputs)` seam; deleted `toCalculationInput.ts` and `useSavedMeals.calculateFromInputs`. `CalculationInput` is now internal. Commits: `refactor(calculator): add calculateFromForm seam, remove toCalculationInput` |
