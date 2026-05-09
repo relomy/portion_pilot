@@ -2,7 +2,7 @@
 
 Identified via an architectural survey using the `improve-codebase-architecture` skill (Ousterhout depth/seam vocabulary). Candidates are ordered by estimated impact.
 
-**Vocabulary:** see [CLAUDE.md](../CLAUDE.md) and [LANGUAGE.md](LANGUAGE.md) (if present).  
+**Vocabulary:** see [AGENTS.md](../AGENTS.md) and [LANGUAGE.md](LANGUAGE.md) (if present).  
 - **Module** — anything with an interface and an implementation  
 - **Depth** — how much behavior callers get relative to interface complexity they must learn  
 - **Seam** — a place where behaviour can be altered without editing at that place  
