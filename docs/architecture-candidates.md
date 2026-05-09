@@ -65,7 +65,7 @@ All four files import from `units.ts`. `calculator.ts` re-exports or drops its o
 
 ## Candidate 3 — `computeHasConflictingCalories` is a business rule hiding in App.tsx
 
-**Status:** open  
+**Status:** resolved — moved into `mealMetrics.ts` as `hasConflictingCalories`; `App.tsx` imports and calls it directly  
 **Files involved:**
 - `src/App.tsx` (lines 56–79 — `hasEnteredPackageLabelSource`, `computeHasConflictingCalories`)
 - `src/utils/calculator.ts`
@@ -137,3 +137,4 @@ After resolving Candidate 2 (units extracted), the unit conversion leaves this f
 |---|---|---|
 | 2026-05-09 | 2 | Extracted `src/utils/units.ts`; removed two duplicate `toGrams` implementations and consolidated all conversion constants there. Commits: `refactor(units): extract unit conversion into units.ts` |
 | 2026-05-09 | 5 | Created `src/utils/mealMetrics.ts` with `calculateFromForm(MealInputs)` seam; deleted `toCalculationInput.ts` and `useSavedMeals.calculateFromInputs`. `CalculationInput` is now internal. Commits: `refactor(calculator): add calculateFromForm seam, remove toCalculationInput` |
+| 2026-05-09 | 3 | Moved `computeHasConflictingCalories` and `hasEnteredPackageLabelSource` from `App.tsx` into `mealMetrics.ts`; exported as `hasConflictingCalories`. Commit: `refactor(calculator): move calorie conflict detection into mealMetrics` |
