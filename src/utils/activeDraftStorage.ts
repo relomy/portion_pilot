@@ -4,53 +4,15 @@ import type {
   TotalCaloriesSource,
   WeightUnit,
 } from '../hooks/useSavedMeals'
+import { getStorageAdapter, resetStorageAdapterForTests } from './storageAdapter'
 
 export const ACTIVE_DRAFT_STORAGE_KEY = 'meal-calorie-calculator.active-draft'
-const fallbackDraftStorage = new Map<string, string>()
 
 export type AppDraft = {
   form: MealInputs
   targetCalories: number | null
   cookedInputUnit: WeightUnit
   cookedOutputUnit: WeightUnit
-}
-
-type StorageAdapter = {
-  getItem: (key: string) => string | null
-  setItem: (key: string, value: string) => void
-  removeItem: (key: string) => void
-}
-
-function getStorage() {
-  if (typeof localStorage !== 'undefined' && localStorage !== null) {
-    const storage = localStorage as {
-      getItem?: (key: string) => string | null
-      setItem?: (key: string, value: string) => void
-      removeItem?: (key: string) => void
-    }
-
-    if (
-      typeof storage.getItem === 'function' &&
-      typeof storage.setItem === 'function' &&
-      typeof storage.removeItem === 'function'
-    ) {
-      return {
-        getItem: (key: string) => storage.getItem!(key),
-        setItem: (key: string, value: string) => storage.setItem!(key, value),
-        removeItem: (key: string) => storage.removeItem!(key),
-      } satisfies StorageAdapter
-    }
-  }
-
-  return {
-    getItem: (key: string) => fallbackDraftStorage.get(key) ?? null,
-    setItem: (key: string, value: string) => {
-      fallbackDraftStorage.set(key, value)
-    },
-    removeItem: (key: string) => {
-      fallbackDraftStorage.delete(key)
-    },
-  } satisfies StorageAdapter
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -121,12 +83,8 @@ export function createDefaultDraft(defaultForm: MealInputs): AppDraft {
 }
 
 export function loadDraft(defaultForm: MealInputs): AppDraft {
-  const storage = getStorage()
+  const storage = getStorageAdapter()
   const defaults = createDefaultDraft(defaultForm)
-
-  if (!storage) {
-    return defaults
-  }
 
   try {
     const parsed = JSON.parse(storage.getItem(ACTIVE_DRAFT_STORAGE_KEY) ?? 'null')
@@ -151,10 +109,9 @@ export function loadDraft(defaultForm: MealInputs): AppDraft {
 }
 
 export function persistDraft(draft: AppDraft) {
-  const storage = getStorage()
-  storage?.setItem(ACTIVE_DRAFT_STORAGE_KEY, JSON.stringify(draft))
+  getStorageAdapter().setItem(ACTIVE_DRAFT_STORAGE_KEY, JSON.stringify(draft))
 }
 
 export function resetActiveDraftStorageForTests() {
-  fallbackDraftStorage.clear()
+  resetStorageAdapterForTests()
 }

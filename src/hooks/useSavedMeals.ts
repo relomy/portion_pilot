@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { type CalculationResult } from '../utils/calculator'
 import { calculateFromForm } from '../utils/mealMetrics'
+import { getStorageAdapter } from '../utils/storageAdapter'
 
 export type MealMode = 'total' | 'perServing'
 export type TotalCaloriesSource = 'manualTotal' | 'packageLabel'
@@ -33,18 +34,6 @@ export type SavedMeal = {
 }
 
 export const STORAGE_KEY = 'meal-calorie-calculator.saved-meals'
-
-function getStorage() {
-  if (
-    typeof localStorage === 'undefined' ||
-    typeof localStorage.getItem !== 'function' ||
-    typeof localStorage.setItem !== 'function'
-  ) {
-    return null
-  }
-
-  return localStorage
-}
 
 function parseSavedMeals(rawValue: string | null): SavedMeal[] {
   if (!rawValue) {
@@ -97,14 +86,13 @@ function normalizeSavedMeals(meals: SavedMeal[]): SavedMeal[] {
 }
 
 export function useSavedMeals() {
-  const storage = getStorage()
   const [savedMeals, setSavedMeals] = useState<SavedMeal[]>(() =>
-    normalizeSavedMeals(parseSavedMeals(storage?.getItem(STORAGE_KEY) ?? null)),
+    normalizeSavedMeals(parseSavedMeals(getStorageAdapter().getItem(STORAGE_KEY))),
   )
 
   useEffect(() => {
-    storage?.setItem(STORAGE_KEY, JSON.stringify(savedMeals))
-  }, [savedMeals, storage])
+    getStorageAdapter().setItem(STORAGE_KEY, JSON.stringify(savedMeals))
+  }, [savedMeals])
 
   function saveMeal(inputs: MealInputs) {
     const nextMeal: SavedMeal = {
