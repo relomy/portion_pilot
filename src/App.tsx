@@ -12,8 +12,7 @@ import {
   persistDraft,
   type AppDraft,
 } from './utils/activeDraftStorage'
-import { calculateMealMetrics } from './utils/calculator'
-import { toCalculationInput } from './utils/toCalculationInput'
+import { calculateFromForm } from './utils/mealMetrics'
 
 function createEmptyForm(): MealInputs {
   return {
@@ -93,7 +92,7 @@ function App() {
   const { deleteMeal, loadMeal, saveMeal, savedMeals } = useSavedMeals()
   const hasConflictingCalories = computeHasConflictingCalories(form)
 
-  const result = calculateMealMetrics(toCalculationInput(form))
+  const result = calculateFromForm(form)
 
   useLayoutEffect(() => {
     persistDraft({

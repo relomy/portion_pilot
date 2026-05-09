@@ -1,8 +1,7 @@
 import { render, screen, within } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import type { MealInputs } from '../../hooks/useSavedMeals'
-import { calculateMealMetrics } from '../../utils/calculator'
-import { toCalculationInput } from '../../utils/toCalculationInput'
+import { calculateFromForm } from '../../utils/mealMetrics'
 import { Zone1PackageSection } from './Zone1PackageSection'
 
 const baseForm: MealInputs = {
@@ -27,7 +26,7 @@ const baseForm: MealInputs = {
 describe('Zone1PackageSection', () => {
   it('renders Zone 1 root test id and key package controls', () => {
     const form = { ...baseForm }
-    const result = calculateMealMetrics(toCalculationInput(form))
+    const result = calculateFromForm(form)
     render(
       <Zone1PackageSection
         form={form}
@@ -52,7 +51,7 @@ describe('Zone1PackageSection', () => {
 
   it('stacks package-label fields full-width and places calories before serving weight', () => {
     const form = { ...baseForm }
-    const result = calculateMealMetrics(toCalculationInput(form))
+    const result = calculateFromForm(form)
     render(
       <Zone1PackageSection
         form={form}
@@ -81,7 +80,7 @@ describe('Zone1PackageSection', () => {
 
   it('renders serving and raw weight unit toggles in label rows', () => {
     const form = { ...baseForm }
-    const result = calculateMealMetrics(toCalculationInput(form))
+    const result = calculateFromForm(form)
     render(
       <Zone1PackageSection
         form={form}

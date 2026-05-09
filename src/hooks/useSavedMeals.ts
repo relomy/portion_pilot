@@ -1,9 +1,6 @@
 import { useEffect, useState } from 'react'
-import {
-  type CalculationResult,
-  calculateMealMetrics,
-} from '../utils/calculator'
-import { toGrams } from '../utils/units'
+import { type CalculationResult } from '../utils/calculator'
+import { calculateFromForm } from '../utils/mealMetrics'
 
 export type MealMode = 'total' | 'perServing'
 export type TotalCaloriesSource = 'manualTotal' | 'packageLabel'
@@ -91,38 +88,11 @@ function normalizeInputs(inputs: PersistedMealInputs): MealInputs {
   }
 }
 
-function calculateFromInputs(inputs: MealInputs): CalculationResult {
-  return calculateMealMetrics({
-    mode: inputs.mode,
-    totalCaloriesSource: inputs.totalCaloriesSource,
-    manualTotalCalories:
-      inputs.mode === 'total' ? inputs.manualTotalCalories : null,
-    totalCalories: inputs.mode === 'total' ? inputs.totalCalories : null,
-    cookedWeightGrams: inputs.cookedWeightGrams,
-    portionEatenGrams:
-      inputs.mode === 'total'
-        ? toGrams(inputs.portionEaten, inputs.portionEatenUnit)
-        : null,
-    yourServings: inputs.yourServings ?? inputs.servings,
-    caloriesPerServing:
-      inputs.mode === 'perServing' ? inputs.caloriesPerServing : null,
-    rawTotalWeightGrams: toGrams(
-      inputs.rawTotalWeight,
-      inputs.rawTotalWeightUnit,
-    ),
-    packageServingWeightGrams: toGrams(
-      inputs.packageServingWeight,
-      inputs.packageServingWeightUnit,
-    ),
-    packageCaloriesPerServing: inputs.packageCaloriesPerServing,
-  })
-}
-
 function normalizeSavedMeals(meals: SavedMeal[]): SavedMeal[] {
   return meals.map((meal) => ({
     ...meal,
     inputs: normalizeInputs(meal.inputs),
-    cachedResult: calculateFromInputs(normalizeInputs(meal.inputs)),
+    cachedResult: calculateFromForm(normalizeInputs(meal.inputs)),
   }))
 }
 
@@ -141,7 +111,7 @@ export function useSavedMeals() {
       id: crypto.randomUUID(),
       createdAt: new Date().toISOString(),
       inputs,
-      cachedResult: calculateFromInputs(inputs),
+      cachedResult: calculateFromForm(inputs),
     }
 
     setSavedMeals((current) => [nextMeal, ...current])
@@ -160,7 +130,7 @@ export function useSavedMeals() {
 
     return {
       inputs: match.inputs,
-      result: calculateFromInputs(match.inputs),
+      result: calculateFromForm(match.inputs),
     }
   }
 

@@ -1,15 +1,15 @@
 import type { MealInputs } from '../hooks/useSavedMeals'
-import { type CalculationInput } from './calculator'
+import { calculateMealMetrics, type CalculationResult } from './calculator'
 import { toGrams } from './units'
 
-export function toCalculationInput(form: MealInputs): CalculationInput {
-  const isTotalMode = form.mode === 'total'
-  const isManualTotal =
-    isTotalMode && form.totalCaloriesSource === 'manualTotal'
-  const isPackageLabel =
-    isTotalMode && form.totalCaloriesSource === 'packageLabel'
+export type { CalculationResult }
 
-  return {
+export function calculateFromForm(form: MealInputs): CalculationResult {
+  const isTotalMode = form.mode === 'total'
+  const isManualTotal = isTotalMode && form.totalCaloriesSource === 'manualTotal'
+  const isPackageLabel = isTotalMode && form.totalCaloriesSource === 'packageLabel'
+
+  return calculateMealMetrics({
     mode: form.mode,
     totalCaloriesSource: form.totalCaloriesSource,
     manualTotalCalories: isManualTotal ? form.manualTotalCalories : null,
@@ -19,8 +19,7 @@ export function toCalculationInput(form: MealInputs): CalculationInput {
       ? toGrams(form.portionEaten, form.portionEatenUnit)
       : null,
     yourServings: form.mode === 'perServing' ? form.yourServings : null,
-    caloriesPerServing:
-      form.mode === 'perServing' ? form.caloriesPerServing : null,
+    caloriesPerServing: form.mode === 'perServing' ? form.caloriesPerServing : null,
     rawTotalWeightGrams: isPackageLabel
       ? toGrams(form.rawTotalWeight, form.rawTotalWeightUnit)
       : null,
@@ -30,5 +29,5 @@ export function toCalculationInput(form: MealInputs): CalculationInput {
     packageCaloriesPerServing: isPackageLabel
       ? form.packageCaloriesPerServing
       : null,
-  }
+  })
 }
