@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { MealInputs } from '../hooks/useSavedMeals'
 import { GRAMS_PER_OUNCE } from './units'
-import { calculateFromForm } from './mealMetrics'
+import { calculateFromForm, hasConflictingCalories } from './mealMetrics'
 
 function makeForm(overrides: Partial<MealInputs> = {}): MealInputs {
   return {
@@ -110,5 +110,61 @@ describe('calculateFromForm', () => {
     expect(result.rawPackageServings).toBeCloseTo(4, 5)
     expect(result.totalCalories).toBeCloseTo(560, 5)
     expect(result.portionCalories).toBeCloseTo(70, 5)
+  })
+})
+
+describe('hasConflictingCalories', () => {
+  it('returns false when only one calorie source is entered', () => {
+    expect(
+      hasConflictingCalories(makeForm({ mode: 'total', totalCaloriesSource: 'manualTotal', manualTotalCalories: 900 })),
+    ).toBe(false)
+  })
+
+  it('flags conflict in perServing mode when total-mode fields are also filled', () => {
+    expect(
+      hasConflictingCalories(
+        makeForm({ mode: 'perServing', caloriesPerServing: 250, manualTotalCalories: 900 }),
+      ),
+    ).toBe(true)
+  })
+
+  it('flags conflict in perServing mode when packageLabel fields are also filled', () => {
+    expect(
+      hasConflictingCalories(
+        makeForm({ mode: 'perServing', caloriesPerServing: 250, rawTotalWeight: 500 }),
+      ),
+    ).toBe(true)
+  })
+
+  it('does not flag conflict in perServing mode when only per-serving fields are filled', () => {
+    expect(
+      hasConflictingCalories(
+        makeForm({ mode: 'perServing', caloriesPerServing: 250, yourServings: 4 }),
+      ),
+    ).toBe(false)
+  })
+
+  it('flags conflict in manualTotal mode when caloriesPerServing is also entered', () => {
+    expect(
+      hasConflictingCalories(
+        makeForm({ mode: 'total', totalCaloriesSource: 'manualTotal', manualTotalCalories: 900, caloriesPerServing: 250 }),
+      ),
+    ).toBe(true)
+  })
+
+  it('flags conflict in packageLabel mode when caloriesPerServing is also entered', () => {
+    expect(
+      hasConflictingCalories(
+        makeForm({ mode: 'total', totalCaloriesSource: 'packageLabel', rawTotalWeight: 680, caloriesPerServing: 250 }),
+      ),
+    ).toBe(true)
+  })
+
+  it('does not flag conflict in packageLabel mode without caloriesPerServing', () => {
+    expect(
+      hasConflictingCalories(
+        makeForm({ mode: 'total', totalCaloriesSource: 'packageLabel', rawTotalWeight: 680, packageServingWeight: 85, packageCaloriesPerServing: 140 }),
+      ),
+    ).toBe(false)
   })
 })

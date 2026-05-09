@@ -4,6 +4,31 @@ import { toGrams } from './units'
 
 export type { CalculationResult }
 
+function hasEnteredPackageLabelSource(form: MealInputs): boolean {
+  return (
+    form.rawTotalWeight !== null ||
+    form.packageServingWeight !== null ||
+    form.packageCaloriesPerServing !== null
+  )
+}
+
+export function hasConflictingCalories(form: MealInputs): boolean {
+  if (form.mode === 'perServing') {
+    return (
+      form.caloriesPerServing !== null &&
+      (form.manualTotalCalories !== null || hasEnteredPackageLabelSource(form))
+    )
+  }
+
+  if (form.totalCaloriesSource === 'manualTotal') {
+    return (
+      form.manualTotalCalories !== null && form.caloriesPerServing !== null
+    )
+  }
+
+  return hasEnteredPackageLabelSource(form) && form.caloriesPerServing !== null
+}
+
 export function calculateFromForm(form: MealInputs): CalculationResult {
   const isTotalMode = form.mode === 'total'
   const isManualTotal = isTotalMode && form.totalCaloriesSource === 'manualTotal'
