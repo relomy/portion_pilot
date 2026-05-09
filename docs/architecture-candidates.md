@@ -13,7 +13,7 @@ Identified via an architectural survey using the `improve-codebase-architecture`
 
 ## Candidate 1 — ZoneLayout has no presentation layer beneath it
 
-**Status:** open  
+**Status:** resolved — `src/utils/displayMetrics.ts` introduced with `computeDisplayMetrics`; ZoneLayout reduced from 423 to ~360 lines with all formatting logic extracted  
 **Files involved:**
 - `src/components/ZoneLayout.tsx` (423 lines)
 - `src/utils/format.ts`
@@ -138,3 +138,4 @@ After resolving Candidate 2 (units extracted), the unit conversion leaves this f
 | 2026-05-09 | 2 | Extracted `src/utils/units.ts`; removed two duplicate `toGrams` implementations and consolidated all conversion constants there. Commits: `refactor(units): extract unit conversion into units.ts` |
 | 2026-05-09 | 5 | Created `src/utils/mealMetrics.ts` with `calculateFromForm(MealInputs)` seam; deleted `toCalculationInput.ts` and `useSavedMeals.calculateFromInputs`. `CalculationInput` is now internal. Commits: `refactor(calculator): add calculateFromForm seam, remove toCalculationInput` |
 | 2026-05-09 | 3 | Moved `computeHasConflictingCalories` and `hasEnteredPackageLabelSource` from `App.tsx` into `mealMetrics.ts`; exported as `hasConflictingCalories`. Commit: `refactor(calculator): move calorie conflict detection into mealMetrics` |
+| 2026-05-09 | 1 | Created `src/utils/displayMetrics.ts` with `computeDisplayMetrics`; removed 12 format imports and 60-line computation block from `ZoneLayout`. Commit: `refactor(ui): extract display value computation into displayMetrics` |
