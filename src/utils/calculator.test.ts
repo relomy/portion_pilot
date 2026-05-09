@@ -1,9 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import {
-  calculateMealMetrics,
-  gramsToOunces,
-  ouncesToGrams,
-} from './calculator'
+import { calculateMealMetrics } from './calculator'
+import { gramsToOunces, ouncesToGrams } from './units'
 
 describe('weight conversions', () => {
   it('converts ounces to grams with full precision', () => {

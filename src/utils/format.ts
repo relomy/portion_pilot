@@ -1,4 +1,4 @@
-import { gramsToOunces } from './calculator'
+import { gramsToOunces } from './units'
 
 const UNAVAILABLE = '—'
 

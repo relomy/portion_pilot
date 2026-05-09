@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { MealInputs } from '../hooks/useSavedMeals'
-import { GRAMS_PER_OUNCE } from './calculator'
+import { GRAMS_PER_OUNCE } from './units'
 import { toCalculationInput } from './toCalculationInput'
 
 function makeForm(overrides: Partial<MealInputs> = {}): MealInputs {

@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react'
 import {
   type CalculationResult,
   calculateMealMetrics,
-  ouncesToGrams,
 } from '../utils/calculator'
+import { toGrams } from '../utils/units'
 
 export type MealMode = 'total' | 'perServing'
 export type TotalCaloriesSource = 'manualTotal' | 'packageLabel'
@@ -64,14 +64,6 @@ function parseSavedMeals(rawValue: string | null): SavedMeal[] {
 
 type PersistedMealInputs = Partial<MealInputs> & {
   servings?: number | null
-}
-
-function toGrams(value: number | null, unit: WeightUnit): number | null {
-  if (value === null) {
-    return null
-  }
-
-  return unit === 'oz' ? ouncesToGrams(value) : value
 }
 
 function normalizeInputs(inputs: PersistedMealInputs): MealInputs {

@@ -1,13 +1,6 @@
-import type { MealInputs, WeightUnit } from '../hooks/useSavedMeals'
-import { type CalculationInput, ouncesToGrams } from './calculator'
-
-function toGrams(value: number | null, unit: WeightUnit): number | null {
-  if (value === null) {
-    return null
-  }
-
-  return unit === 'oz' ? ouncesToGrams(value) : value
-}
+import type { MealInputs } from '../hooks/useSavedMeals'
+import { type CalculationInput } from './calculator'
+import { toGrams } from './units'
 
 export function toCalculationInput(form: MealInputs): CalculationInput {
   const isTotalMode = form.mode === 'total'
