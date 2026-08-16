@@ -38,16 +38,7 @@ export type CalculationResult = {
   }
 }
 
-export const OUNCES_PER_GRAM = 0.03527396195
-export const GRAMS_PER_OUNCE = 28.349523125
-
-export function ouncesToGrams(ounces: number): number {
-  return ounces * GRAMS_PER_OUNCE
-}
-
-export function gramsToOunces(grams: number): number {
-  return grams * OUNCES_PER_GRAM
-}
+import { GRAMS_PER_OUNCE } from './units'
 
 export function calculateMealMetrics(input: CalculationInput): CalculationResult {
   const hasUserServings =

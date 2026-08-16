@@ -9,36 +9,14 @@ import type {
 import { type CalculationResult } from '../utils/calculator'
 import { DevPanel } from './DevPanel'
 import { SavedMealsList } from './SavedMealsList'
-import {
-  toCanonicalCookedWeightGrams,
-  toCookedInputDisplayValue,
-} from './zones/cookedWeightInputMapping'
+import { toCanonicalCookedWeightGrams } from './zones/cookedWeightInputMapping'
 import { Zone1PackageSection } from './zones/Zone1PackageSection'
 import { Zone2CookedSection } from './zones/Zone2CookedSection'
 import { Zone3PortionSection } from './zones/Zone3PortionSection'
 import { StepNavigation } from './stepflow/StepNavigation'
 import { UtilityNav, type UtilityKey } from './stepflow/UtilityNav'
 import { getStepStates, type StepKey } from './stepflow/stepState'
-import {
-  formatCaloriesPer100Grams,
-  formatCaloriesPerGram,
-  formatCaloriesPerOunce,
-  formatCaloriesPerServing,
-  formatCookedWeightValue,
-  formatEquivalentPackageServings,
-  formatRawPerCookedMultiplier,
-  formatPortionCalories,
-  formatWeightChange,
-  getWeightChangeCopy,
-  formatRawPackageServings,
-  formatTotalCalories,
-} from '../utils/format'
-
-const sourceLabels = {
-  total: 'Source: total calories',
-  per_serving: 'Source: calories per serving',
-  insufficient: 'Source: insufficient data',
-} as const
+import { computeDisplayMetrics } from '../utils/displayMetrics'
 
 const STEP_LABELS: Record<StepKey, string> = {
   step1: 'Step 1 · Package',
@@ -121,69 +99,7 @@ export function ZoneLayout({
     useState<NavUtilityKey>('calculator')
   const stepStates = getStepStates({ result, activeStep })
   const activeStepState = stepStates[activeStep]
-  const totalCaloriesText = formatTotalCalories(
-    result.totalCalories,
-    result.totalCaloriesDisplaySource,
-  )
-  const rawServingsText = formatRawPackageServings(result.rawPackageServings)
-  const caloriesPerServingText = formatCaloriesPerServing(
-    form.mode === 'total' && form.totalCaloriesSource === 'packageLabel'
-      ? form.packageCaloriesPerServing
-      : result.caloriesPerServing,
-  )
-  const sourceLabel = sourceLabels[result.calorie_source_used]
-  const activeOutputUnit = cookedOutputUnit
-  const cookedInputValue = toCookedInputDisplayValue(
-    form.cookedWeightGrams,
-    cookedInputUnit,
-  )
-  const primaryDensityLabel =
-    activeOutputUnit === 'oz' ? 'Calories per ounce' : 'Calories per gram'
-  const primaryDensityValue =
-    activeOutputUnit === 'oz'
-      ? formatCaloriesPerOunce(result.caloriesPerOunce)
-      : formatCaloriesPerGram(result.caloriesPerGram)
-  const secondaryDensityValue =
-    activeOutputUnit === 'oz'
-      ? formatCaloriesPerGram(result.caloriesPerGram)
-      : formatCaloriesPerOunce(result.caloriesPerOunce)
-  const secondaryDensityLabel =
-    activeOutputUnit === 'oz' ? 'Calories per gram' : 'Calories per ounce'
-  const caloriesPer100GramsValue = formatCaloriesPer100Grams(
-    result.caloriesPer100Grams,
-  )
-  const weightChangeText = formatWeightChange(
-    result.weightChangeGrams,
-    result.weightChangePercent,
-    activeOutputUnit,
-  )
-  const weightChangeCopy = getWeightChangeCopy(result.weightChangeDirection)
-  const hasWeightChange = weightChangeText !== '—'
-  const targetPortionGrams =
-    targetCalories !== null && result.caloriesPerGram !== null
-      ? targetCalories / result.caloriesPerGram
-      : null
-  const referenceServingText = formatCookedWeightValue(
-    result.cookedWeightPerPackageServingGrams,
-    activeOutputUnit,
-  )
-  const targetPortionText = formatCookedWeightValue(
-    targetPortionGrams,
-    activeOutputUnit,
-  )
-  const servingsEatenText = formatEquivalentPackageServings(
-    result.equivalentPackageServingsEaten,
-  )
-  const rawEquivalentEatenText = formatCookedWeightValue(
-    result.rawEquivalentEatenGrams,
-    activeOutputUnit,
-  )
-  const rawPerCookedMultiplierText = formatRawPerCookedMultiplier(
-    result.rawPerCookedMultiplier,
-  )
-  const portionCaloriesText = formatPortionCalories(result.portionCalories)
-  const isPrimaryDensityMuted =
-    primaryDensityValue === '—' || primaryDensityValue === 'Need cooked weight'
+  const dm = computeDisplayMetrics({ result, form, targetCalories, cookedInputUnit, cookedOutputUnit })
   const handleCookedWeightChange = (value: number | null) => {
     onNumberChange('cookedWeightGrams', toCanonicalCookedWeightGrams(value, cookedInputUnit))
   }
@@ -224,7 +140,7 @@ export function ZoneLayout({
       </header>
 
       <div className="zone-layout__diagnostics">
-        <p>{sourceLabel}</p>
+        <p>{dm.sourceLabel}</p>
         <DevPanel
           hasConflictingCalories={hasConflictingCalories}
           form={form}
@@ -322,9 +238,9 @@ export function ZoneLayout({
                     <Zone1PackageSection
                       form={form}
                       result={result}
-                      totalCaloriesText={totalCaloriesText}
-                      rawServingsText={rawServingsText}
-                      caloriesPerServingText={caloriesPerServingText}
+                      totalCaloriesText={dm.totalCaloriesText}
+                      rawServingsText={dm.rawServingsText}
+                      caloriesPerServingText={dm.caloriesPerServingText}
                       onTextChange={onTextChange}
                       onNumberChange={onNumberChange}
                       onUnitChange={onUnitChange}
@@ -342,17 +258,17 @@ export function ZoneLayout({
                   >
                     <Zone2CookedSection
                       cookedInputUnit={cookedInputUnit}
-                      cookedInputValue={cookedInputValue}
-                      primaryDensityLabel={primaryDensityLabel}
-                      primaryDensityValue={primaryDensityValue}
-                      secondaryDensityLabel={secondaryDensityLabel}
-                      secondaryDensityValue={secondaryDensityValue}
-                      caloriesPer100GramsValue={caloriesPer100GramsValue}
-                      isPrimaryDensityMuted={isPrimaryDensityMuted}
-                      weightChangeText={weightChangeText}
-                      rawPerCookedMultiplierText={rawPerCookedMultiplierText}
-                      weightChangeCopy={weightChangeCopy}
-                      hasWeightChange={hasWeightChange}
+                      cookedInputValue={dm.cookedInputValue}
+                      primaryDensityLabel={dm.primaryDensityLabel}
+                      primaryDensityValue={dm.primaryDensityValue}
+                      secondaryDensityLabel={dm.secondaryDensityLabel}
+                      secondaryDensityValue={dm.secondaryDensityValue}
+                      caloriesPer100GramsValue={dm.caloriesPer100GramsValue}
+                      isPrimaryDensityMuted={dm.isPrimaryDensityMuted}
+                      weightChangeText={dm.weightChangeText}
+                      rawPerCookedMultiplierText={dm.rawPerCookedMultiplierText}
+                      weightChangeCopy={dm.weightChangeCopy}
+                      hasWeightChange={dm.hasWeightChange}
                       onCookedInputUnitChange={onCookedInputUnitChange}
                       onCookedWeightChange={handleCookedWeightChange}
                     />
@@ -368,12 +284,12 @@ export function ZoneLayout({
                     <Zone3PortionSection
                       form={form}
                       targetCalories={targetCalories}
-                      activeOutputUnit={activeOutputUnit}
-                      referenceServingText={referenceServingText}
-                      targetPortionText={targetPortionText}
-                      servingsEatenText={servingsEatenText}
-                      rawEquivalentEatenText={rawEquivalentEatenText}
-                      portionCaloriesText={portionCaloriesText}
+                      activeOutputUnit={cookedOutputUnit}
+                      referenceServingText={dm.referenceServingText}
+                      targetPortionText={dm.targetPortionText}
+                      servingsEatenText={dm.servingsEatenText}
+                      rawEquivalentEatenText={dm.rawEquivalentEatenText}
+                      portionCaloriesText={dm.portionCaloriesText}
                       onUnitChange={onUnitChange}
                       onCookedOutputUnitChange={onCookedOutputUnitChange}
                       onNumberChange={onNumberChange}

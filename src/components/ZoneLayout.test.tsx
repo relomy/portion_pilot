@@ -2,8 +2,7 @@ import { fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import type { MealInputs } from '../hooks/useSavedMeals'
-import { calculateMealMetrics } from '../utils/calculator'
-import { toCalculationInput } from '../utils/toCalculationInput'
+import { calculateFromForm } from '../utils/mealMetrics'
 import { ZoneLayout, type ZoneLayoutProps } from './ZoneLayout'
 
 const baseForm: MealInputs = {
@@ -27,7 +26,7 @@ const baseForm: MealInputs = {
 
 function buildProps(overrides: Partial<MealInputs> = {}): ZoneLayoutProps {
   const form: MealInputs = { ...baseForm, ...overrides }
-  const result = calculateMealMetrics(toCalculationInput(form))
+  const result = calculateFromForm(form)
 
   return {
     form,
@@ -265,7 +264,7 @@ describe('ZoneLayout', () => {
   it('renders shelf meal cards when meals are provided', async () => {
     const user = userEvent.setup()
     const form: MealInputs = { ...baseForm, mealName: 'Prep bowl' }
-    const result = calculateMealMetrics(toCalculationInput(form))
+    const result = calculateFromForm(form)
     render(
       <ZoneLayout
         {...buildProps()}

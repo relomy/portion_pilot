@@ -12,8 +12,7 @@ import {
   persistDraft,
   type AppDraft,
 } from './utils/activeDraftStorage'
-import { calculateMealMetrics } from './utils/calculator'
-import { toCalculationInput } from './utils/toCalculationInput'
+import { calculateFromForm, hasConflictingCalories } from './utils/mealMetrics'
 
 function createEmptyForm(): MealInputs {
   return {
@@ -53,31 +52,6 @@ function clearVariableFields(form: MealInputs): MealInputs {
   }
 }
 
-function hasEnteredPackageLabelSource(form: MealInputs): boolean {
-  return (
-    form.rawTotalWeight !== null ||
-    form.packageServingWeight !== null ||
-    form.packageCaloriesPerServing !== null
-  )
-}
-
-function computeHasConflictingCalories(form: MealInputs): boolean {
-  if (form.mode === 'perServing') {
-    return (
-      form.caloriesPerServing !== null &&
-      (form.manualTotalCalories !== null || hasEnteredPackageLabelSource(form))
-    )
-  }
-
-  if (form.totalCaloriesSource === 'manualTotal') {
-    return (
-      form.manualTotalCalories !== null && form.caloriesPerServing !== null
-    )
-  }
-
-  return hasEnteredPackageLabelSource(form) && form.caloriesPerServing !== null
-}
-
 function App() {
   const [initialDraft] = useState<AppDraft>(() => loadDraft(createEmptyForm()))
   const [form, setForm] = useState<MealInputs>(initialDraft.form)
@@ -91,9 +65,7 @@ function App() {
     initialDraft.cookedOutputUnit,
   )
   const { deleteMeal, loadMeal, saveMeal, savedMeals } = useSavedMeals()
-  const hasConflictingCalories = computeHasConflictingCalories(form)
-
-  const result = calculateMealMetrics(toCalculationInput(form))
+  const result = calculateFromForm(form)
 
   useLayoutEffect(() => {
     persistDraft({
@@ -195,7 +167,7 @@ function App() {
       <ZoneLayout
         form={form}
         result={result}
-        hasConflictingCalories={hasConflictingCalories}
+        hasConflictingCalories={hasConflictingCalories(form)}
         targetCalories={targetCalories}
         cookedInputUnit={cookedInputUnit}
         cookedOutputUnit={cookedOutputUnit}

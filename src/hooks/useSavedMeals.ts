@@ -1,9 +1,7 @@
 import { useEffect, useState } from 'react'
-import {
-  type CalculationResult,
-  calculateMealMetrics,
-  ouncesToGrams,
-} from '../utils/calculator'
+import { type CalculationResult } from '../utils/calculator'
+import { calculateFromForm } from '../utils/mealMetrics'
+import { getStorageAdapter } from '../utils/storageAdapter'
 
 export type MealMode = 'total' | 'perServing'
 export type TotalCaloriesSource = 'manualTotal' | 'packageLabel'
@@ -37,18 +35,6 @@ export type SavedMeal = {
 
 export const STORAGE_KEY = 'meal-calorie-calculator.saved-meals'
 
-function getStorage() {
-  if (
-    typeof localStorage === 'undefined' ||
-    typeof localStorage.getItem !== 'function' ||
-    typeof localStorage.setItem !== 'function'
-  ) {
-    return null
-  }
-
-  return localStorage
-}
-
 function parseSavedMeals(rawValue: string | null): SavedMeal[] {
   if (!rawValue) {
     return []
@@ -64,14 +50,6 @@ function parseSavedMeals(rawValue: string | null): SavedMeal[] {
 
 type PersistedMealInputs = Partial<MealInputs> & {
   servings?: number | null
-}
-
-function toGrams(value: number | null, unit: WeightUnit): number | null {
-  if (value === null) {
-    return null
-  }
-
-  return unit === 'oz' ? ouncesToGrams(value) : value
 }
 
 function normalizeInputs(inputs: PersistedMealInputs): MealInputs {
@@ -99,57 +77,29 @@ function normalizeInputs(inputs: PersistedMealInputs): MealInputs {
   }
 }
 
-function calculateFromInputs(inputs: MealInputs): CalculationResult {
-  return calculateMealMetrics({
-    mode: inputs.mode,
-    totalCaloriesSource: inputs.totalCaloriesSource,
-    manualTotalCalories:
-      inputs.mode === 'total' ? inputs.manualTotalCalories : null,
-    totalCalories: inputs.mode === 'total' ? inputs.totalCalories : null,
-    cookedWeightGrams: inputs.cookedWeightGrams,
-    portionEatenGrams:
-      inputs.mode === 'total'
-        ? toGrams(inputs.portionEaten, inputs.portionEatenUnit)
-        : null,
-    yourServings: inputs.yourServings ?? inputs.servings,
-    caloriesPerServing:
-      inputs.mode === 'perServing' ? inputs.caloriesPerServing : null,
-    rawTotalWeightGrams: toGrams(
-      inputs.rawTotalWeight,
-      inputs.rawTotalWeightUnit,
-    ),
-    packageServingWeightGrams: toGrams(
-      inputs.packageServingWeight,
-      inputs.packageServingWeightUnit,
-    ),
-    packageCaloriesPerServing: inputs.packageCaloriesPerServing,
-  })
-}
-
 function normalizeSavedMeals(meals: SavedMeal[]): SavedMeal[] {
   return meals.map((meal) => ({
     ...meal,
     inputs: normalizeInputs(meal.inputs),
-    cachedResult: calculateFromInputs(normalizeInputs(meal.inputs)),
+    cachedResult: calculateFromForm(normalizeInputs(meal.inputs)),
   }))
 }
 
 export function useSavedMeals() {
-  const storage = getStorage()
   const [savedMeals, setSavedMeals] = useState<SavedMeal[]>(() =>
-    normalizeSavedMeals(parseSavedMeals(storage?.getItem(STORAGE_KEY) ?? null)),
+    normalizeSavedMeals(parseSavedMeals(getStorageAdapter().getItem(STORAGE_KEY))),
   )
 
   useEffect(() => {
-    storage?.setItem(STORAGE_KEY, JSON.stringify(savedMeals))
-  }, [savedMeals, storage])
+    getStorageAdapter().setItem(STORAGE_KEY, JSON.stringify(savedMeals))
+  }, [savedMeals])
 
   function saveMeal(inputs: MealInputs) {
     const nextMeal: SavedMeal = {
       id: crypto.randomUUID(),
       createdAt: new Date().toISOString(),
       inputs,
-      cachedResult: calculateFromInputs(inputs),
+      cachedResult: calculateFromForm(inputs),
     }
 
     setSavedMeals((current) => [nextMeal, ...current])
@@ -168,7 +118,7 @@ export function useSavedMeals() {
 
     return {
       inputs: match.inputs,
-      result: calculateFromInputs(match.inputs),
+      result: calculateFromForm(match.inputs),
     }
   }
 

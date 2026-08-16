@@ -1,4 +1,4 @@
-import { gramsToOunces, ouncesToGrams } from '../../utils/calculator'
+import { gramsToOunces, ouncesToGrams } from '../../utils/units'
 import type { WeightUnit } from '../../hooks/useSavedMeals'
 
 function roundForInput(value: number, maxDecimals = 3): number {
